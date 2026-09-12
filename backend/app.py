@@ -35,6 +35,10 @@ class ConfigRequest(BaseModel):
 class ResetRequest(BaseModel):
     session_id: Optional[str] = None
 
+class RestoreRequest(BaseModel):
+    session_id: str
+    turn_index: int
+
 @app.post("/api/config")
 async def update_engine_config(req: ConfigRequest):
     global use_mock_only
@@ -74,6 +78,15 @@ async def get_demo_scenarios():
             "description": "Caller provides identity info and asks about denied January healthcare claim in one shot.",
             "messages": [
                 "I’m the policyholder. My name is Margaret Chen, policy POL-9921. I’m calling about my denied healthcare claim from January. DOB is 1985-03-15, SSN last four is 4472."
+            ]
+        },
+        {
+            "id": "proxy_david_chen",
+            "title": "Authorized Representative (David Chen for Margaret Chen)",
+            "description": "Son calls on behalf of elderly mother Margaret Chen. System verifies proxy relationship, evaluates SMS consent, and enters PROCESS_CASE.",
+            "messages": [
+                "I am David Chen calling on behalf of my mother Margaret Chen POL-9921, DOB 1985-03-15, SSN 4472. Calling about her denied healthcare claim from January.",
+                "What if we cannot get the original pathology report?"
             ]
         },
         {
@@ -141,6 +154,9 @@ async def chat_endpoint(req: ChatRequest):
     history.append({"role": "user", "content": req.message})
     history.append({"role": "assistant", "content": reply})
 
+    # Record state snapshot for time-travel replay
+    sm.record_snapshot(req.message, reply)
+
     return ChatResponse(
         session_id=sid,
         reply=reply,
@@ -150,6 +166,43 @@ async def chat_endpoint(req: ChatRequest):
         active_case=sm.get_active_claim(),
         verified_policyholder=sm.get_verified_policyholder()
     )
+
+@app.post("/api/restore")
+async def restore_session_state(req: RestoreRequest):
+    sid = req.session_id
+    sm = active_sessions.get(sid)
+    if not sm:
+        raise HTTPException(status_code=404, detail="Session not found")
+    success = sm.restore_to_turn(req.turn_index)
+    if not success:
+        raise HTTPException(status_code=400, detail="Invalid turn index")
+    
+    # Trim conversation history to match restored snapshot
+    if sid in session_histories:
+        session_histories[sid] = session_histories[sid][:(req.turn_index + 1) * 2]
+
+    return {
+        "status": "restored",
+        "session_id": sid,
+        "turn_index": req.turn_index,
+        "phase": sm.state.phase.value,
+        "sop_state": sm.state,
+        "verified_fields": sm.state.verified_fields,
+        "active_case": sm.get_active_claim(),
+        "verified_policyholder": sm.get_verified_policyholder()
+    }
+
+@app.get("/api/trajectory/{session_id}")
+async def get_session_trajectory(session_id: str):
+    sm = active_sessions.get(session_id)
+    if not sm:
+        raise HTTPException(status_code=404, detail="Session not found")
+    snapshots = [s.model_dump() for s in sm.state.history_snapshots]
+    return {
+        "session_id": session_id,
+        "turns_count": len(snapshots),
+        "snapshots": snapshots
+    }
 
 # Mount frontend files if directory exists
 if FRONTEND_DIR.exists():

@@ -2,7 +2,7 @@ import datetime
 from typing import Dict, Any, Optional, Tuple, List
 from .types import (
     Phase, SOPState, PIIFields, CrossPhaseMemory, TraceEvent,
-    PostProcessState, ClaimRecord, PolicyHolder
+    PostProcessState, ClaimRecord, PolicyHolder, StateSnapshot, Representative
 )
 from .grounded_data import grounded_data
 from .extractor import UtteranceExtractor
@@ -26,6 +26,38 @@ class SOPStateMachine:
         )
         self.state.trace_log.append(event)
 
+    def record_snapshot(self, user_msg: str, reply: str):
+        snapshot = StateSnapshot(
+            turn_index=len(self.state.history_snapshots),
+            user_message=user_msg,
+            agent_reply=reply,
+            phase=self.state.phase,
+            state_dump=self.state.model_dump(exclude={"history_snapshots"}),
+            timestamp=datetime.datetime.utcnow().isoformat() + "Z"
+        )
+        self.state.history_snapshots.append(snapshot)
+
+    def restore_to_turn(self, turn_index: int) -> bool:
+        if 0 <= turn_index < len(self.state.history_snapshots):
+            target_snap = self.state.history_snapshots[turn_index]
+            dump = target_snap.state_dump
+            self.state.phase = Phase(dump["phase"])
+            self.state.accumulated_pii = PIIFields(**dump["accumulated_pii"])
+            self.state.verified_party_id = dump["verified_party_id"]
+            self.state.verified_fields = dump["verified_fields"]
+            self.state.cross_phase_memory = CrossPhaseMemory(**dump["cross_phase_memory"])
+            self.state.active_case_id = dump["active_case_id"]
+            self.state.out_of_scope_count = dump["out_of_scope_count"]
+            self.state.refusal_count = dump["refusal_count"]
+            self.state.post_process = PostProcessState(**dump["post_process"])
+            self.state.is_proxy_caller = dump.get("is_proxy_caller", False)
+            self.state.proxy_rep_name = dump.get("proxy_rep_name")
+            self.state.proxy_relationship = dump.get("proxy_relationship")
+            self.state.proxy_consent_status = dump.get("proxy_consent_status")
+            self.state.history_snapshots = self.state.history_snapshots[:turn_index + 1]
+            return True
+        return False
+
     def get_verified_policyholder(self) -> Optional[PolicyHolder]:
         if not self.state.verified_party_id:
             return None
@@ -33,6 +65,11 @@ class SOPStateMachine:
             if ph.party_id == self.state.verified_party_id:
                 return ph
         return None
+
+    def get_proxy_representative(self) -> Optional[Representative]:
+        if not self.state.is_proxy_caller or not self.state.proxy_rep_name:
+            return None
+        return grounded_data.find_representative(self.state.proxy_rep_name)
 
     def get_active_claim(self) -> Optional[ClaimRecord]:
         if not self.state.active_case_id:
@@ -105,6 +142,7 @@ class SOPStateMachine:
 
             ph = self.get_verified_policyholder()
             ac = self.get_active_claim()
+            is_escalated = (self.state.out_of_scope_count >= 2 or self.state.phase == Phase.ESCALATED)
             context = ContextBuilder.build_system_prompt(
                 self.state, ph, ac, is_out_of_scope=True
             )
@@ -112,11 +150,11 @@ class SOPStateMachine:
                 "is_out_of_scope": True,
                 "is_frustrated": False,
                 "is_refusal": False,
-                "demands_human": False,
+                "demands_human": is_escalated,
                 "context": context,
                 "policyholder": ph,
                 "active_claim": ac,
-                "transition_note": "Out-of-scope query handled."
+                "transition_note": "Consecutive out-of-scope queries. Human escalation triggered." if is_escalated else "Out-of-scope query handled."
             }
         else:
             # Reset consecutive out of scope counter if user returns to scope
@@ -150,6 +188,35 @@ class SOPStateMachine:
                 "transition_note": "Escalated to human representative upon request."
             }
 
+        # 2.5 Check Proxy Caller / Authorized Representative
+        proxy_ctx = self.extractor.extract_proxy_context(user_text)
+        if proxy_ctx["is_proxy"]:
+            self.state.is_proxy_caller = True
+            if proxy_ctx["rep_name"]:
+                self.state.proxy_rep_name = proxy_ctx["rep_name"]
+            if proxy_ctx["relationship"]:
+                self.state.proxy_relationship = proxy_ctx["relationship"]
+
+            # Check representative database
+            rep_record = grounded_data.find_representative(self.state.proxy_rep_name or "", proxy_ctx.get("buyer_name"))
+            if rep_record:
+                consent_status = grounded_data.simulate_consent_check("default", attempt_index=1)
+                self.state.proxy_consent_status = consent_status
+                self._add_trace(
+                    gate="PROXY_AUTHORIZATION_GATE",
+                    passed=(consent_status == "approved"),
+                    details=f"Representative {rep_record.rep_name} ({rep_record.relationship}) authorized for policyholder {rep_record.buyer_name}. Consent status: {consent_status}.",
+                    phase_before=phase_before
+                )
+            else:
+                self.state.proxy_consent_status = "unauthorized"
+                self._add_trace(
+                    gate="PROXY_AUTHORIZATION_GATE",
+                    passed=False,
+                    details=f"Caller {proxy_ctx.get('rep_name')} not found on authorized representative list for {proxy_ctx.get('buyer_name')}.",
+                    phase_before=phase_before
+                )
+
         # 3. Always Extract and Store Cross-Phase Memory
         hints = self.extractor.extract_cross_phase_hints(user_text)
         if hints.case_type_hint:
@@ -163,6 +230,22 @@ class SOPStateMachine:
 
         # 4. Phase-Specific State Handling
         if self.state.phase == Phase.VERIFY_ID:
+            # If unauthorized proxy caller trying to bypass verification
+            if self.state.is_proxy_caller and self.state.proxy_consent_status == "unauthorized":
+                ph = self.get_verified_policyholder()
+                ac = self.get_active_claim()
+                context = ContextBuilder.build_system_prompt(self.state, ph, ac)
+                return {
+                    "is_out_of_scope": False,
+                    "is_frustrated": is_frustrated,
+                    "is_refusal": is_refusal,
+                    "demands_human": False,
+                    "context": context,
+                    "policyholder": ph,
+                    "active_claim": ac,
+                    "transition_note": "Unauthorized proxy caller blocked."
+                }
+
             # Extract PII from user text
             new_pii = self.extractor.extract_pii(user_text)
 
@@ -311,5 +394,9 @@ class SOPStateMachine:
             "context": context,
             "policyholder": ph,
             "active_claim": ac,
+            "is_proxy_caller": self.state.is_proxy_caller,
+            "proxy_rep_name": self.state.proxy_rep_name,
+            "proxy_relationship": self.state.proxy_relationship,
+            "proxy_consent_status": self.state.proxy_consent_status,
             "transition_note": f"Phase: {phase_before.value} -> {self.state.phase.value}"
         }

@@ -2,7 +2,7 @@ import json
 import re
 from pathlib import Path
 from typing import List, Dict, Optional, Tuple, Any
-from .types import PolicyHolder, ClaimRecord, PIIFields, CrossPhaseMemory
+from .types import PolicyHolder, ClaimRecord, PIIFields, CrossPhaseMemory, Representative
 
 # Resolve path to fixtures directory
 FIXTURES_DIR = Path(__file__).resolve().parent.parent.parent / "fixtures"
@@ -14,7 +14,7 @@ class GroundedDataManager:
         self.claims: List[ClaimRecord] = []
         self.claim_schema: Dict[str, Any] = {}
         self.document_guideline: Dict[str, Any] = {}
-        self.representatives: List[Dict[str, Any]] = []
+        self.representatives: List[Representative] = []
         self.consent_scenarios: Dict[str, Any] = {}
         self._load_fixtures()
 
@@ -49,13 +49,36 @@ class GroundedDataManager:
         rep_path = self.fixtures_dir / "representatives.json"
         if rep_path.exists():
             with open(rep_path, "r", encoding="utf-8") as f:
-                self.representatives = json.load(f)
+                data = json.load(f)
+                self.representatives = [Representative(**item) for item in data]
 
         # 6. Consent scenarios
         consent_path = self.fixtures_dir / "consent_scenarios.json"
         if consent_path.exists():
             with open(consent_path, "r", encoding="utf-8") as f:
                 self.consent_scenarios = json.load(f)
+
+    def find_representative(self, rep_name: str, policyholder_name: Optional[str] = None) -> Optional[Representative]:
+        clean_rep = self._clean_str(rep_name)
+        clean_ph = self._clean_str(policyholder_name) if policyholder_name else ""
+        for r in self.representatives:
+            if self._clean_str(r.rep_name) in clean_rep or clean_rep in self._clean_str(r.rep_name):
+                if not clean_ph or (self._clean_str(r.buyer_name) in clean_ph or clean_ph in self._clean_str(r.buyer_name)):
+                    return r
+        return None
+
+    def simulate_consent_check(self, scenario_name: str = "default", attempt_index: int = 1) -> str:
+        scenario = self.consent_scenarios.get(scenario_name, self.consent_scenarios.get("default", {}))
+        sequence = scenario.get("status_sequence", ["pending", "approved"])
+        idx = min(attempt_index, len(sequence) - 1)
+        return sequence[idx]
+
+    def get_document_alternative(self, doc_name: str) -> str:
+        all_alt_g = self.document_guideline.get("document_alternative_guidance", {})
+        for k, v in all_alt_g.items():
+            if doc_name.lower() in k.lower() or k.lower() in doc_name.lower():
+                return v.get("en", "")
+        return all_alt_g.get("default", {}).get("en", "")
 
     @staticmethod
     def _clean_phone(phone: Optional[str]) -> str:

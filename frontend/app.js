@@ -19,6 +19,13 @@ const postProcessActions = document.getElementById("post-process-actions");
 const btnAcceptEmail = document.getElementById("btn-accept-email");
 const btnDeclineEmail = document.getElementById("btn-decline-email");
 
+// Time-Travel Debugger Elements
+const timeTravelSlider = document.getElementById("time-travel-slider");
+const timeTravelBadge = document.getElementById("time-travel-badge");
+const btnRevertLive = document.getElementById("btn-revert-live");
+
+let timeTravelSnapshots = [];
+
 // Inspector Elements
 const dataShieldBadge = document.getElementById("data-shield-badge");
 const verifyStatusBadge = document.getElementById("verify-status-badge");
@@ -84,6 +91,10 @@ function setupEventListeners() {
     sendMessage("I’m the policyholder. My name is Margaret Chen, policy POL-9921. I’m calling about my denied healthcare claim from January. DOB is 1985-03-15, SSN last four is 4472.");
   });
 
+  document.getElementById("scenario-proxy")?.addEventListener("click", () => {
+    sendMessage("I am David Chen calling on behalf of my mother Margaret Chen POL-9921, DOB 1985-03-15, SSN 4472. Calling about her denied healthcare claim from January.");
+  });
+
   document.getElementById("scenario-frustrated").addEventListener("click", () => {
     sendMessage("I already told you who I am. This is ridiculous. Just tell me why my claim was denied.");
   });
@@ -94,6 +105,21 @@ function setupEventListeners() {
 
   document.getElementById("scenario-partial").addEventListener("click", () => {
     sendMessage("Hi, my name is Ava Lopez.");
+  });
+
+  // Time-Travel Slider Event Listener
+  timeTravelSlider.addEventListener("input", (e) => {
+    const idx = parseInt(e.target.value, 10);
+    if (idx >= 0 && idx < timeTravelSnapshots.length) {
+      applySnapshot(idx);
+    }
+  });
+
+  // Return to Live Button
+  btnRevertLive.addEventListener("click", () => {
+    if (timeTravelSnapshots.length > 0) {
+      applySnapshot(timeTravelSnapshots.length - 1, true);
+    }
   });
 
   // Post Process Quick Consent
@@ -143,9 +169,42 @@ async function sendMessage(text) {
     appendMessage("assistant", data.reply, data.current_phase);
     updateInspector(data);
 
+    // Save snapshot for Time-Travel Debugger
+    timeTravelSnapshots.push({
+      chatHTML: chatWindow.innerHTML,
+      data: data
+    });
+    timeTravelSlider.disabled = false;
+    timeTravelSlider.min = 0;
+    timeTravelSlider.max = timeTravelSnapshots.length - 1;
+    timeTravelSlider.value = timeTravelSnapshots.length - 1;
+    timeTravelBadge.innerText = `Live Turn ${timeTravelSnapshots.length}`;
+    timeTravelBadge.style.background = "rgba(56, 189, 248, 0.15)";
+    btnRevertLive.style.display = "none";
+
   } catch (err) {
     typingBubble.remove();
     appendMessage("assistant", "Network connection failed. Please check the backend.", "ERROR");
+  }
+}
+
+function applySnapshot(idx, isLive = false) {
+  const snap = timeTravelSnapshots[idx];
+  if (!snap) return;
+
+  chatWindow.innerHTML = snap.chatHTML;
+  updateInspector(snap.data);
+
+  timeTravelSlider.value = idx;
+  const isActuallyLive = isLive || (idx === timeTravelSnapshots.length - 1);
+  if (isActuallyLive) {
+    timeTravelBadge.innerText = `Live Turn ${timeTravelSnapshots.length}`;
+    timeTravelBadge.style.background = "rgba(56, 189, 248, 0.15)";
+    btnRevertLive.style.display = "none";
+  } else {
+    timeTravelBadge.innerText = `Replaying Turn ${idx + 1} / ${timeTravelSnapshots.length}`;
+    timeTravelBadge.style.background = "rgba(245, 158, 11, 0.2)";
+    btnRevertLive.style.display = "inline-block";
   }
 }
 
@@ -447,6 +506,15 @@ async function resetSession() {
     traceCounter.innerText = "0 events";
     traceStream.innerHTML = `<div class="trace-empty">Audit events will stream here in real time...</div>`;
     postProcessActions.style.display = "none";
+
+    // Reset Time-Travel State
+    timeTravelSnapshots = [];
+    timeTravelSlider.disabled = true;
+    timeTravelSlider.min = 0;
+    timeTravelSlider.max = 0;
+    timeTravelSlider.value = 0;
+    timeTravelBadge.innerText = "Live Turn 0";
+    btnRevertLive.style.display = "none";
 
   } catch (err) {
     console.error("Failed to reset session:", err);

@@ -70,6 +70,20 @@ class PostProcessState(BaseModel):
     user_decision: Optional[str] = None  # "pending", "accepted", "declined"
     sent_to: Optional[str] = None
 
+class Representative(BaseModel):
+    rep_name: str
+    relationship: str
+    buyer_name: str
+    buyer_party_id: str
+
+class StateSnapshot(BaseModel):
+    turn_index: int
+    user_message: str
+    agent_reply: str
+    phase: Phase
+    state_dump: Dict[str, Any]
+    timestamp: str
+
 class SOPState(BaseModel):
     session_id: str
     phase: Phase = Phase.VERIFY_ID
@@ -82,6 +96,13 @@ class SOPState(BaseModel):
     refusal_count: int = 0
     post_process: PostProcessState = Field(default_factory=PostProcessState)
     trace_log: List[TraceEvent] = Field(default_factory=list)
+    # Proxy / Authorized Representative fields
+    is_proxy_caller: bool = False
+    proxy_rep_name: Optional[str] = None
+    proxy_relationship: Optional[str] = None
+    proxy_consent_status: Optional[str] = None  # "pending", "approved", "timeout", "unauthorized"
+    # Time-travel history snapshots
+    history_snapshots: List[StateSnapshot] = Field(default_factory=list)
 
 class Message(BaseModel):
     role: str  # "user", "assistant", "system"
@@ -101,3 +122,4 @@ class ChatResponse(BaseModel):
     trace: List[TraceEvent]
     active_case: Optional[ClaimRecord] = None
     verified_policyholder: Optional[PolicyHolder] = None
+    proxy_rep: Optional[Representative] = None

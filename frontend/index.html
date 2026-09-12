@@ -84,6 +84,23 @@
       </div>
     </div>
 
+    <!-- Time-Travel State Replay Bar -->
+    <div class="time-travel-bar">
+      <div class="time-travel-meta">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/>
+          <polyline points="12 6 12 12 14 14"/>
+        </svg>
+        <span class="time-travel-title">Time-Travel State Debugger:</span>
+        <span class="time-travel-badge" id="time-travel-badge">Live Turn 0</span>
+      </div>
+      <div class="time-travel-controls">
+        <span class="slider-label">Step:</span>
+        <input type="range" id="time-travel-slider" min="0" max="0" value="0" disabled>
+        <button id="btn-revert-live" class="btn-xs" style="display:none;">Return to Live</button>
+      </div>
+    </div>
+
     <!-- Main Content: Dual-Column Studio -->
     <div class="main-layout">
       <!-- Left: Chat Studio -->
@@ -93,6 +110,7 @@
           <span class="scenario-label">Quick Scenarios:</span>
           <div class="scenario-chips">
             <button class="chip-btn" id="scenario-margaret">🎯 Margaret Chen Demo</button>
+            <button class="chip-btn" id="scenario-proxy">🤝 David Chen (Proxy Son)</button>
             <button class="chip-btn" id="scenario-frustrated">⚡ Frustrated Caller</button>
             <button class="chip-btn" id="scenario-oos">🛡️ Out of Scope ("RL?")</button>
             <button class="chip-btn" id="scenario-partial">👤 Step-by-Step PII</button>

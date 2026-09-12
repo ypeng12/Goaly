@@ -894,3 +894,76 @@ body {
   gap: 12px;
   margin-top: 10px;
 }
+
+/* Time-Travel Replay Bar */
+.time-travel-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(15, 23, 42, 0.7);
+  border: 1px solid rgba(56, 189, 248, 0.2);
+  border-radius: var(--radius-md);
+  margin: 0 24px 14px 24px;
+  padding: 8px 18px;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+.time-travel-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--accent-cyan);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.time-travel-title {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.time-travel-badge {
+  background: rgba(56, 189, 248, 0.15);
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  color: var(--accent-cyan);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.75rem;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+}
+
+.time-travel-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.slider-label {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+#time-travel-slider {
+  width: 140px;
+  accent-color: var(--accent-cyan);
+  cursor: pointer;
+}
+
+.btn-xs {
+  background: rgba(56, 189, 248, 0.15);
+  color: var(--accent-cyan);
+  border: 1px solid rgba(56, 189, 248, 0.4);
+  border-radius: var(--radius-sm);
+  padding: 3px 10px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-xs:hover {
+  background: rgba(56, 189, 248, 0.3);
+  color: #fff;
+}
+

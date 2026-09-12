@@ -30,10 +30,10 @@ class MockEngine(BaseEngine):
         # 1. Out of Scope Rejection
         if "REJECT_OUT_OF_SCOPE" in allowed_actions or is_oos:
             # Check if this triggered escalation
-            if state_result.get("transition_note") and "human escalation" in state_result["transition_note"].lower():
+            if state_result.get("demands_human") or (state_result.get("transition_note") and "human escalation" in state_result["transition_note"].lower()):
                 return (
                     "I am an insurance claims assistant and can only assist with claims and policy questions. "
-                    "Since you have further questions outside of my scope, I am transferring you to a human customer service representative who can assist you. Please hold on."
+                    "Since you have further questions outside of my scope, I am transferring you to a human customer service representative who can assist you directly. Please hold on."
                 )
             return (
                 "I apologize, but as an insurance claims support assistant, I can only assist with policy, coverage, and claim inquiries. "
@@ -50,6 +50,14 @@ class MockEngine(BaseEngine):
             )
 
         # 3. VERIFY_ID Phase
+        if "Unauthorized proxy caller" in state_result.get("transition_note", ""):
+            return (
+                "I understand you are calling regarding a policyholder's claim. However, because claim files contain protected personal health and financial data, "
+                "privacy regulations strictly require us to verify your authorization before disclosing any information. "
+                "We cannot disclose any claim information to unauthorized third parties without verified consent on file. "
+                "If you are an authorized representative, please have the policyholder contact us directly or submit an authorization designation form."
+            )
+
         if "REQUEST_PII" in allowed_actions:
             if is_frustrated or is_refusal:
                 return (
@@ -71,9 +79,15 @@ class MockEngine(BaseEngine):
         # 4. RESOLVE_INTENT & PROCESS_CASE Transition
         # This handles Margaret Chen's demo test case where identity is verified and cross-phase memory had "denied healthcare claim from January"
         if active_claim and ("EXPLAIN_DENIAL" in allowed_actions or "RESOLVE_CLAIM" in allowed_actions):
-            # Check if this is the first turn entering PROCESS_CASE from VERIFY_ID (e.g. Margaret Chen single utterance)
-            just_verified = "Verified caller" in state_result.get("transition_note", "") or len(history) <= 2
-            caller_name = policyholder.name.split()[0] if policyholder else "there"
+            # Check if proxy caller
+            is_proxy = state_result.get("is_proxy_caller", False)
+            rep_name = state_result.get("proxy_rep_name", "David")
+            caller_name = rep_name if is_proxy else (policyholder.name.split()[0] if policyholder else "there")
+            greeting_prefix = (
+                f"Thank you for verifying, {caller_name}. As an authorized representative for {policyholder.name if policyholder else 'the policyholder'}, I have opened the file.\n\n"
+                if is_proxy else
+                f"Thank you for verifying your details, {caller_name}. I have your account open.\n\n"
+            )
 
             # If user asks specific follow-up questions about documents or submission
             has_timing = any(q in user_lower for q in ["how soon", "when do i need", "when should", "deadline to submit"])
@@ -95,7 +109,7 @@ class MockEngine(BaseEngine):
                     f"For claim {active_claim.case_id}, the best starting point is to upload them directly via the member portal or claim upload link. "
                     f"Each file should be clear and legible. If online upload is not available, we can help arrange fax or mail submission."
                 )
-            elif any(q in user_lower for q in ["alternative", "don't have", "cannot get", "substitute", "missing report"]):
+            elif any(q in user_lower for q in ["alternative", "don't have", "cannot get", "substitute", "missing report", "what if we cannot"]):
                 return (
                     f"If the original pathology report is not immediately available, you can request a replacement copy from the hospital or treating lab. "
                     f"A complete, readable scan is acceptable. For the office note, ask the clinic for a visit summary or have them fax the chart directly. "
@@ -110,7 +124,7 @@ class MockEngine(BaseEngine):
             # Default / Opening response for active claim
             docs_needed = " and the ".join(active_claim.documents_needed)
             return (
-                f"Thank you for verifying your details, {caller_name}. I have your account open.\n\n"
+                f"{greeting_prefix}"
                 f"Regarding your {active_claim.case_type} claim ({active_claim.case_id}) from {active_claim.created_at}: "
                 f"the claim was denied because {active_claim.denial_reason}. Specifically, we still need the {docs_needed}.\n\n"
                 f"You have until {active_claim.appeal_deadline} to submit these documents for an appeal. "

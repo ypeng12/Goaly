@@ -14,6 +14,9 @@ KNOWN_NAMES = [
 OUT_OF_SCOPE_PATTERNS = [
     r"\bwhat is rl\b",
     r"\breinforcement learning\b",
+    r"\bq-learning\b",
+    r"\bdeep learning\b",
+    r"\bmachine learning\b",
     r"\bwrite (?:a )?(?:poem|code|script|story|essay)\b",
     r"\bcapital of\b",
     r"\bwho is the president\b",
@@ -22,7 +25,13 @@ OUT_OF_SCOPE_PATTERNS = [
     r"\bquantum physics\b",
     r"\bbitcoin\b|\bcrypto\b",
     r"\btell me a joke\b",
-    r"\bpython\b|\bjavascript\b|\bgolang\b"
+    r"\bpython\b|\bjavascript\b|\bgolang\b",
+    r"ignore (?:all |previous )?instructions",
+    r"print (?:system )?prompt",
+    r"system prompt",
+    r"reveal (?:your )?instructions",
+    r"claims\.json",
+    r"jailbreak"
 ]
 
 class UtteranceExtractor:
@@ -31,9 +40,8 @@ class UtteranceExtractor:
         pii = PIIFields()
         text_lower = text.lower()
 
-        # 1. Name
-        # Check known names first
-        for name in KNOWN_NAMES:
+        # Check known policyholders first
+        for name in ["Margaret Chen", "Ava Lopez", "Ma Tian", "Ya Wen Li", "Yaven Li"]:
             if name.lower() in text_lower:
                 pii.name = name
                 break
@@ -180,6 +188,59 @@ class UtteranceExtractor:
             if re.search(pat, text_lower):
                 return True
         return False
+
+    @staticmethod
+    def extract_proxy_context(text: str) -> Dict[str, Any]:
+        text_lower = text.lower()
+        is_proxy = False
+        rep_name = None
+        buyer_name = None
+        relationship = None
+
+        proxy_triggers = [
+            "on behalf of", "calling for my", "for my mother", "for my father",
+            "for my wife", "for my husband", "son of", "daughter of", "representative for",
+            "calling for", "neighbor of", "friend of", "attorney", "lawyer", "doctor",
+            "surgeon", "nurse", "calling about her", "checking on her", "her claim"
+        ]
+        if any(t in text_lower for t in proxy_triggers):
+            is_proxy = True
+
+        # Check caller introduced name
+        name_intro = re.search(r"(?:i am|my name is|this is)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)", text, re.IGNORECASE)
+        if name_intro:
+            candidate_rep = name_intro.group(1).strip()
+            # If introduced name is NOT Margaret Chen, but Margaret is mentioned
+            if ("margaret" in text_lower or "mom" in text_lower or "mother" in text_lower) and "margaret" not in candidate_rep.lower():
+                is_proxy = True
+                rep_name = candidate_rep
+                buyer_name = "Margaret Chen"
+
+        if "david chen" in text_lower:
+            rep_name = "David Chen"
+            is_proxy = True
+        elif "david" in text_lower and any(w in text_lower for w in ["son", "calling for", "mother", "mom"]):
+            rep_name = "David Chen"
+            is_proxy = True
+
+        if "margaret chen" in text_lower or "margaret" in text_lower or "mom" in text_lower or "mother" in text_lower:
+            buyer_name = "Margaret Chen"
+
+        if "mother" in text_lower or "mom" in text_lower or "son" in text_lower:
+            relationship = "son"
+        elif "neighbor" in text_lower:
+            relationship = "neighbor"
+        elif "doctor" in text_lower or "surgeon" in text_lower:
+            relationship = "medical_provider"
+        elif "lawyer" in text_lower or "attorney" in text_lower:
+            relationship = "legal_rep"
+
+        return {
+            "is_proxy": is_proxy,
+            "rep_name": rep_name,
+            "buyer_name": buyer_name,
+            "relationship": relationship
+        }
 
     @staticmethod
     def detect_post_process_consent(text: str) -> Optional[str]:
