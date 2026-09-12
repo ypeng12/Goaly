@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  insurance-sop-agent:
+    build: .
+    container_name: insurance_sop_agent
+    ports:
+      - "8000:8000"
+    environment:
+      - AI_API_KEY=${AI_API_KEY:-}
+      - AI_BASE_URL=${AI_BASE_URL:-https://api.openai.com/v1}
+      - AI_MODEL=${AI_MODEL:-gpt-4o-mini}
+    restart: unless-stopped

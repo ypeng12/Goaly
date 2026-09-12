@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aegis ClaimShield • Insurance SOP Agent Harness</title>
+  <meta name="description" content="Standard Operating Procedure (SOP) harness for insurance claims support agent with deterministic workflow control and natural LLM reasoning.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <div class="app-shell">
+    <!-- Top Navigation -->
+    <header class="header">
+      <div class="header-brand">
+        <div class="logo-mark">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            <path d="M9 12l2 2 4-4"/>
+          </svg>
+        </div>
+        <div>
+          <h1 class="header-title">Aegis ClaimShield</h1>
+          <p class="header-subtitle">Insurance Claims SOP Harness • Deterministic Gates + Empathetic LLM</p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <div class="engine-indicator" id="engine-badge">
+          <span class="pulse-dot"></span>
+          <span id="engine-label">Mock Engine (Deterministic)</span>
+        </div>
+        <button id="btn-config" class="btn btn-secondary" title="Configure AI Model or API Key">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+          </svg>
+          API Settings
+        </button>
+        <button id="btn-reset" class="btn btn-outline" title="Reset Session">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="1 4 1 10 7 10"/>
+            <polyline points="23 20 23 14 17 14"/>
+            <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/>
+          </svg>
+          New Call
+        </button>
+      </div>
+    </header>
+
+    <!-- Visual SOP Progress Pipeline Stepper -->
+    <div class="stepper-bar">
+      <div class="step-item active" id="step-verify">
+        <div class="step-circle"><span class="step-num">1</span></div>
+        <div class="step-info">
+          <span class="step-name">VERIFY_ID</span>
+          <span class="step-sub">3+ PII Gate</span>
+        </div>
+      </div>
+      <div class="step-divider" id="div-1"></div>
+      <div class="step-item" id="step-intent">
+        <div class="step-circle"><span class="step-num">2</span></div>
+        <div class="step-info">
+          <span class="step-name">RESOLVE_INTENT</span>
+          <span class="step-sub">Memory Match</span>
+        </div>
+      </div>
+      <div class="step-divider" id="div-2"></div>
+      <div class="step-item" id="step-process">
+        <div class="step-circle"><span class="step-num">3</span></div>
+        <div class="step-info">
+          <span class="step-name">PROCESS_CASE</span>
+          <span class="step-sub">Grounded Q&A</span>
+        </div>
+      </div>
+      <div class="step-divider" id="div-3"></div>
+      <div class="step-item" id="step-post">
+        <div class="step-circle"><span class="step-num">4</span></div>
+        <div class="step-info">
+          <span class="step-name">POST_PROCESS</span>
+          <span class="step-sub">Email Summary</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content: Dual-Column Studio -->
+    <div class="main-layout">
+      <!-- Left: Chat Studio -->
+      <section class="chat-section">
+        <!-- Quick Scenario Chips -->
+        <div class="scenario-tray">
+          <span class="scenario-label">Quick Scenarios:</span>
+          <div class="scenario-chips">
+            <button class="chip-btn" id="scenario-margaret">🎯 Margaret Chen Demo</button>
+            <button class="chip-btn" id="scenario-frustrated">⚡ Frustrated Caller</button>
+            <button class="chip-btn" id="scenario-oos">🛡️ Out of Scope ("RL?")</button>
+            <button class="chip-btn" id="scenario-partial">👤 Step-by-Step PII</button>
+          </div>
+        </div>
+
+        <!-- Chat Transcript Window -->
+        <div class="chat-window" id="chat-window">
+          <div class="chat-msg system">
+            <div class="msg-avatar system">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+              </svg>
+            </div>
+            <div class="msg-bubble">
+              <div class="msg-meta">
+                <span class="msg-sender">Aegis SOP Engine</span>
+                <span class="badge-phase badge-verify">VERIFY_ID</span>
+              </div>
+              <div class="msg-text">
+                Welcome to Insurance Claims Customer Support. The SOP security gate is active: identity verification is required before any claim details can be accessed.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Context Quick Action Buttons (shown during POST_PROCESS) -->
+        <div class="quick-actions-bar" id="post-process-actions" style="display: none;">
+          <button class="action-btn accept" id="btn-accept-email">✉️ Yes, send email summary</button>
+          <button class="action-btn decline" id="btn-decline-email">⏭️ No thanks, skip it</button>
+        </div>
+
+        <!-- Input Area -->
+        <div class="input-container">
+          <form id="chat-form" class="chat-form">
+            <textarea
+              id="user-input"
+              class="chat-input"
+              rows="2"
+              placeholder="Type customer message or click a scenario above..."
+              required
+            ></textarea>
+            <button type="submit" id="btn-send" class="btn btn-primary" title="Send (Enter)">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="22" y1="2" x2="11" y2="13"/>
+                <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+              </svg>
+            </button>
+          </form>
+          <div class="input-hint">Press <kbd>Enter</kbd> to send, <kbd>Shift + Enter</kbd> for newline</div>
+        </div>
+      </section>
+
+      <!-- Right: Live SOP Harness Inspector -->
+      <aside class="inspector-section">
+        <div class="inspector-header">
+          <h2>Live SOP Harness Inspector</h2>
+          <span class="badge-shield active" id="data-shield-badge">🔒 DATA SHIELD ACTIVE</span>
+        </div>
+
+        <!-- Card 1: Identity & Verification Meter -->
+        <div class="inspector-card">
+          <div class="card-header">
+            <h3>Identity Verification Gate</h3>
+            <span class="badge-status pending" id="verify-status-badge">0 / 3 PII Verified</span>
+          </div>
+          <div class="pii-progress-bar">
+            <div class="progress-fill" id="pii-progress-fill" style="width: 0%;"></div>
+          </div>
+          <div class="pii-grid">
+            <div class="pii-item" id="pii-name"><span class="pii-icon">✗</span> Full Name</div>
+            <div class="pii-item" id="pii-dob"><span class="pii-icon">✗</span> Date of Birth</div>
+            <div class="pii-item" id="pii-policy"><span class="pii-icon">✗</span> Policy #</div>
+            <div class="pii-item" id="pii-id4"><span class="pii-icon">✗</span> SSN / ID Last 4</div>
+            <div class="pii-item" id="pii-phone"><span class="pii-icon">✗</span> Phone</div>
+            <div class="pii-item" id="pii-email"><span class="pii-icon">✗</span> Email</div>
+          </div>
+          <div class="policyholder-details" id="ph-card" style="display: none;">
+            <div class="ph-name" id="ph-name-val">Margaret Chen</div>
+            <div class="ph-meta" id="ph-meta-val">POL-9921 • margaret@email.com</div>
+          </div>
+        </div>
+
+        <!-- Card 2: Proactive Cross-Phase Memory -->
+        <div class="inspector-card">
+          <div class="card-header">
+            <h3>Cross-Phase Memory Store</h3>
+            <span class="badge-info">Proactive Slots</span>
+          </div>
+          <div class="memory-chips" id="memory-chips-container">
+            <span class="memory-placeholder">No early hints captured yet.</span>
+          </div>
+        </div>
+
+        <!-- Card 3: Active Grounded Claim Details (Shielded until verified) -->
+        <div class="inspector-card">
+          <div class="card-header">
+            <h3>Grounded Case Details</h3>
+            <span class="badge-shield" id="claim-shield-status">Locked</span>
+          </div>
+          <div id="claim-details-container">
+            <div class="shielded-placeholder">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+              </svg>
+              <p>Protected health & claim information is shielded by SOP policy until 3 PII items are verified.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 4: SOP Audit Trail & Guardrails -->
+        <div class="inspector-card trace-card">
+          <div class="card-header">
+            <h3>SOP Audit Log & Gate Checks</h3>
+            <span class="badge-counter" id="trace-counter">0 events</span>
+          </div>
+          <div class="trace-stream" id="trace-stream">
+            <div class="trace-empty">Audit events will stream here in real time...</div>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <!-- API Settings Modal -->
+  <div class="modal-backdrop" id="config-modal" style="display: none;">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2>AI Model & Harness Configuration</h2>
+        <button class="btn-close" id="modal-close">&times;</button>
+      </div>
+      <form id="config-form">
+        <div class="form-group">
+          <label for="cfg-engine-mode">Execution Engine Mode</label>
+          <select id="cfg-engine-mode" class="form-select">
+            <option value="mock">Deterministic Mock Engine (Offline / Zero-Token)</option>
+            <option value="llm">Live LLM (OpenAI / Gemini / OpenRouter Compatible)</option>
+          </select>
+          <small class="form-help">Deterministic Mock runs all demo test cases out-of-the-box with 100% adherence.</small>
+        </div>
+
+        <div id="llm-config-fields" style="display: none;">
+          <div class="form-group">
+            <label for="cfg-api-key">API Auth Token / Key</label>
+            <input type="password" id="cfg-api-key" class="form-input" placeholder="sk-... (Leave empty to keep current)">
+          </div>
+          <div class="form-group">
+            <label for="cfg-base-url">API Base URL</label>
+            <input type="text" id="cfg-base-url" class="form-input" placeholder="https://api.openai.com/v1">
+          </div>
+          <div class="form-group">
+            <label for="cfg-model">Model Name</label>
+            <input type="text" id="cfg-model" class="form-input" placeholder="gpt-4o-mini">
+          </div>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary" id="modal-cancel">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Configuration</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
