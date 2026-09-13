@@ -79,6 +79,8 @@ class VerifyCardRequest(SessionRequest):
     phone: Optional[str] = Field(default=None, max_length=50)
     email: Optional[str] = Field(default=None, max_length=200)
     id_last4: Optional[str] = Field(default=None, max_length=10)
+    id_type: Optional[str] = Field(default=None, max_length=50)
+
 
 
 
@@ -279,6 +281,7 @@ async def verify_card(req: VerifyCardRequest):
             "phone": req.phone or "",
             "email": req.email or "",
             "id_last4": req.id_last4 or "",
+            "id_type": req.id_type or "",
         }
         res = item.machine.verify_card_data(form_data)
         reply = res["agent_reply"]

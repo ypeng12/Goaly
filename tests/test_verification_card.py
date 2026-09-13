@@ -69,3 +69,18 @@ def test_api_verify_card_endpoint():
     assert data["sop_state"]["identity_verified"] is True
     assert data["current_phase"] in ["RESOLVE_INTENT", "PROCESS_CASE"]
     assert "Margaret Chen" in data["reply"]
+
+
+def test_national_id_policyholder_verification():
+    sm = SOPStateMachine("test_session_matian")
+    res = sm.verify_card_data({
+        "name": "Ma Tian",
+        "dob": "1964-09-10",
+        "phone": "(650) 208-8799",
+        "email": "matian@example.com",
+        "id_last4": "6688",
+        "id_type": "national_id_last4"
+    })
+    assert sm.state.identity_verified is True
+    assert sm.get_verified_policyholder().name == "Ma Tian"
+

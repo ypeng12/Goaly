@@ -342,19 +342,6 @@ function renderVerificationCard() {
       Enter any 3 details. They must match your policy record.
     </div>
 
-    <div class="experiment-presets-tray">
-      <div class="experiment-presets-title">
-        <span>Use a demo identity for testing:</span>
-        <span>Select to auto-fill</span>
-      </div>
-      <div class="experiment-preset-chips">
-        <button type="button" class="preset-chip" id="preset-margaret">🟢 Margaret Chen</button>
-        <button type="button" class="preset-chip" id="preset-ava">🔵 Ava Lopez</button>
-        <button type="button" class="preset-chip" id="preset-matian">🟡 Ma Tian</button>
-        <button type="button" class="preset-chip" id="preset-yawen">🟣 Ya Wen Li</button>
-      </div>
-    </div>
-
     <div class="security-card-grid">
       <div class="security-card-field">
         <label for="card-name">Full name <span class="field-tag">Match field</span></label>
@@ -378,11 +365,31 @@ function renderVerificationCard() {
       </div>
       <div class="security-card-field">
         <label for="card-id4">Government ID / SSN last 4 <span class="field-tag">Optional</span></label>
-        <input type="text" id="card-id4" maxlength="4" placeholder="e.g. 4472" aria-label="Government ID or SSN last 4 digits">
+        <div class="id-input-wrapper" style="display:flex; gap:6px;">
+          <select id="card-id-type" style="background:var(--paper); border:1px solid #cad8d3; border-radius:6px; font-size:11px; padding:4px 6px; color:var(--ink);" aria-label="Select ID type">
+            <option value="ssn_last4">SSN</option>
+            <option value="national_id_last4">National ID</option>
+          </select>
+          <input type="text" id="card-id4" maxlength="4" placeholder="e.g. 4472" style="flex:1;" aria-label="Government ID or SSN last 4 digits">
+        </div>
       </div>
     </div>
+
+    <div class="demo-tools-tray" style="background:var(--paper); border:1px dashed #b2d5cb; border-radius:8px; padding:10px 12px; margin-top:14px;">
+      <div style="font-size:11px; font-weight:600; color:var(--muted); margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;">
+        <span>🧪 DEMO TOOLS (TESTING ONLY)</span>
+        <span>Select persona to prefill</span>
+      </div>
+      <div class="experiment-preset-chips">
+        <button type="button" class="preset-chip" id="preset-margaret">🟢 Margaret Chen</button>
+        <button type="button" class="preset-chip" id="preset-ava">🔵 Ava Lopez</button>
+        <button type="button" class="preset-chip" id="preset-matian">🟡 Ma Tian</button>
+        <button type="button" class="preset-chip" id="preset-yawen">🟣 Ya Wen Li</button>
+      </div>
+    </div>
+
     <div class="security-card-actions">
-      <button type="button" class="security-card-instant-submit" id="btn-card-instant">Use sample and verify</button>
+      <button type="button" class="security-card-instant-submit" id="btn-card-fill">Fill sample data</button>
       <button type="button" class="security-card-submit" id="btn-card-submit">Verify identity</button>
     </div>
   `;
@@ -390,10 +397,10 @@ function renderVerificationCard() {
   $("chat-window").append(card);
 
   const presets = {
-    margaret: { name: "Margaret Chen", dob: "1985-03-15", phone: "(650) 521-2836", email: "margaret@email.com", id_last4: "4472" },
-    ava: { name: "Ava Lopez", dob: "1990-08-21", phone: "(650) 388-2920", email: "ava.lopez@email.com", id_last4: "9180" },
-    matian: { name: "Ma Tian", dob: "1964-09-10", phone: "(650) 208-8799", email: "matian@example.com", id_last4: "6688" },
-    yawen: { name: "Ya Wen Li", dob: "1989-12-03", phone: "(650) 521-2830", email: "yawen.li@gmail.com", id_last4: "5317" }
+    margaret: { name: "Margaret Chen", dob: "1985-03-15", phone: "(650) 521-2836", email: "margaret@email.com", id_last4: "4472", id_type: "ssn_last4" },
+    ava: { name: "Ava Lopez", dob: "1990-08-21", phone: "(650) 388-2920", email: "ava.lopez@email.com", id_last4: "9180", id_type: "ssn_last4" },
+    matian: { name: "Ma Tian", dob: "1964-09-10", phone: "(650) 208-8799", email: "matian@example.com", id_last4: "6688", id_type: "national_id_last4" },
+    yawen: { name: "Ya Wen Li", dob: "1989-12-03", phone: "(650) 521-2830", email: "yawen.li@gmail.com", id_last4: "5317", id_type: "national_id_last4" }
   };
 
   function fillPreset(key) {
@@ -404,6 +411,7 @@ function renderVerificationCard() {
     card.querySelector("#card-phone").value = p.phone;
     card.querySelector("#card-email").value = p.email;
     card.querySelector("#card-id4").value = p.id_last4;
+    card.querySelector("#card-id-type").value = p.id_type || "ssn_last4";
     card.querySelectorAll(".preset-chip").forEach(btn => btn.classList.remove("active"));
     const activeBtn = card.querySelector(`#preset-${key}`);
     if (activeBtn) activeBtn.classList.add("active");
@@ -454,23 +462,11 @@ function renderVerificationCard() {
     });
   }
 
-  // Inputs remain blank by default for real identity verification authenticity.
-
-  const instantBtn = card.querySelector("#btn-card-instant");
-  if (instantBtn) {
-    instantBtn.addEventListener("click", () => {
-      // If form is blank, fill default sample Margaret Chen before instant submit
-      if (!card.querySelector("#card-name").value && !card.querySelector("#card-phone").value && !card.querySelector("#card-email").value) {
-        fillPreset("margaret");
-      }
-      const form = {
-        name: card.querySelector("#card-name").value.trim(),
-        dob: card.querySelector("#card-dob").value.trim(),
-        phone: card.querySelector("#card-phone").value.trim(),
-        email: card.querySelector("#card-email").value.trim(),
-        id_last4: card.querySelector("#card-id4").value.trim(),
-      };
-      submitVerificationCard(form);
+  // Fill sample data button populates form fields without submitting
+  const fillBtn = card.querySelector("#btn-card-fill");
+  if (fillBtn) {
+    fillBtn.addEventListener("click", () => {
+      fillPreset("margaret");
     });
   }
 
@@ -483,11 +479,13 @@ function renderVerificationCard() {
         phone: card.querySelector("#card-phone").value.trim(),
         email: card.querySelector("#card-email").value.trim(),
         id_last4: card.querySelector("#card-id4").value.trim(),
+        id_type: card.querySelector("#card-id-type").value,
       };
       submitVerificationCard(form);
     });
   }
 }
+
 
 
 

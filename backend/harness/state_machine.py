@@ -340,7 +340,7 @@ class SOPStateMachine:
         if phase_before in self.TERMINAL_PHASES:
             return self._result(phase_before, note="This session is terminal. Start a new session to continue.")
 
-        for field in ("name", "dob", "phone", "email", "id_last4"):
+        for field in ("name", "dob", "phone", "email", "id_last4", "id_type"):
             val = form_data.get(field, "").strip()
             if val:
                 setattr(self.state.accumulated_pii, field, val)

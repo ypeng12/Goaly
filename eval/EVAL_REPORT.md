@@ -1,9 +1,9 @@
 # Insurance SOP fixture evaluation
 
-Generated: `2026-09-13T05:12:58.211197+00:00`. Engine: MockEngine (no live provider calls).
+Generated: `2026-09-13T05:22:18.119942+00:00`. Engine: MockEngine (no live provider calls).
 
 Scenarios: **33/33 passed** across 50 turns.
-Mean measured turn execution: 1.623 ms (local state machine plus mock response; excludes HTTP and model latency).
+Mean measured turn execution: 2.021 ms (local state machine plus mock response; excludes HTTP and model latency).
 
 | Assertion group | Passed / checked | Result |
 | --- | ---: | --- |
