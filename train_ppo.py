@@ -2,8 +2,8 @@
 """PPO Training CLI for Goaly Insurance Claims Agent Environment.
 
 Usage:
-    python3 train_ppo.py --timesteps 12000
-    python3 train_ppo.py --device auto --save-path artifacts/ppo_policy.pt
+    python3 train_ppo.py --timesteps 50000 --device cpu --seed 42
+    python3 train_ppo.py --timesteps 50000 --device auto --save-path artifacts/ppo_policy.pt
 """
 import argparse
 import json
@@ -14,7 +14,7 @@ from backend.rl.ppo_trainer import PPOTrainer, PPOConfig
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Train a Masked PPO Policy on AgentPolicyEnv")
-    parser.add_argument("--timesteps", type=int, default=12000, help="Total timesteps to train")
+    parser.add_argument("--timesteps", type=int, default=50000, help="Total timesteps to train")
     parser.add_argument("--lr", type=float, default=3e-4, help="Learning rate")
     parser.add_argument("--rollout-steps", type=int, default=128, help="Rollout buffer size per update")
     parser.add_argument("--device", type=str, default="auto", help="Device: 'auto', 'mps', or 'cpu'")
@@ -26,9 +26,9 @@ def parse_args():
 
 def main():
     args = parse_args()
-    print("=" * 70)
+    print("=" * 72)
     print("           Goaly Insurance SOP - Masked PPO Training           ")
-    print("=" * 70)
+    print("=" * 72)
 
     cfg = PPOConfig(
         lr=args.lr,
@@ -51,17 +51,22 @@ def main():
         json.dump(history, f, indent=2)
     print(f"Training metrics saved to {metrics_path}")
 
-    # Evaluate trained policy
+    # Evaluate trained policy on all profiles (50 episodes)
     print("\nRunning post-training evaluation across 50 episodes...")
     eval_results = trainer.evaluate(n_episodes=50, deterministic=True)
-    print("=" * 70)
-    print(f"Post-Training PPO Evaluation (50 episodes):")
-    print(f"  Mean Cumulative Reward: {eval_results['mean_reward']:+.2f}")
-    print(f"  Mean Turns per Episode: {eval_results['mean_turns']:.2f}")
-    print(f"  Clean Termination Rate: {eval_results['termination_rate']:.1f}%")
-    print(f"  Violation Rate:         {eval_results['violation_rate']:.1f}%")
-    print(f"  Mean Verified Fields:   {eval_results['mean_verified_fields']:.2f} / 3.00")
-    print("=" * 70)
+    print("=" * 72)
+    print("Post-Training PPO Evaluation (50 episodes, multi-profile arena):")
+    print(f"  Goal Success Rate:              {eval_results['goal_success_rate']:5.1f}%")
+    print(f"  Appropriate Escalation Rate:    {eval_results['appropriate_escalation_rate']:5.1f}%")
+    print(f"  Premature Termination Rate:     {eval_results['premature_termination_rate']:5.1f}%")
+    print(f"  Clean Termination Rate:         {eval_results['termination_rate']:5.1f}%")
+    print(f"  Truncation Rate:                {eval_results['truncation_rate']:5.1f}%")
+    print(f"  Terminal State Consistency:     {eval_results['terminal_state_consistency']:5.1f}%")
+    print(f"  Constraint Violation Rate:      {eval_results['violation_rate']:5.1f}%")
+    print(f"  Mean Verified Fields Collected: {eval_results['mean_verified_fields']:5.2f} / 3.00")
+    print(f"  Mean Turns per Episode:         {eval_results['mean_turns']:5.2f}")
+    print(f"  Mean Cumulative Reward:         {eval_results['mean_reward']:+5.2f}")
+    print("=" * 72)
 
 
 if __name__ == "__main__":

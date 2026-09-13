@@ -28,22 +28,29 @@ A constrained environment, Masked PPO training loop, and evaluation harness for 
 
 Benchmarked across 50 episodes each with 4 distinct caller profiles (`eval/policy_comparison.py`, max_turns=15):
 
-| Metric | `RuleBasedPolicy` | `RandomPolicy` | `PPO (Learned)` |
+| Metric | `RuleBasedPolicy` | `RandomPolicy` | `PPO (Learned, 50k)` |
 |---|---:|---:|---:|
-| **Mean cumulative reward** | **+6.05** | +3.73 | **+3.80** |
-| **Mean episode length (turns)** | 4.76 | 4.44 | **2.00** |
-| **Termination rate (clean end)** | **100.0%** | 98.0% | **100.0%** |
-| **Truncation rate (hit max turns)** | **0.0%** | 2.0% | **0.0%** |
-| **Violation rate (any violation)** | **0.0%** | 0.0% | **0.0%** |
-| **Verified fields collected** | **3.00** | 2.14 | **2.00** |
+| **Terminal State Consistency** | **100.0%** | 98.0% | **100.0%** |
+| **Constraint Violation Rate** | **0.0%** | 0.0% | **0.0%** |
+| **Premature Termination Rate** | **0.0%** | 40.0% | **0.0%** |
+| **Goal Success Rate** | **76.0%** | 10.0% | **76.0%** |
+| **Appropriate Escalation Rate** | **24.0%** | 48.0% | **24.0%** |
+| **Clean Termination Rate** | **100.0%** | 98.0% | **100.0%** |
+| **Truncation Rate** | **0.0%** | 2.0% | **0.0%** |
+| **Mean verified fields collected** | **2.28** | 1.78 | **2.28** |
+| **Mean episode length (turns)** | 3.52 | 4.00 | **3.28** |
+| **Mean cumulative reward** | **+13.53** | +2.44 | **+13.08** |
 
-Zero violations across all conditions — safety is structurally enforced by action masking, not reward-shaped. The learned PPO policy reaches optimal resolution in fewer turns (2.0 turns vs. 4.76 turns) with a 100% clean termination rate.
+The PPO policy is evaluated on task success, terminal-state consistency,
+constraint violations, verified-field completion, and episode efficiency.
+Safety is enforced structurally by the harness; reward is used to optimize
+task completion within the legal action space.
 
 ### Usage
 
 #### 1. Run PPO Training
 ```bash
-python3 train_ppo.py --timesteps 12000 --device auto
+python3 train_ppo.py --timesteps 50000 --device cpu --seed 42
 ```
 Saves the trained weights to `artifacts/ppo_policy.pt` and metrics to `artifacts/ppo_training_metrics.json`.
 

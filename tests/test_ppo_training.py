@@ -64,10 +64,32 @@ def test_model_action_masking():
         assert not torch.isinf(log_prob)
 
 
-def test_rollout_buffer_gae():
+def test_rollout_buffer_gae_analytical():
+    """Exact hand-calculated GAE test verifying non-bleeding across terminal transitions.
+    
+    Given:
+      rewards = [1.0, 1.0, 1.0, 1.0]
+      values  = [0.5, 0.5, 0.5, 0.5]
+      dones   = [False, True, False, True]  (transitions 1 and 3 are terminal)
+      gamma = 0.99, gae_lambda = 0.95
+      next_value = 0.0, next_done = True
+    
+    Analytical derivation:
+      t=3: delta_3 = 1.0 + 0 - 0.5 = 0.5, A_3 = 0.5
+      t=2: non_term_2 = 1.0 - dones[2] = 1.0
+           delta_2 = 1.0 + 0.99*0.5*1.0 - 0.5 = 0.995
+           A_2 = 0.995 + 0.99*0.95*1.0*0.5 = 1.46525
+      t=1: non_term_1 = 1.0 - dones[1] = 0.0 (TERMINAL!)
+           delta_1 = 1.0 + 0 - 0.5 = 0.5
+           A_1 = 0.5 + 0 = 0.5  (MUST NOT bleed from A_2)
+      t=0: non_term_0 = 1.0 - dones[0] = 1.0
+           delta_0 = 1.0 + 0.99*0.5*1.0 - 0.5 = 0.995
+           A_0 = 0.995 + 0.99*0.95*1.0*0.5 = 1.46525
+    """
     device = torch.device("cpu")
     buffer = RolloutBuffer(size=4, state_dim=20, action_dim=9, device=device)
 
+    dones_seq = [False, True, False, True]
     for i in range(4):
         state = torch.randn(20)
         buffer.add(
@@ -75,7 +97,7 @@ def test_rollout_buffer_gae():
             action=torch.tensor(0),
             log_prob=torch.tensor(-0.5),
             reward=1.0,
-            done=(i == 3),
+            done=dones_seq[i],
             value=torch.tensor(0.5),
             mask=torch.ones(9, dtype=torch.bool),
         )
@@ -87,6 +109,16 @@ def test_rollout_buffer_gae():
     assert buffer.returns.shape == (4,)
     assert not torch.isnan(buffer.advantages).any()
     assert not torch.isnan(buffer.returns).any()
+
+    # Exact value checks
+    assert abs(buffer.advantages[3].item() - 0.5) < 1e-4, f"A3 mismatch: {buffer.advantages[3].item()}"
+    assert abs(buffer.advantages[2].item() - 1.46525) < 1e-4, f"A2 mismatch: {buffer.advantages[2].item()}"
+    assert abs(buffer.advantages[1].item() - 0.5) < 1e-4, f"A1 mismatch: {buffer.advantages[1].item()}"
+    assert abs(buffer.advantages[0].item() - 1.46525) < 1e-4, f"A0 mismatch: {buffer.advantages[0].item()}"
+
+    # Verify that returns = advantages + values
+    for t in range(4):
+        assert abs(buffer.returns[t].item() - (buffer.advantages[t].item() + 0.5)) < 1e-4
 
 
 def test_ppo_short_training_and_checkpoint():

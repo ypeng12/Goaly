@@ -383,3 +383,47 @@ class TestCallerAgentLoop:
             f"This means the CallerProfile PII is not being accepted by the state machine."
         )
 
+    def test_terminated_always_has_terminal_phase(self):
+        """Invariant: terminated is True ONLY when state.phase in {CONCLUDED, ESCALATED}."""
+        from backend.harness.caller_sim import make_all_profiles
+        from backend.harness.rl_baseline import RuleBasedPolicy
+
+        profiles = make_all_profiles()
+        policy = RuleBasedPolicy()
+        for profile in profiles:
+            env = AgentPolicyEnv(caller_profile=profile, max_turns=15)
+            res = policy.run_episode(env)
+            for turn in res["trajectory"]:
+                if turn["terminated"]:
+                    assert turn["observation"]["phase"] in {"CONCLUDED", "ESCALATED"}, (
+                        f"Illegal terminal phase: {turn['observation']['phase']}"
+                    )
+
+    def test_escalation_changes_phase_to_escalated(self):
+        """ESCALATE_HUMAN immediately transitions phase to ESCALATED and terminates."""
+        from backend.harness.caller_sim import make_margaret_chen_profile
+        profile = make_margaret_chen_profile()
+        env = AgentPolicyEnv(caller_profile=profile, max_turns=10)
+        env.reset()
+        obs, reward, terminated, truncated, info = env.step(AgentAction.ESCALATE_HUMAN)
+
+        assert terminated is True
+        assert truncated is False
+        assert obs["phase"] == "ESCALATED"
+        assert info["termination_reason"] == "agent_escalation"
+
+    def test_send_email_requires_explicit_consent(self):
+        """SEND_EMAIL must be masked out if user consent is not accepted."""
+        from backend.harness.caller_sim import make_margaret_chen_profile
+        profile = make_margaret_chen_profile()
+        env = AgentPolicyEnv(caller_profile=profile, max_turns=10)
+        obs, info = env.reset()
+
+        send_email_idx = AGENT_ACTIONS.index(AgentAction.SEND_EMAIL)
+        assert obs["action_mask"][send_email_idx] is False
+
+        # Stepping SEND_EMAIL when masked must raise ValueError
+        with pytest.raises(ValueError):
+            env.step(AgentAction.SEND_EMAIL)
+
+

@@ -1,10 +1,10 @@
 """
 Policy comparison: RuleBasedPolicy vs RandomPolicy vs LearnedPPOPolicy on AgentPolicyEnv.
 
-All policies are tested on the same AgentPolicyEnv + CallerProfile setup.
-The CallerProfile provides real PII utterances to drive the SOP state machine.
-The agent selects actions; rewards reflect PII field collection, phase transitions,
-and structural violations.
+All policies are evaluated on task success, terminal-state consistency,
+constraint violations, verified-field completion, and episode efficiency.
+Safety is enforced structurally by the harness; reward is used to optimize
+task completion within the legal action space.
 
 Run:
     python3 eval/policy_comparison.py
@@ -14,25 +14,28 @@ import random
 import statistics
 from collections import Counter
 from pathlib import Path
-from typing import Optional
+from typing import Optional, List, Dict, Any
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 import torch
 
-from backend.harness.rl_env import AgentPolicyEnv, AgentAction, AGENT_ACTIONS
+from backend.harness.types import AgentAction, AGENT_ACTIONS, Phase
+from backend.harness.rl_env import AgentPolicyEnv
 from backend.harness.rl_baseline import RuleBasedPolicy
-from backend.harness.caller_sim import make_margaret_chen_profile, make_all_profiles
+from backend.harness.caller_sim import (
+    make_all_profiles,
+    make_train_profiles,
+    make_val_profiles,
+    make_test_profiles,
+)
 from backend.rl.featurizer import StateFeaturizer
 from backend.rl.models import ActorCriticPolicy
 
 
 class RandomPolicy:
-    """Uniformly samples from the legal action_mask each step.
+    """Uniformly samples from the legal action_mask each step."""
 
-    This is the simplest possible agent: it never selects masked actions,
-    but otherwise has no preference over the legal action set.
-    """
     def __init__(self, seed: int = 42):
         self.rng = random.Random(seed)
 
@@ -43,28 +46,34 @@ class RandomPolicy:
             raise RuntimeError("No legal actions available")
         return self.rng.choice(legal)
 
-    def run_episode(self, env, verbose: bool = False) -> dict:
+    def run_episode(self, env: AgentPolicyEnv, verbose: bool = False) -> dict:
         obs, info = env.reset()
         done = False
         cumulative_reward = 0.0
         all_violations = []
         terminated = truncated = False
+        last_info = {}
+
         while not done:
             action = self.select_action(obs)
-            obs, reward, terminated, truncated, info = env.step(action)
+            obs, reward, terminated, truncated, last_info = env.step(action)
             cumulative_reward += reward
-            all_violations.extend(info.get("structural_violations", []))
+            all_violations.extend(last_info.get("structural_violations", []))
             done = terminated or truncated
             if verbose:
                 caller = obs.get("caller_utterance", "")[:60]
-                print(f"  turn={info['turn']:2d}  action={action.value:<28s}  reward={reward:+.2f}  phase={obs['phase']}")
+                print(f"  turn={last_info['turn']:2d}  action={action.value:<28s}  reward={reward:+.2f}  phase={obs['phase']}")
                 if caller:
                     print(f"    caller: {caller!r}")
+
         return {
             "cumulative_reward": cumulative_reward,
             "turns": env.turn_count,
             "terminated": terminated,
             "truncated": truncated,
+            "task_success": last_info.get("task_success", False),
+            "appropriate_escalation": last_info.get("appropriate_escalation", False),
+            "premature_termination": last_info.get("premature_termination", False),
             "violations": all_violations,
             "trajectory": env.trajectory,
             "final_phase": obs.get("phase", "unknown"),
@@ -97,28 +106,34 @@ class LearnedPPOPolicy:
             )
         return AGENT_ACTIONS[action_idx.item()]
 
-    def run_episode(self, env, verbose: bool = False) -> dict:
+    def run_episode(self, env: AgentPolicyEnv, verbose: bool = False) -> dict:
         obs, info = env.reset()
         done = False
         cumulative_reward = 0.0
         all_violations = []
         terminated = truncated = False
+        last_info = {}
+
         while not done:
             action = self.select_action(obs, turn=env.turn_count)
-            obs, reward, terminated, truncated, info = env.step(action)
+            obs, reward, terminated, truncated, last_info = env.step(action)
             cumulative_reward += reward
-            all_violations.extend(info.get("structural_violations", []))
+            all_violations.extend(last_info.get("structural_violations", []))
             done = terminated or truncated
             if verbose:
                 caller = obs.get("caller_utterance", "")[:60]
-                print(f"  turn={info['turn']:2d}  action={action.value:<28s}  reward={reward:+.2f}  phase={obs['phase']}")
+                print(f"  turn={last_info['turn']:2d}  action={action.value:<28s}  reward={reward:+.2f}  phase={obs['phase']}")
                 if caller:
                     print(f"    caller: {caller!r}")
+
         return {
             "cumulative_reward": cumulative_reward,
             "turns": env.turn_count,
             "terminated": terminated,
             "truncated": truncated,
+            "task_success": last_info.get("task_success", False),
+            "appropriate_escalation": last_info.get("appropriate_escalation", False),
+            "premature_termination": last_info.get("premature_termination", False),
             "violations": all_violations,
             "trajectory": env.trajectory,
             "final_phase": obs.get("phase", "unknown"),
@@ -131,9 +146,19 @@ def run_agent_comparison(
     max_turns: int = 15,
     seed: int = 42,
     ppo_model_path: Optional[str] = "artifacts/ppo_policy.pt",
+    split: str = "all",
 ):
-    """Compare RuleBasedPolicy vs RandomPolicy (and optionally LearnedPPOPolicy) on AgentPolicyEnv."""
-    profiles = make_all_profiles()
+    """Compare RuleBasedPolicy vs RandomPolicy vs LearnedPPOPolicy."""
+    if split == "train":
+        profile_fn = make_train_profiles
+    elif split == "val":
+        profile_fn = make_val_profiles
+    elif split == "test":
+        profile_fn = make_test_profiles
+    else:
+        profile_fn = make_all_profiles
+
+    profiles = profile_fn()
     rule_policy = RuleBasedPolicy()
     rand_policy = RandomPolicy(seed=seed)
 
@@ -153,39 +178,43 @@ def run_agent_comparison(
         profile_idx = i % len(profiles)
 
         for name, pol in policies:
-            # Fresh profile of identical identity per episode
-            ep_profiles = make_all_profiles()
+            ep_profiles = profile_fn()
             profile = ep_profiles[profile_idx]
             env = AgentPolicyEnv(caller_profile=profile, max_turns=max_turns)
             results_dict[name].append(pol.run_episode(env))
 
     def pct(results, pred):
-        return 100 * sum(1 for r in results if pred(r)) / len(results)
+        return 100.0 * sum(1 for r in results if pred(r)) / len(results)
 
     def avg(results, key):
         return sum(r[key] for r in results) / len(results)
 
     header_cols = "".join(f"{name:>16}" for name, _ in policies)
-    line_len = 36 + 16 * len(policies)
+    line_len = 38 + 16 * len(policies)
     print(f"\n{'=' * line_len}")
-    print(f"AgentPolicyEnv: Multi-Policy Benchmark Arena")
+    print(f"AgentPolicyEnv: Multi-Policy Benchmark Arena ({split} split)")
     print(f"({n_episodes} episodes each, {len(profiles)} caller profiles, max_turns={max_turns})")
     print(f"{'=' * line_len}")
-    print(f"{'Metric':<36}{header_cols}")
+    print(f"{'Metric':<38}{header_cols}")
     print("-" * line_len)
 
+    terminal_phases = {"CONCLUDED", "ESCALATED"}
     metric_defs = [
-        ("Mean cumulative reward", lambda res: f"{avg(res, 'cumulative_reward'):>16.2f}"),
-        ("Mean episode length (turns)", lambda res: f"{avg(res, 'turns'):>16.2f}"),
+        ("Goal success rate (%)", lambda res: f"{pct(res, lambda r: r['task_success']):>16.2f}"),
+        ("Appropriate escalation rate (%)", lambda res: f"{pct(res, lambda r: r['appropriate_escalation']):>16.2f}"),
+        ("Premature termination rate (%)", lambda res: f"{pct(res, lambda r: r['premature_termination']):>16.2f}"),
         ("Termination rate — clean end (%)", lambda res: f"{pct(res, lambda r: r['terminated']):>16.2f}"),
         ("Truncation rate — hit max_turns (%)", lambda res: f"{pct(res, lambda r: r['truncated']):>16.2f}"),
-        ("Violation rate — any violation (%)", lambda res: f"{pct(res, lambda r: bool(r['violations'])):>16.2f}"),
+        ("Terminal consistency (%)", lambda res: f"{pct(res, lambda r: r['terminated'] and r['final_phase'] in terminal_phases):>16.2f}"),
+        ("Constraint violation rate (%)", lambda res: f"{pct(res, lambda r: bool(r['violations'])):>16.2f}"),
         ("Mean verified fields collected", lambda res: f"{(sum(len(r['verified_fields']) for r in res) / len(res)):>16.2f}"),
+        ("Mean episode length (turns)", lambda res: f"{avg(res, 'turns'):>16.2f}"),
+        ("Mean cumulative reward", lambda res: f"{avg(res, 'cumulative_reward'):>16.2f}"),
     ]
 
     for label, fn in metric_defs:
         vals = "".join(fn(results_dict[name]) for name, _ in policies)
-        print(f"  {label:<34}{vals}")
+        print(f"  {label:<36}{vals}")
 
     print("=" * line_len)
 

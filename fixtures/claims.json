@@ -69,5 +69,29 @@
     "allowed_max_amount": "1200.00",
     "net_pay": "0.00",
     "net_fee": "1200.00"
+  },
+  {
+    "case_id": "CL-1044",
+    "party_id": "P7",
+    "case_type": "healthcare",
+    "created_at": "2026-02-15",
+    "status": "open",
+    "summary": "Healthcare claim under review for specialist consultation",
+    "expected_reimbursement_amount": "350.00",
+    "allowed_max_amount": "400.00",
+    "net_pay": "350.00",
+    "net_fee": "400.00"
+  },
+  {
+    "case_id": "CL-7742",
+    "party_id": "P13",
+    "case_type": "auto",
+    "created_at": "2026-03-05",
+    "status": "in_review",
+    "summary": "Auto collision claim pending police report submission",
+    "expected_reimbursement_amount": "2100.00",
+    "allowed_max_amount": "2500.00",
+    "net_pay": "0.00",
+    "net_fee": "2500.00"
   }
 ]

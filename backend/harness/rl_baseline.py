@@ -50,10 +50,12 @@ class RuleBasedPolicy:
     def __init__(self):
         self._resolve_intent_attempts = 0   # reset at episode start
         self._claim_clarification_done = False
+        self._grounded_answered = False
 
     def _reset_episode_state(self) -> None:
         self._resolve_intent_attempts = 0
         self._claim_clarification_done = False
+        self._grounded_answered = False
 
     def select_action(self, observation: dict) -> AgentAction:
         """Select the best legal action given the current observation.
@@ -114,8 +116,9 @@ class RuleBasedPolicy:
                 return AgentAction.ACK_EMOTION
 
         elif phase == Phase.PROCESS_CASE:
-            # Provide grounded answer if verified
-            if not data_shield and legal(AgentAction.ANSWER_GROUNDED):
+            # Provide grounded answer once if verified, then move to wrap up
+            if not data_shield and legal(AgentAction.ANSWER_GROUNDED) and not self._grounded_answered:
+                self._grounded_answered = True
                 return AgentAction.ANSWER_GROUNDED
             if legal(AgentAction.OFFER_EMAIL_SUMMARY):
                 return AgentAction.OFFER_EMAIL_SUMMARY
@@ -125,6 +128,8 @@ class RuleBasedPolicy:
         elif phase == Phase.POST_PROCESS:
             if legal(AgentAction.SEND_EMAIL):
                 return AgentAction.SEND_EMAIL
+            if legal(AgentAction.OFFER_EMAIL_SUMMARY):
+                return AgentAction.OFFER_EMAIL_SUMMARY
             if legal(AgentAction.ACK_EMOTION):
                 return AgentAction.ACK_EMOTION
 
@@ -163,16 +168,17 @@ class RuleBasedPolicy:
         all_violations: list[str] = []
         terminated = truncated = False
 
+        last_info: dict = {}
         while not done:
             action = self.select_action(obs)
-            obs, reward, terminated, truncated, step_info = env.step(action)
+            obs, reward, terminated, truncated, last_info = env.step(action)
             cumulative_reward += reward
-            all_violations.extend(step_info.get("structural_violations", []))
+            all_violations.extend(last_info.get("structural_violations", []))
             done = terminated or truncated
             if verbose:
                 caller = obs.get("caller_utterance", "")[:60]
                 print(
-                    f"  turn={step_info['turn']:2d}  action={action.value:<28s}"
+                    f"  turn={last_info['turn']:2d}  action={action.value:<28s}"
                     f"  reward={reward:+.2f}  phase={obs['phase']}"
                 )
                 if caller:
@@ -183,6 +189,9 @@ class RuleBasedPolicy:
             "turns": env.turn_count,
             "terminated": terminated,
             "truncated": truncated,
+            "task_success": last_info.get("task_success", False),
+            "appropriate_escalation": last_info.get("appropriate_escalation", False),
+            "premature_termination": last_info.get("premature_termination", False),
             "violations": all_violations,
             "trajectory": env.trajectory,
             "final_phase": obs.get("phase", "unknown"),
