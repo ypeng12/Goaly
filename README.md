@@ -48,6 +48,47 @@ task completion within the legal action space.
 
 ### Usage
 
+#### 0. Start the interactive demo
+
+The demo uses synthetic policyholders and claims. No provider token is needed
+for the deterministic offline flow.
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+./run.sh
+```
+
+Open <http://127.0.0.1:8080>. Choose **Offline demo** to run without an API
+token. To use an OpenAI-compatible model, open **API settings**, select
+**Live model**, and enter the token, base URL, and model name. The token stays
+in server memory for that session and is never written to browser storage.
+
+Docker provides the same UI and API:
+
+```bash
+cp .env.example .env
+# Optional: set AI_API_KEY in .env for the default live-model configuration.
+docker compose up --build
+```
+
+Then open <http://127.0.0.1:8080>. Set `AI_BASE_URL`, `AI_MODEL`, and `PORT` in
+`.env` when needed. Email delivery and human transfer are simulated.
+
+#### Demo acceptance path
+
+1. Click **Margaret’s January claim**. The agent collects three identity
+   fields while claim details remain locked, then reuses the remembered January
+   denial hint after verification.
+2. Ask about missing documents. The answer is composed from the matching
+   synthetic claim record.
+3. Click **That answers my question**, then choose **Yes, send summary** or
+   **No thanks, skip**. Both choices are recorded and only the accepted choice
+   produces a simulated email delivery.
+4. Open **Safety trace / SOP audit** to inspect phase gates, data shielding,
+   consent, and replay snapshots.
+
 #### 1. Run PPO Training
 ```bash
 python3 train_ppo.py --timesteps 50000 --device cpu --seed 42
