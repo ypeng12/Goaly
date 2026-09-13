@@ -10,6 +10,29 @@ class Phase(str, Enum):
     ESCALATED = "ESCALATED"
     CONCLUDED = "CONCLUDED"
 
+class AgentAction(str, Enum):
+    """Named actions available to an assistant policy in this SOP environment.
+
+    The action space is constrained per-phase via action_mask.  An action is
+    *legal* only when its bit in the mask is True.  Illegal actions should be
+    filtered before sampling in any policy implementation.
+    """
+    ACK_EMOTION             = "ACK_EMOTION"             # Acknowledge caller emotional state
+    ASK_IDENTITY_FIELD      = "ASK_IDENTITY_FIELD"      # Request a missing PII field
+    EXPLAIN_VERIFICATION_GATE = "EXPLAIN_VERIFICATION_GATE"  # Explain why identity is needed
+    RESOLVE_INTENT          = "RESOLVE_INTENT"           # Confirm understanding of caller goal
+    ASK_CLAIM_CLARIFICATION = "ASK_CLAIM_CLARIFICATION" # Ask for more detail on the claim
+    ANSWER_GROUNDED         = "ANSWER_GROUNDED"          # Provide a grounded factual answer (requires verified)
+    OFFER_EMAIL_SUMMARY     = "OFFER_EMAIL_SUMMARY"      # Offer to send an email summary
+    SEND_EMAIL              = "SEND_EMAIL"               # Confirm and send the email summary
+    ESCALATE_HUMAN          = "ESCALATE_HUMAN"           # Transfer to a human agent
+
+
+# Canonical ordering used for action_mask vectors (index → AgentAction)
+AGENT_ACTIONS: list[AgentAction] = list(AgentAction)
+ACTION_SPACE_SIZE: int = len(AGENT_ACTIONS)
+
+
 class PIIFields(BaseModel):
     name: Optional[str] = None
     policy_number: Optional[str] = None
