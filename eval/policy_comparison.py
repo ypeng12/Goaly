@@ -1,7 +1,7 @@
 """
-Policy comparison: RuleBasedPolicy vs RandomPolicy on AgentPolicyEnv.
+Policy comparison: RuleBasedPolicy vs RandomPolicy vs LearnedPPOPolicy on AgentPolicyEnv.
 
-Both policies are tested on the same AgentPolicyEnv + CallerProfile setup.
+All policies are tested on the same AgentPolicyEnv + CallerProfile setup.
 The CallerProfile provides real PII utterances to drive the SOP state machine.
 The agent selects actions; rewards reflect PII field collection, phase transitions,
 and structural violations.
@@ -13,12 +13,18 @@ import sys
 import random
 import statistics
 from collections import Counter
+from pathlib import Path
+from typing import Optional
 
-sys.path.insert(0, "/Users/yuliangpeng/Desktop/apps/insurance_claims")
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
+import torch
 
 from backend.harness.rl_env import AgentPolicyEnv, AgentAction, AGENT_ACTIONS
 from backend.harness.rl_baseline import RuleBasedPolicy
 from backend.harness.caller_sim import make_margaret_chen_profile, make_all_profiles
+from backend.rl.featurizer import StateFeaturizer
+from backend.rl.models import ActorCriticPolicy
 
 
 class RandomPolicy:
@@ -60,38 +66,98 @@ class RandomPolicy:
             "terminated": terminated,
             "truncated": truncated,
             "violations": all_violations,
+            "trajectory": env.trajectory,
             "final_phase": obs.get("phase", "unknown"),
             "verified_fields": list(obs.get("verified_fields", [])),
         }
 
 
+class LearnedPPOPolicy:
+    """Policy driven by a trained ActorCritic neural network."""
 
-def run_agent_comparison(n_episodes: int = 50, max_turns: int = 15, seed: int = 42):
-    """Compare RuleBasedPolicy vs RandomPolicy on AgentPolicyEnv + CallerProfile.
+    def __init__(self, model_path: str = "artifacts/ppo_policy.pt", device: str = "cpu"):
+        self.device = torch.device(device)
+        self.featurizer = StateFeaturizer()
+        self.policy = ActorCriticPolicy(
+            state_dim=self.featurizer.FEATURE_DIM,
+            action_dim=len(AGENT_ACTIONS),
+            hidden_dim=64,
+        ).to(self.device)
 
-    Both policies use the same set of CallerProfiles (all fixture policyholders,
-    cycled across episodes) so the comparison is controlled for caller quality.
-    """
+        checkpoint = torch.load(model_path, map_location=self.device)
+        self.policy.load_state_dict(checkpoint["policy_state_dict"])
+        self.policy.eval()
+
+    def select_action(self, observation: dict, turn: int = 0) -> AgentAction:
+        state_t = self.featurizer.featurize_tensor(observation, turn=turn, device=self.device)
+        mask_t = self.featurizer.extract_mask_tensor(observation, device=self.device)
+        with torch.no_grad():
+            action_idx, _, _, _ = self.policy.get_action_and_value(
+                state_t, mask=mask_t, deterministic=True
+            )
+        return AGENT_ACTIONS[action_idx.item()]
+
+    def run_episode(self, env, verbose: bool = False) -> dict:
+        obs, info = env.reset()
+        done = False
+        cumulative_reward = 0.0
+        all_violations = []
+        terminated = truncated = False
+        while not done:
+            action = self.select_action(obs, turn=env.turn_count)
+            obs, reward, terminated, truncated, info = env.step(action)
+            cumulative_reward += reward
+            all_violations.extend(info.get("structural_violations", []))
+            done = terminated or truncated
+            if verbose:
+                caller = obs.get("caller_utterance", "")[:60]
+                print(f"  turn={info['turn']:2d}  action={action.value:<28s}  reward={reward:+.2f}  phase={obs['phase']}")
+                if caller:
+                    print(f"    caller: {caller!r}")
+        return {
+            "cumulative_reward": cumulative_reward,
+            "turns": env.turn_count,
+            "terminated": terminated,
+            "truncated": truncated,
+            "violations": all_violations,
+            "trajectory": env.trajectory,
+            "final_phase": obs.get("phase", "unknown"),
+            "verified_fields": list(obs.get("verified_fields", [])),
+        }
+
+
+def run_agent_comparison(
+    n_episodes: int = 50,
+    max_turns: int = 15,
+    seed: int = 42,
+    ppo_model_path: Optional[str] = "artifacts/ppo_policy.pt",
+):
+    """Compare RuleBasedPolicy vs RandomPolicy (and optionally LearnedPPOPolicy) on AgentPolicyEnv."""
     profiles = make_all_profiles()
     rule_policy = RuleBasedPolicy()
     rand_policy = RandomPolicy(seed=seed)
 
-    rule_results = []
-    rand_results = []
+    has_ppo = ppo_model_path and Path(ppo_model_path).exists()
+    ppo_policy = LearnedPPOPolicy(model_path=ppo_model_path) if has_ppo else None
+
+    policies = [
+        ("RuleBased", rule_policy),
+        ("Random", rand_policy),
+    ]
+    if ppo_policy:
+        policies.append(("PPO (Learned)", ppo_policy))
+
+    results_dict = {name: [] for name, _ in policies}
 
     for i in range(n_episodes):
-        # Create fresh profiles for each episode (CallerProfile tracks internal state)
-        profiles_r = make_all_profiles()
-        profiles_rnd = make_all_profiles()
-        profile_idx = i % len(profiles_r)
+        profile_idx = i % len(profiles)
 
-        # RuleBasedPolicy episode
-        env = AgentPolicyEnv(caller_profile=profiles_r[profile_idx], max_turns=max_turns)
-        rule_results.append(rule_policy.run_episode(env))
-
-        # RandomPolicy episode (same profile type, fresh instance)
-        env2 = AgentPolicyEnv(caller_profile=profiles_rnd[profile_idx], max_turns=max_turns)
-        rand_results.append(rand_policy.run_episode(env2))
+        for name, pol in policies:
+            # Fresh profile of identical identity per episode
+            ep_profiles = make_all_profiles()
+            profile = ep_profiles[profile_idx]
+            env = AgentPolicyEnv(caller_profile=profile, max_turns=max_turns)
+            results_dict[name].append(pol.run_episode(env))
 
     def pct(results, pred):
         return 100 * sum(1 for r in results if pred(r)) / len(results)
@@ -99,56 +165,49 @@ def run_agent_comparison(n_episodes: int = 50, max_turns: int = 15, seed: int = 
     def avg(results, key):
         return sum(r[key] for r in results) / len(results)
 
-    print(f"\n{'='*72}")
-    print(f"AgentPolicyEnv: RuleBasedPolicy vs RandomPolicy")
+    header_cols = "".join(f"{name:>16}" for name, _ in policies)
+    line_len = 36 + 16 * len(policies)
+    print(f"\n{'=' * line_len}")
+    print(f"AgentPolicyEnv: Multi-Policy Benchmark Arena")
     print(f"({n_episodes} episodes each, {len(profiles)} caller profiles, max_turns={max_turns})")
-    print(f"{'='*72}")
-    print(f"{'Metric':<40} {'RuleBased':>13} {'Random':>13}")
-    print("-" * 72)
+    print(f"{'=' * line_len}")
+    print(f"{'Metric':<36}{header_cols}")
+    print("-" * line_len)
 
-    metrics = [
-        ("Mean cumulative reward",
-         avg(rule_results, "cumulative_reward"),
-         avg(rand_results, "cumulative_reward")),
-        ("Mean episode length (turns)",
-         avg(rule_results, "turns"),
-         avg(rand_results, "turns")),
-        ("Termination rate — clean end (%)",
-         pct(rule_results, lambda r: r["terminated"]),
-         pct(rand_results, lambda r: r["terminated"])),
-        ("Truncation rate — hit max_turns (%)",
-         pct(rule_results, lambda r: r["truncated"]),
-         pct(rand_results, lambda r: r["truncated"])),
-        ("Violation rate — any violation (%)",
-         pct(rule_results, lambda r: bool(r["violations"])),
-         pct(rand_results, lambda r: bool(r["violations"]))),
-        ("Mean verified fields collected",
-         sum(len(r["verified_fields"]) for r in rule_results) / len(rule_results),
-         sum(len(r["verified_fields"]) for r in rand_results) / len(rand_results)),
+    metric_defs = [
+        ("Mean cumulative reward", lambda res: f"{avg(res, 'cumulative_reward'):>16.2f}"),
+        ("Mean episode length (turns)", lambda res: f"{avg(res, 'turns'):>16.2f}"),
+        ("Termination rate — clean end (%)", lambda res: f"{pct(res, lambda r: r['terminated']):>16.2f}"),
+        ("Truncation rate — hit max_turns (%)", lambda res: f"{pct(res, lambda r: r['truncated']):>16.2f}"),
+        ("Violation rate — any violation (%)", lambda res: f"{pct(res, lambda r: bool(r['violations'])):>16.2f}"),
+        ("Mean verified fields collected", lambda res: f"{(sum(len(r['verified_fields']) for r in res) / len(res)):>16.2f}"),
     ]
 
-    for label, r_val, rnd_val in metrics:
-        print(f"  {label:<38} {r_val:>13.2f} {rnd_val:>13.2f}")
+    for label, fn in metric_defs:
+        vals = "".join(fn(results_dict[name]) for name, _ in policies)
+        print(f"  {label:<34}{vals}")
 
-    print("=" * 72)
+    print("=" * line_len)
 
     # Reward distribution
     print("\nReward distribution:")
-    for name, results in [("RuleBasedPolicy", rule_results), ("RandomPolicy", rand_results)]:
-        rewards = sorted(r["cumulative_reward"] for r in results)
+    for name, _ in policies:
+        rewards = sorted(r["cumulative_reward"] for r in results_dict[name])
         print(f"  {name}:")
-        print(f"    min={rewards[0]:.2f}  p25={rewards[len(rewards)//4]:.2f}"
-              f"  median={statistics.median(rewards):.2f}"
-              f"  p75={rewards[3*len(rewards)//4]:.2f}  max={rewards[-1]:.2f}")
+        print(
+            f"    min={rewards[0]:.2f}  p25={rewards[len(rewards)//4]:.2f}"
+            f"  median={statistics.median(rewards):.2f}"
+            f"  p75={rewards[3*len(rewards)//4]:.2f}  max={rewards[-1]:.2f}"
+        )
 
     # Final phase breakdown
     print("\nFinal phase breakdown:")
-    for name, results in [("RuleBasedPolicy", rule_results), ("RandomPolicy", rand_results)]:
-        counts = Counter(r["final_phase"] for r in results)
+    for name, _ in policies:
+        counts = Counter(r["final_phase"] for r in results_dict[name])
         phases_str = "  ".join(f"{p}={c}" for p, c in sorted(counts.items()))
         print(f"  {name}: {phases_str}")
 
-    return rule_results, rand_results
+    return results_dict
 
 
 if __name__ == "__main__":
