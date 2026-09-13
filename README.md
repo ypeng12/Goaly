@@ -18,8 +18,8 @@ A constrained environment, Masked PPO training loop, and evaluation harness for 
 | **Masked PPO Actor-Critic** (`backend/rl/`) | PyTorch PPO algorithm with action masking in logits layer (`torch.distributions.Categorical`) |
 | **DPO Alignment Pipeline** (`eval/generate_dpo_pairs.py`) | Automated synthesis of `(prompt, chosen, rejected)` preference pairs from rollout delta |
 | `RuleBasedPolicy` baseline | Deterministic SOP-aligned policy for comparison with learned policies |
-| 33-scenario benchmark, 596 assertions | Behavior slicing: identity gates, ownership, memory, scope, consent, disclosure |
-| 121 automated tests | Unit + integration coverage including RL-specific action mask and PPO tests |
+| 33-scenario benchmark, 650 assertions | Behavior slicing: identity gates, ownership, memory, scope, consent, disclosure |
+| 126 automated tests | Unit + integration coverage including RL-specific action mask, Gym spaces, and PPO tests |
 | Trajectory export (JSONL) | SFT/DPO/RL-ready, one turn per line with reward components and violations |
 | Audit trail + time-travel replay | Every gate decision logged; UI slider replays any prior state |
 | Verified-first identity gate | 3-of-5 PII required; structural violation = −100 reward, not soft penalty |

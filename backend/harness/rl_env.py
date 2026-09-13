@@ -29,6 +29,13 @@ from ..engine.mock_engine import MockEngine
 from ..engine.base import BaseEngine
 
 
+# Gymnasium's default Text charset is alphanumeric-only.  Caller and agent
+# messages contain spaces and punctuation, so use a bounded printable
+# Unicode set while keeping the declared space finite and serializable.
+_TEXT_CHARSET = frozenset(chr(i) for i in range(32, 127)) | frozenset("\n\r\t—…’“”")
+_MEMORY_KEYS = ("case_type_hint", "status_hint", "date_hint", "topic_hint")
+
+
 # ---------------------------------------------------------------------------
 # Per-phase legal action sets
 # ANSWER_GROUNDED is masked when identity is unverified.
@@ -90,17 +97,22 @@ def _compute_action_mask(
 
 def _build_observation(state, reply: str, verified: bool, caller_msg: str = "") -> dict[str, Any]:
     memory = state.cross_phase_memory.model_dump()
-    memory_slots = {k: v for k, v in memory.items() if v and k != "hint_history"}
+    # Keep the observation shape stable.  Extra state such as raw snippets and
+    # notes remains in the SOP state/audit trail, not in the RL observation.
+    memory_slots = {k: memory.get(k) or "" for k in _MEMORY_KEYS}
     post_accepted = getattr(state.post_process, "user_decision", None) == "accepted"
     return {
         "caller_utterance": caller_msg,
         "last_agent_reply": reply,
         "reply": reply,
         "phase": state.phase.value,
-        "verified_fields": list(state.verified_fields),
+        # Sequence spaces require tuples when stack=False.
+        "verified_fields": tuple(state.verified_fields),
         "memory_slots": memory_slots,
         "data_shield_active": not verified,
-        "active_case_id": state.active_case_id if verified else None,
+        # Text spaces cannot contain None; an empty value represents the
+        # shielded/unresolved case in the observation.
+        "active_case_id": state.active_case_id if verified and state.active_case_id else "",
         "action_mask": _compute_action_mask(state.phase, verified, post_accepted),
     }
 
@@ -267,18 +279,20 @@ class AgentPolicyEnv(gym.Env):
         # Gymnasium Spaces
         self.action_space = spaces.Discrete(ACTION_SPACE_SIZE)
         self.observation_space = spaces.Dict({
-            "phase": spaces.Text(max_length=32),
-            "caller_utterance": spaces.Text(max_length=2000),
-            "last_agent_reply": spaces.Text(max_length=2000),
-            "verified_fields": spaces.Sequence(spaces.Text(max_length=32)),
+            "phase": spaces.Text(max_length=32, charset=_TEXT_CHARSET),
+            "caller_utterance": spaces.Text(max_length=2000, min_length=0, charset=_TEXT_CHARSET),
+            "last_agent_reply": spaces.Text(max_length=2000, min_length=0, charset=_TEXT_CHARSET),
+            # Backward-compatible alias retained in observations.
+            "reply": spaces.Text(max_length=2000, min_length=0, charset=_TEXT_CHARSET),
+            "verified_fields": spaces.Sequence(
+                spaces.Text(max_length=32, charset=_TEXT_CHARSET)
+            ),
             "memory_slots": spaces.Dict({
-                "case_type_hint": spaces.Text(max_length=64),
-                "status_hint": spaces.Text(max_length=64),
-                "date_hint": spaces.Text(max_length=64),
-                "topic_hint": spaces.Text(max_length=64),
+                key: spaces.Text(max_length=64, min_length=0, charset=_TEXT_CHARSET)
+                for key in _MEMORY_KEYS
             }),
             "data_shield_active": spaces.Discrete(2),
-            "active_case_id": spaces.Text(max_length=32),
+            "active_case_id": spaces.Text(max_length=32, min_length=0, charset=_TEXT_CHARSET),
             "action_mask": spaces.MultiBinary(ACTION_SPACE_SIZE),
         })
 
@@ -354,6 +368,13 @@ class AgentPolicyEnv(gym.Env):
             import random
             random.seed(seed)
             np.random.seed(seed)
+            # Keep the environment's stochastic sources reproducible when a
+            # caller simulator or downstream policy uses torch randomness.
+            try:
+                import torch
+                torch.manual_seed(seed)
+            except ImportError:
+                pass
 
         self._initialize(str(uuid.uuid4()))
 
@@ -389,6 +410,12 @@ class AgentPolicyEnv(gym.Env):
         """Execute one agent action following strict timing & safety invariants."""
         if self._finished:
             raise RuntimeError("Session is finished; call reset() before another step")
+        # Gymnasium policies emit integer actions; the internal harness and
+        # baseline policies use the typed enum.  Accept both representations.
+        if isinstance(action, (int, np.integer)) and not isinstance(action, bool):
+            if not 0 <= int(action) < ACTION_SPACE_SIZE:
+                raise ValueError(f"action index out of range: {action}")
+            action = AGENT_ACTIONS[int(action)]
         if not isinstance(action, AgentAction):
             raise ValueError(f"action must be an AgentAction, got {type(action)}")
 

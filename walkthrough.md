@@ -90,18 +90,24 @@ The action space consists of 9 discrete actions (`spaces.Discrete(9)`):
 
 | Index | Action Name | Allowed Phases | Conditions / Physical Blocking |
 |:---:|---|---|---|
-| 0 | `GREET` | `RESOLVE_INTENT` | Initial conversation start |
-| 1 | `CLARIFY_INTENT` | `RESOLVE_INTENT` | When intent is ambiguous |
-| 2 | `REQUEST_VERIFY_INFO`| `VERIFY_ID` | Blocked if verified fields >= 3 |
-| 3 | `ANSWER_GROUNDED` | `PROCESS_CASE`, `VERIFY_ID`* | **Physically blocked** if verified fields < 3 (prevents privacy breach) |
-| 4 | `DECLINE_OUT_OF_SCOPE` | All non-terminal phases | For unrelated inquiries |
-| 5 | `OFFER_EMAIL_FOLLOWUP` | `POST_PROCESS`, `PROCESS_CASE` | Initiates closing flow |
-| 6 | `SEND_EMAIL` | `POST_PROCESS` | **Strictly blocked** unless `user_decision == "accepted"` |
-| 7 | `CLOSE_CONVERSATION` | `POST_PROCESS` | Permitted when post-process complete |
-| 8 | `ESCALATE_HUMAN` | All non-terminal phases | Always legal, but penalized if unprovoked |
+| 0 | `ACK_EMOTION` | All active phases | Empathy / de-escalation |
+| 1 | `ASK_IDENTITY_FIELD` | `VERIFY_ID`, `RESOLVE_INTENT` | Requests a missing PII field |
+| 2 | `EXPLAIN_VERIFICATION_GATE` | `VERIFY_ID`, `RESOLVE_INTENT` | Explains why protected details require verification |
+| 3 | `RESOLVE_INTENT` | `RESOLVE_INTENT`, `PROCESS_CASE` | Confirms the caller's goal |
+| 4 | `ASK_CLAIM_CLARIFICATION` | `RESOLVE_INTENT`, `PROCESS_CASE` | Requests bounded case detail |
+| 5 | `ANSWER_GROUNDED` | `PROCESS_CASE` | **Physically blocked** until identity is verified |
+| 6 | `OFFER_EMAIL_SUMMARY` | `PROCESS_CASE`, `POST_PROCESS` | Offers an optional summary email |
+| 7 | `SEND_EMAIL` | `POST_PROCESS` | **Strictly blocked** unless `user_decision == "accepted"` |
+| 8 | `ESCALATE_HUMAN` | All active phases | Transfers the caller; penalized when unprovoked |
 
 Masking is enforced structurally at the logits layer:
 $$\text{logits}_{\text{masked}}(a) = \begin{cases} \text{logits}(a) & \text{if } \text{mask}(a) = 1 \\ -10^8 & \text{if } \text{mask}(a) = 0 \end{cases}$$
+
+`AgentPolicyEnv` exposes Gymnasium `action_space` and `observation_space` and
+accepts either an integer action index or an `AgentAction`. Since illegal
+actions are deliberately rejected at the environment boundary, the generic
+Gymnasium checker (which samples unmasked actions) must be replaced with a
+mask-aware sampler for this constrained environment.
 
 ---
 
@@ -247,7 +253,7 @@ python3 -m eval.eval_benchmark
 - **`RandomPolicy`**: `CONCLUDED: 5 (10%)`, `ESCALATED: 44 (88%)`, `POST_PROCESS (truncated): 1 (2%)`
 - **`PPO (Learned)`**: `CONCLUDED: 38 (76%)`, `ESCALATED: 12 (24%)`
 
-The learned PPO agent achieves **100% policy congruence** with the RuleBased gold standard across all 50 evaluation episodes with 0% premature termination and 0% constraint violations.
+The learned PPO agent matches the RuleBased policy's **terminal outcome distribution** across these 50 episodes (38 concluded, 12 escalated), while its surface action sequence can differ. It has 0% premature termination and 0% constraint violations in this fixture benchmark.
 
 ---
 

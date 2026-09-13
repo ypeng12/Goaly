@@ -166,6 +166,18 @@ class TestAgentPolicyEnv:
         assert len(obs["action_mask"]) == ACTION_SPACE_SIZE
         assert obs["data_shield_active"] is True
 
+    def test_observation_matches_declared_gym_space(self):
+        env = AgentPolicyEnv(max_turns=10)
+        obs, _ = env.reset(seed=42)
+        assert env.observation_space.contains(obs)
+
+    def test_discrete_integer_action_is_supported(self):
+        env = AgentPolicyEnv(max_turns=10)
+        env.reset(seed=42)
+        action_idx = AGENT_ACTIONS.index(AgentAction.ASK_IDENTITY_FIELD)
+        obs, _, _, _, info = env.step(action_idx)
+        assert info["agent_action"] == AgentAction.ASK_IDENTITY_FIELD.value
+
     def test_action_space_size_property(self):
         env = AgentPolicyEnv()
         assert env.action_space_size == ACTION_SPACE_SIZE
@@ -425,5 +437,4 @@ class TestCallerAgentLoop:
         # Stepping SEND_EMAIL when masked must raise ValueError
         with pytest.raises(ValueError):
             env.step(AgentAction.SEND_EMAIL)
-
 

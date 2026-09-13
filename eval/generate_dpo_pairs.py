@@ -48,7 +48,7 @@ STYLES = ["cooperative", "frustrated", "confused", "privacy_sensitive", "escalat
 def generate_same_state_dpo_pairs(
     num_pairs: int = 50,
     output_dir: str = "artifacts",
-    min_reward_delta: float = 0.5,
+    min_reward_delta: float = 1.0,
     seed: int = 42,
 ) -> Tuple[List[Dict[str, Any]], Dict[str, Any]]:
     random.seed(seed)
