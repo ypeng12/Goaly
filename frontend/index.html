@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="An insurance claims support demo with a conversational agent, identity verification, grounded answers, and optional email follow-up.">
   <meta name="theme-color" content="#143d39">
-  <title>Aegis — Claims Support Studio</title>
+  <title>aegis — Claims help</title>
   <link rel="stylesheet" href="/static/style.css">
   <script src="/static/app.js" defer></script>
 </head>
@@ -13,12 +13,13 @@
   <a href="#user-input" class="skip-link">Skip to conversation</a>
   <div class="app-shell">
     <header class="header">
-      <a class="brand" href="/" aria-label="Aegis Claims Support Studio home">
+      <a class="brand" href="/" aria-label="aegis Claims help home">
         <span class="logo-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/><path d="m8.5 12 2.5 2.5 4.5-5"/></svg></span>
-        <span class="brand-name">aegis<span class="brand-divider"></span><span class="brand-subtitle">Claims support studio</span></span>
+        <span class="brand-name">aegis<span class="brand-divider"></span><span class="brand-subtitle">Claims help</span></span>
       </a>
       <div class="header-actions">
         <span class="engine-badge" id="engine-badge"><span class="status-dot"></span><span id="engine-label">Connecting</span></span>
+        <button id="btn-toggle-inspector" class="btn btn-secondary" type="button" aria-expanded="false"><span aria-hidden="true">🛡️</span> Safety trace / SOP audit</button>
         <button id="btn-config" class="btn btn-secondary" type="button">API settings</button>
         <button id="btn-reset" class="btn btn-primary" type="button"><span aria-hidden="true">＋</span> New call</button>
       </div>
@@ -26,7 +27,7 @@
 
     <main>
       <div class="page-heading">
-        <div><p class="eyebrow">THE CONVERSATION, WITH GUARDRAILS</p><h1>Support that follows through.</h1><p class="page-description">Natural conversation. Verified identity. A clear next step.</p></div>
+        <div><p class="eyebrow">VERIFIABLE · EXPLAINABLE · RESILIENT</p><h1>Claims help</h1><p class="page-description">Natural conversation or instant security card. Privacy verified at the data layer before claim details are accessed.</p></div>
         <div class="sandbox-note"><span class="sandbox-pill">DEMO WORKSPACE</span><p>Synthetic records · Simulated email &amp; handoff</p></div>
       </div>
 

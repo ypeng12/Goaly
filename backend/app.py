@@ -73,6 +73,15 @@ class ChatRequest(SessionRequest):
         return value.strip()
 
 
+class VerifyCardRequest(SessionRequest):
+    name: Optional[str] = Field(default=None, max_length=200)
+    dob: Optional[str] = Field(default=None, max_length=100)
+    phone: Optional[str] = Field(default=None, max_length=50)
+    email: Optional[str] = Field(default=None, max_length=200)
+    id_last4: Optional[str] = Field(default=None, max_length=10)
+
+
+
 def get_session(sid):
     item = sessions.get(sid)
     if not item or time.monotonic() - item.touched > SESSION_TTL:
@@ -256,6 +265,29 @@ async def chat(req: ChatRequest):
         # Network I/O and model processing do not block other sessions' event loop.
         reply = await asyncio.to_thread(process_turn, item, req.message)
         return reply_payload(req.session_id, item, reply)
+
+
+@app.post('/api/verify-card')
+async def verify_card(req: VerifyCardRequest):
+    item = get_session(req.session_id)
+    async with item.lock:
+        if len(item.history) // 2 >= MAX_TURNS:
+            raise HTTPException(429, 'Demo turn limit reached. Start a new call.')
+        form_data = {
+            "name": req.name or "",
+            "dob": req.dob or "",
+            "phone": req.phone or "",
+            "email": req.email or "",
+            "id_last4": req.id_last4 or "",
+        }
+        res = item.machine.verify_card_data(form_data)
+        reply = res["agent_reply"]
+        item.history.extend([
+            {'role': 'user', 'content': '[Submitted Security Verification Card]'},
+            {'role': 'assistant', 'content': reply}
+        ])
+        return reply_payload(req.session_id, item, reply)
+
 
 
 @app.post('/api/restore')

@@ -17,7 +17,7 @@ const SCENARIOS = {
   "scenario-oos": "What is RL?",
   "scenario-proxy": "I am David Chen calling on behalf of my mother Margaret Chen, policy POL-9921. Her DOB is 1985-03-15 and her SSN last four is 4472. I’m calling about her denied healthcare claim from January."
 };
-const WELCOME = "Hello, I’m your insurance claims support assistant. I can help you understand a claim and what to do next.\n\nBefore I access claim information, I’ll need to verify at least three details: your full name, date of birth, phone number, email, or the last four digits of your SSN. You can share whichever of those you prefer, one at a time or together.\n\nWhat brings you in today?";
+const WELCOME = "Hello, I’m Aegis support. I can help you understand your claim and clear next steps.\n\nTo protect your privacy, claim details stay locked until identity is verified. You can fill out the Security Verification Card below or share your details in chat.\n\nWhat brings you in today?";
 let sessionId = null;
 let config = {};
 let busy = false;
@@ -77,7 +77,7 @@ function renderMessage(message) {
   avatar.setAttribute("aria-hidden", "true");
   const bubble = node("div", "msg-bubble");
   const meta = node("div", "msg-meta");
-  meta.append(node("span", "msg-sender", role === "assistant" ? "Aegis · Claims support" : role === "user" ? "You" : "Connection notice"));
+  meta.append(node("span", "msg-sender", role === "assistant" ? "Aegis support" : role === "user" ? "You" : "Connection notice"));
   if (message.phase) meta.append(node("span", "msg-phase", message.phase));
   bubble.append(meta, node("div", "msg-text", message.text));
   row.append(avatar, bubble);
@@ -87,7 +87,9 @@ function renderMessage(message) {
 function renderMessages(messages) {
   $("chat-window").replaceChildren();
   messages.forEach(renderMessage);
+  renderVerificationCard();
 }
+
 function appendLive(message) { liveMessages.push(message); renderMessage(message); }
 function showTyping() {
   const row = node("div", "chat-msg assistant typing");
@@ -324,6 +326,131 @@ async function saveConfig(event) {
   }
 }
 
+function renderVerificationCard() {
+  const existing = $("security-card-el");
+  if (existing) existing.remove();
+  if (liveData.current_phase !== "VERIFY_ID" || liveData.sop_state?.identity_verified || replaying) return;
+
+  const card = node("div", "security-card");
+  card.id = "security-card-el";
+  card.innerHTML = `
+    <div class="security-card-header">
+      <div class="security-card-title"><span>🛡️</span> Security Verification Card</div>
+      <span class="security-card-badge">Deterministic Security Gate</span>
+    </div>
+    <div class="security-card-desc">
+      Submit any 3 details to unlock claim access. Form submissions bypass LLM text processing directly into deterministic validation.
+    </div>
+    <div class="security-card-grid">
+      <div class="security-card-field">
+        <label for="card-name">Full name <span class="field-tag">Required for match</span></label>
+        <input type="text" id="card-name" placeholder="e.g. Margaret Chen" autocomplete="name">
+      </div>
+      <div class="security-card-field">
+        <label for="card-dob">Date of birth <span class="field-tag">Date / Paste</span></label>
+        <input type="text" id="card-dob" placeholder="YYYY-MM-DD or 03/15/1985">
+      </div>
+      <div class="security-card-field">
+        <label for="card-phone">Phone number <span class="field-tag">Auto-formatted</span></label>
+        <input type="tel" id="card-phone" placeholder="e.g. (650) 388-2920">
+      </div>
+      <div class="security-card-field">
+        <label for="card-email">Email address <span class="field-tag">Email</span></label>
+        <input type="email" id="card-email" placeholder="e.g. margaret.chen@email.com">
+      </div>
+      <div class="security-card-field">
+        <label for="card-id4">SSN last 4 <span class="field-tag">Optional</span></label>
+        <input type="text" id="card-id4" maxlength="4" placeholder="e.g. 4472">
+      </div>
+    </div>
+    <div class="security-card-actions">
+      <button type="button" class="security-card-quickfill" id="btn-card-quickfill">Fill test caller (Margaret Chen)</button>
+      <button type="button" class="security-card-submit" id="btn-card-submit">Submit Verification Card</button>
+    </div>
+  `;
+
+  $("chat-window").append(card);
+
+  const phoneInput = card.querySelector("#card-phone");
+  if (phoneInput) {
+    phoneInput.addEventListener("input", (e) => {
+      const digits = e.target.value.replace(/\D/g, "");
+      if (digits.length <= 3) e.target.value = digits;
+      else if (digits.length <= 6) e.target.value = `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
+      else e.target.value = `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6, 10)}`;
+    });
+  }
+
+  const quickFillBtn = card.querySelector("#btn-card-quickfill");
+  if (quickFillBtn) {
+    quickFillBtn.addEventListener("click", () => {
+      card.querySelector("#card-name").value = "Margaret Chen";
+      card.querySelector("#card-dob").value = "1985-03-15";
+      card.querySelector("#card-phone").value = "(650) 521-2836";
+      card.querySelector("#card-email").value = "margaret@email.com";
+      card.querySelector("#card-id4").value = "4472";
+    });
+  }
+
+  const submitBtn = card.querySelector("#btn-card-submit");
+  if (submitBtn) {
+    submitBtn.addEventListener("click", () => {
+      const form = {
+        name: card.querySelector("#card-name").value.trim(),
+        dob: card.querySelector("#card-dob").value.trim(),
+        phone: card.querySelector("#card-phone").value.trim(),
+        email: card.querySelector("#card-email").value.trim(),
+        id_last4: card.querySelector("#card-id4").value.trim(),
+      };
+      submitVerificationCard(form);
+    });
+  }
+}
+
+async function submitVerificationCard(form) {
+  if (busy || replaying || !sessionId || isTerminal()) return;
+  busy = true;
+  notice("");
+  syncControls();
+  const typing = showTyping();
+  try {
+    const data = await request("/api/verify-card", {
+      method: "POST",
+      body: JSON.stringify({ session_id: sessionId, ...form })
+    });
+    typing.remove();
+    if (!data.sop_state || typeof data.reply !== "string") throw new Error("Verification card submission failed.");
+    liveData = data;
+    appendLive({ role: "user", text: "[Submitted Security Verification Card]" });
+    appendLive({ role: "assistant", text: data.reply, phase: data.current_phase });
+    snapshots.push({ data: clone(data), messages: clone(liveMessages) });
+    renderInspector(data);
+    renderEngine(data);
+    renderReplayStatus(snapshots.length - 1);
+    $("chat-window").scrollTop = $("chat-window").scrollHeight;
+  } catch (error) {
+    typing.remove();
+    notice(error.message);
+  } finally {
+    busy = false;
+    syncControls();
+  }
+}
+
+const toggleInspectorBtn = $("btn-toggle-inspector");
+if (toggleInspectorBtn) {
+  toggleInspectorBtn.addEventListener("click", () => {
+    const drawer = document.querySelector(".inspector-panel");
+    const layout = document.querySelector(".main-layout");
+    if (drawer) {
+      const isHidden = drawer.classList.toggle("hidden-drawer");
+      if (layout) layout.classList.toggle("full-width-conversation", isHidden);
+      toggleInspectorBtn.setAttribute("aria-expanded", String(!isHidden));
+      toggleInspectorBtn.classList.toggle("active", !isHidden);
+    }
+  });
+}
+
 $("chat-form").addEventListener("submit", event => { event.preventDefault(); sendMessage($("user-input").value); });
 $("user-input").addEventListener("keydown", event => {
   if (event.key === "Enter" && !event.shiftKey && !event.isComposing) { event.preventDefault(); $("chat-form").requestSubmit(); }
@@ -343,3 +470,4 @@ $("cfg-engine-mode").addEventListener("change", () => { $("llm-config-fields").h
 $("config-form").addEventListener("submit", saveConfig);
 renderInspector(liveData);
 resetSession();
+

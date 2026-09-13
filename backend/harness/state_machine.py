@@ -334,6 +334,54 @@ class SOPStateMachine:
             return False
         return bool(re.search(r"\b(?:no more questions?|that's all|that is all|i'm good|im good|nothing else|no (?:that's|that is) it|nope that's it|wrap up|thanks that helps|no thanks)\b", clean))
 
+    def verify_card_data(self, form_data: Dict[str, str]) -> Dict[str, Any]:
+        """Direct deterministic card form verification bypassing LLM extraction."""
+        phase_before = self.state.phase
+        if phase_before in self.TERMINAL_PHASES:
+            return self._result(phase_before, note="This session is terminal. Start a new session to continue.")
+
+        for field in ("name", "dob", "phone", "email", "id_last4"):
+            val = form_data.get(field, "").strip()
+            if val:
+                setattr(self.state.accumulated_pii, field, val)
+
+        dob_val = form_data.get("dob", "").strip()
+        if dob_val:
+            m = re.match(r"^(\d{1,2})/(\d{1,2})/(\d{4})$", dob_val)
+            if m:
+                month, day, year = int(m.group(1)), int(m.group(2)), int(m.group(3))
+                iso_dob = f"{year:04d}-{month:02d}-{day:02d}"
+                self.state.accumulated_pii.dob = iso_dob
+
+        verified, ph, matched = grounded_data.verify_identity(self.state.accumulated_pii)
+        if verified and ph and len(matched) >= 3:
+            self.state.identity_verified = True
+            self.state.verified_party_id = ph.party_id
+            self.state.verified_fields = list(matched)
+            if self.state.phase == Phase.VERIFY_ID:
+                self.state.phase = Phase.RESOLVE_INTENT
+                self._add_trace(
+                    "VERIFY_ID_GATE", True,
+                    f"Security card form matched {len(matched)}/3 fields for policyholder {ph.name} ({ph.party_id}). Gate unlocked.",
+                    Phase.VERIFY_ID
+                )
+                self._resolve()
+            reply_msg = f"Thank you, {ph.name}. Your security verification card has been verified. How can Aegis support help with your claim today?"
+        else:
+            num_matched = len(matched) if matched else 0
+            self._add_trace(
+                "VERIFY_ID_GATE", False,
+                f"Security card form submitted ({num_matched}/3 fields matched). Gate remains locked.",
+                phase_before
+            )
+            needed = max(0, 3 - num_matched)
+            reply_msg = f"Thank you for submitting the verification card. We currently have {num_matched} matching field(s). We need {needed} more matching field(s) to verify your identity."
+
+        self.record_snapshot("[Submitted Security Verification Card]", reply_msg)
+        res = self._result(phase_before, note=f"Card verification: {phase_before.value} -> {self.state.phase.value}")
+        res["agent_reply"] = reply_msg
+        return res
+
     def evaluate_turn(self, user_text: str, semantic: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         phase_before = self.state.phase
         if phase_before in self.TERMINAL_PHASES:
