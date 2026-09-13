@@ -1,6 +1,9 @@
-# Insurance claims SOP harness
+# Insurance claims — constrained agent environment & eval harness
 
-A runnable text demo with a fixed workflow, cross-phase memory, grounded claim answers, and optional model-assisted interpretation. The fixtures are synthetic. Email delivery and human handoffs are explicitly simulated.
+A constrained environment and evaluation harness for training safe, tool-using customer-service agents. Built as a research artifact to demonstrate RL infrastructure design: a deterministic SOP harness that enforces safety gates, a formal action space with per-phase action masks, a rule-based policy baseline, 112 automated tests, and a 33-scenario benchmark with 596 invariant assertions.
+
+The demo also ships as a runnable web app so the harness decisions are visible end-to-end: verified-first identity gate, cross-phase memory, grounded claim answers, email consent, proxy authorization, and audit replay.
+
 
 ## Run locally
 
@@ -199,6 +202,19 @@ reply              str         assistant utterance for this turn
 
 Rewards are illustrative shaping scores, not calibrated customer outcomes. Structural violations (unverified record exposure, premature phase advance, missing consent) trigger -100 each; these are hard constraints, not soft preferences. Use the separate benchmark (`eval_benchmark.py`) for explicitly-reported SOP assertions.
 
+### Empirical results: scripted caller vs. random caller
+
+Running 40 episodes each (`eval/policy_comparison.py`, seed=42):
+
+| Metric | Scripted caller | Random caller |
+|---|---:|---:|
+| Mean cumulative reward | **+5.30** | −0.44 |
+| Mean episode length (turns) | **6.0** | 8.4 |
+| Mean verified fields collected | **2.6** | 0.0 |
+| Violation rate | **0%** | 0% |
+| Still in VERIFY\_ID at end | 20% | **67.5%** |
+
+The reward gap (+5.74) comes entirely from PII field collection (+1.0 each) and phase transitions (+2.0 each) — a random caller never advances past VERIFY_ID because it never provides PII. Zero violations in both conditions confirms the harness enforces safety independent of caller quality; a real policy would be graded on reward, not on violations it was never able to trigger.
 
 ## API usage
 
