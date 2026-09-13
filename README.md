@@ -17,17 +17,20 @@ A constrained environment and evaluation harness for training safe, tool-using c
 | `CallerSimulatorEnv` + `AgentPolicyEnv` | Caller simulator vs. agent policy environment, cleanly separated |
 | `RuleBasedPolicy` baseline | Deterministic SOP-aligned policy for comparison with learned policies |
 | 33-scenario benchmark, 596 assertions | Behavior slicing: identity gates, ownership, memory, scope, consent, disclosure |
-| 112 automated tests | Unit + integration coverage including RL-specific action mask tests |
+| 116 automated tests | Unit + integration coverage including RL-specific action mask tests |
 | Trajectory export (JSONL) | SFT/DPO/RL-ready, one turn per line with reward components and violations |
 | Audit trail + time-travel replay | Every gate decision logged; UI slider replays any prior state |
 | Verified-first identity gate | 3-of-5 PII required; structural violation = −100 reward, not soft penalty |
 
-**Empirical results** (40 episodes, `eval/policy_comparison.py`):
+**Empirical results** (50 episodes each, `eval/policy_comparison.py`, max_turns=15):
 
-| Metric | Scripted caller | Random caller |
+| Metric | `RuleBasedPolicy` | `RandomPolicy` |
 |---|---:|---:|
-| Mean cumulative reward | +5.30 | −0.44 |
-| Verified fields collected | 2.6 | 0.0 |
-| Violation rate | 0% | 0% |
+| Mean cumulative reward | **+6.05** | +3.73 |
+| Termination rate (clean end) | **100.0%** | 98.0% |
+| Truncation rate (hit max turns) | **0.0%** | 2.0% |
+| Verified fields collected | **3.00** | 2.14 |
+| Violation rate | **0.0%** | 0.0% |
 
-Zero violations in both conditions — safety is structurally enforced, not reward-shaped.
+Zero violations in both conditions — safety is structurally enforced by action masking, not reward-shaped.
+

@@ -4,23 +4,23 @@ Two classes serve distinct roles:
 
 CallerSimulatorEnv  (formerly InsuranceSOPEnv)
     step(caller_utterance: str) → (obs, reward, terminated, truncated, info)
-    The caller drives the conversation; the SOP harness evaluates each turn and
-    MockEngine generates the assistant reply.  This is a *caller simulator*, not
-    a trained assistant policy.  Use it for trajectory collection and benchmark
-    regression, not for direct PPO/GRPO training.
+    The caller drives the conversation with free-text utterances; the SOP harness
+    evaluates each turn and MockEngine generates the assistant reply.  Use for
+    trajectory collection and benchmark regression, not for agent policy training.
 
-AgentPolicyEnv
+AgentPolicyEnv  (paired with a CallerProfile)
     step(action: AgentAction) → (obs, reward, terminated, truncated, info)
-    The *agent* drives the conversation by selecting a named action from a
-    constrained action space.  Each phase exposes a different action_mask so
-    that illegal actions (e.g. ANSWER_GROUNDED before identity is verified)
-    are structurally blocked.  A RuleBasedPolicy baseline is available in
-    rl_baseline.py for comparison with random or LLM policies.
 
-Both classes share the same reward shaping logic and five-value Gym-like return
-signature.  Rewards are illustrative shaping scores only; they are not
-calibrated customer outcomes.  Use the separate benchmark (eval_benchmark.py)
-for explicit, separately-reported SOP assertions.
+    Correct turn loop:
+        1. CallerProfile provides next caller utterance
+        2. SOP harness processes utterance → updates state (PII, phase, memory)
+        3. Agent selects action from action_mask
+        4. Agent action + state → agent reply via engine
+        5. CallerProfile reacts to agent reply → next turn's caller utterance
+        6. Reward computed from state delta (field gains, phase visits, violations)
+
+    The agent's action is NEVER fed into the state machine as a caller utterance.
+    Caller text and agent text are strictly separated channels.
 
 Architecture positioning:
     A constrained conversational-agent environment where the deterministic
@@ -35,6 +35,7 @@ from pathlib import Path
 
 from .types import Phase, AgentAction, AGENT_ACTIONS, ACTION_SPACE_SIZE
 from .state_machine import SOPStateMachine
+from .caller_sim import CallerProfile, make_margaret_chen_profile
 from ..engine.mock_engine import MockEngine
 from ..engine.base import BaseEngine
 
@@ -299,31 +300,40 @@ InsuranceSOPEnv = CallerSimulatorEnv
 
 
 class AgentPolicyEnv:
-    """Agent-driven environment where the *assistant policy* chooses named actions.
+    """Agent-driven environment paired with a reactive CallerProfile.
 
     step(action: AgentAction) → (obs, reward, terminated, truncated, info)
 
-    The action_mask in each observation indicates which of the ACTION_SPACE_SIZE
-    actions are currently legal.  An agent must respect the mask; attempting an
-    illegal action raises ValueError.
+    Turn loop (correct architecture):
+        1. CallerProfile.respond_to(action, reply, state) → caller_utterance
+        2. state_machine.evaluate_turn(caller_utterance) → state update
+           (PII accumulation, phase transition, memory slots)
+        3. Agent selects next action from action_mask
+        4. engine.generate_response(action, result, history) → agent reply
+        5. Reward = f(state delta: new fields, new phases, violations)
+        6. Return (observation, reward, terminated, truncated, info)
+
+    The agent action is NEVER fed into the state machine as a caller utterance.
+    Caller text (with real PII) and agent replies are strictly separate channels.
+
+    Action mask semantics:
+        ANSWER_GROUNDED is always False when data_shield_active=True (unverified).
+        All other masks are enforced per-phase (see _PHASE_LEGAL_ACTIONS).
 
     Observation schema:
-        phase             : str   — current SOP phase
-        verified_fields   : list  — PII fields confirmed so far
-        memory_slots      : dict  — filled CrossPhaseMemory fields
-        data_shield_active: bool  — True until identity is verified
-        active_case_id    : str|None — only populated after verification
+        phase             : str        — current SOP phase value
+        caller_utterance  : str        — what the caller just said (drives state)
+        verified_fields   : list[str]  — PII fields confirmed this session
+        memory_slots      : dict       — filled CrossPhaseMemory fields
+        data_shield_active: bool       — True until identity is verified
+        active_case_id    : str|None   — only populated after verification
         action_mask       : list[bool] — length ACTION_SPACE_SIZE
-        reply             : str   — assistant utterance generated for this action
-
-    This environment is suitable for:
-    - Defining a formal action space for post-training (PPO/GRPO)
-    - Running a RuleBasedPolicy baseline (see rl_baseline.py)
-    - Comparing random / rule-based / LLM policies on cumulative reward
+        last_agent_reply  : str        — agent's reply from previous turn
     """
 
     def __init__(
         self,
+        caller_profile: Optional[CallerProfile] = None,
         session_id: Optional[str] = None,
         engine: Optional[BaseEngine] = None,
         max_turns: int = 20,
@@ -331,6 +341,7 @@ class AgentPolicyEnv:
     ):
         if max_turns < 1:
             raise ValueError("max_turns must be positive")
+        self.caller_profile = caller_profile or make_margaret_chen_profile()
         self.engine = engine or MockEngine()
         self.max_turns = max_turns
         self.enforce_mask = enforce_mask
@@ -346,6 +357,8 @@ class AgentPolicyEnv:
         self._seen_fields: set[str] = set()
         self._seen_memory_fields: set[str] = set()
         self._seen_phases: set[Phase] = {Phase.VERIFY_ID}
+        self._pending_caller_utterance: Optional[str] = None
+        self._last_agent_reply: str = ""
 
     @property
     def phase(self) -> Phase:
@@ -360,25 +373,40 @@ class AgentPolicyEnv:
         return ACTION_SPACE_SIZE
 
     def reset(self, seed: Optional[int] = None):
-        """Start a fresh session."""
+        """Start a fresh session.  Caller sends opening utterance immediately."""
         self._initialize(str(uuid.uuid4()))
-        mask = _compute_action_mask(self.phase, False)
-        return {
-            "reply": "Welcome to insurance claims support. We need three identity details before discussing a claim.",
-            "phase": self.phase.value,
-            "verified_fields": [],
-            "memory_slots": {},
-            "data_shield_active": True,
-            "active_case_id": None,
+
+        # Caller speaks first — opening utterance drives initial state
+        opening = self.caller_profile.get_opening_utterance()
+        result = self.sm.evaluate_turn(opening)
+        state = self.sm.state
+        verified = bool(state.verified_party_id)
+        mask = _compute_action_mask(self.phase, verified)
+        memory = state.cross_phase_memory.model_dump()
+        memory_slots = {k: v for k, v in memory.items() if v and k != "hint_history"}
+
+        self._pending_caller_utterance = opening
+        obs = {
+            "caller_utterance": opening,
+            "last_agent_reply": "",
+            "phase": state.phase.value,
+            "verified_fields": list(state.verified_fields),
+            "memory_slots": memory_slots,
+            "data_shield_active": not verified,
+            "active_case_id": state.active_case_id if verified else None,
             "action_mask": mask,
-        }, {"session_id": self.session_id, "turn_count": 0, "seed": seed, "seed_used": False}
+        }
+        return obs, {"session_id": self.session_id, "turn_count": 0, "seed": seed}
 
     def step(self, action: AgentAction):
         """step(action: AgentAction) → (obs, reward, terminated, truncated, info).
 
-        Raises ValueError if action is masked and enforce_mask=True (default).
-        The env translates the agent action into a synthetic caller utterance
-        to drive the SOP state machine, then generates an assistant reply.
+        The agent selects an action; the env:
+          1. Generates an agent reply using the action + current state.
+          2. Asks the CallerProfile to react → gets the next caller utterance.
+          3. Feeds that utterance into the state machine → state update.
+          4. Computes reward from the state delta.
+          5. Returns the new observation (including the caller's new utterance).
         """
         if self._finished:
             raise RuntimeError("Session is finished; call reset() before another step")
@@ -396,21 +424,40 @@ class AgentPolicyEnv:
 
         self.turn_count += 1
         phase_before = self.phase
+        state_before = self.sm.state
 
-        # Translate agent action to a canonical caller-side trigger utterance.
-        # This keeps the SOP state machine (which operates on caller text) intact.
-        synthetic_utterance = _action_to_utterance(action, self.sm.state)
-        result = self.sm.evaluate_turn(synthetic_utterance)
+        # --- Step A: Generate agent reply from the chosen action ---
+        # The result dict reflects the *previous* caller utterance (already processed
+        # in reset() or the previous step). The engine uses it + action context.
+        prev_result = self.sm._result(phase_before)  # non-mutating state read
+        action_context = f"[Agent action: {action.value}]"
+        agent_reply = self.engine.generate_response(action_context, prev_result, self.history)
+        self._last_agent_reply = agent_reply
 
-        # Build a structured system prompt for the engine that names the chosen action.
-        context_hint = f"[Agent selected action: {action.value}]"
-        reply = self.engine.generate_response(context_hint, result, self.history)
+        # --- Step B: CallerProfile reacts → next caller utterance ---
+        # ESCALATE_HUMAN and SEND_EMAIL terminate: don't ask for more caller input
+        terminal_actions = {AgentAction.ESCALATE_HUMAN, AgentAction.SEND_EMAIL}
+        if action in terminal_actions:
+            next_caller_utterance = self.caller_profile.respond_to(
+                action, agent_reply, state_before
+            ) or "Thank you."
+        else:
+            next_caller_utterance = self.caller_profile.respond_to(
+                action, agent_reply, state_before
+            )
+            if next_caller_utterance is None:
+                # Caller has nothing left to say; treat as graceful close
+                next_caller_utterance = "That covers everything, thank you."
+
+        # --- Step C: Feed caller utterance into state machine ---
+        result = self.sm.evaluate_turn(next_caller_utterance)
         self.history.extend([
-            {"role": "user", "content": synthetic_utterance},
-            {"role": "assistant", "content": reply},
+            {"role": "user", "content": next_caller_utterance},
+            {"role": "assistant", "content": agent_reply},
         ])
-        self.sm.record_snapshot(synthetic_utterance, reply)
+        self.sm.record_snapshot(next_caller_utterance, agent_reply)
 
+        # --- Step D: Compute reward from state delta ---
         state = self.sm.state
         verified_after = bool(state.verified_party_id)
         components = _compute_reward_components(
@@ -427,24 +474,48 @@ class AgentPolicyEnv:
         self._seen_phases.add(state.phase)
 
         reward = sum(components.values())
+
+        # Terminal on CONCLUDED or ESCALATED, OR when action itself is terminal
         terminated = state.phase in {Phase.CONCLUDED, Phase.ESCALATED}
+        if action in terminal_actions and not terminated:
+            # Force termination: agent chose to end the conversation
+            terminated = True
         truncated = self.turn_count >= self.max_turns and not terminated
         self._finished = terminated or truncated
 
-        observation = _build_observation(state, reply, verified_after)
+        memory = state.cross_phase_memory.model_dump()
+        memory_slots = {k: v for k, v in memory.items() if v and k != "hint_history"}
+        observation = {
+            "caller_utterance": next_caller_utterance,
+            "last_agent_reply": agent_reply,
+            "phase": state.phase.value,
+            "verified_fields": list(state.verified_fields),
+            "memory_slots": memory_slots,
+            "data_shield_active": not verified_after,
+            "active_case_id": state.active_case_id if verified_after else None,
+            "action_mask": _compute_action_mask(state.phase, verified_after),
+        }
         info = {
             "turn": self.turn_count,
             "agent_action": action.value,
+            "caller_utterance": next_caller_utterance,
+            "agent_reply": agent_reply,
             "phase_transition": f"{phase_before.value} -> {state.phase.value}",
             "structural_violations": violations,
             "reward_components": components,
             "trace_events": len(state.trace_log),
         }
         self.trajectory.append(copy.deepcopy({
-            "session_id": self.session_id, "turn": self.turn_count,
-            "agent_action": action.value, "synthetic_utterance": synthetic_utterance,
-            "observation": observation, "reward": reward,
-            "terminated": terminated, "truncated": truncated, "info": info,
+            "session_id": self.session_id,
+            "turn": self.turn_count,
+            "agent_action": action.value,
+            "caller_utterance": next_caller_utterance,
+            "agent_reply": agent_reply,
+            "observation": observation,
+            "reward": reward,
+            "terminated": terminated,
+            "truncated": truncated,
+            "info": info,
         }))
         return observation, reward, terminated, truncated, info
 
@@ -455,33 +526,3 @@ class AgentPolicyEnv:
         with destination.open("w", encoding="utf-8") as handle:
             for turn in self.trajectory:
                 handle.write(json.dumps(turn, ensure_ascii=False) + "\n")
-
-
-def _action_to_utterance(action: AgentAction, state) -> str:
-    """Map an agent action to a synthetic caller utterance that drives the SOP.
-
-    These utterances are minimal triggers — enough to advance the state machine
-    without leaking real PII.  In a real training setup the caller side would
-    come from a separate caller simulator (CallerSimulatorEnv) or a dataset.
-    """
-    missing = [
-        f for f in ("name", "dob", "phone", "email", "id_last4")
-        if f not in (state.verified_fields or [])
-    ]
-    mapping = {
-        AgentAction.ACK_EMOTION: "I understand, this must be frustrating.",
-        AgentAction.ASK_IDENTITY_FIELD: (
-            f"Could you please provide your {missing[0]}?" if missing
-            else "Could you confirm your policy number?"
-        ),
-        AgentAction.EXPLAIN_VERIFICATION_GATE: (
-            "I need to verify your identity before I can access any claim details."
-        ),
-        AgentAction.RESOLVE_INTENT: "I'd like to understand what you need help with today.",
-        AgentAction.ASK_CLAIM_CLARIFICATION: "Can you give me more details about your claim?",
-        AgentAction.ANSWER_GROUNDED: "Here is the information from your file.",
-        AgentAction.OFFER_EMAIL_SUMMARY: "Would you like me to send a summary to your email?",
-        AgentAction.SEND_EMAIL: "Please send the summary to my email.",
-        AgentAction.ESCALATE_HUMAN: "I'd like to speak with a human agent please.",
-    }
-    return mapping[action]

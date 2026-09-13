@@ -47,11 +47,22 @@ class RuleBasedPolicy:
     - A reference for mask-compliance in tests
     """
 
+    def __init__(self):
+        self._resolve_intent_attempts = 0   # reset at episode start
+        self._claim_clarification_done = False
+
+    def _reset_episode_state(self) -> None:
+        self._resolve_intent_attempts = 0
+        self._claim_clarification_done = False
+
     def select_action(self, observation: dict) -> AgentAction:
         """Select the best legal action given the current observation.
 
         Args:
             observation: The dict returned by AgentPolicyEnv.step() or .reset().
+                         Keys: phase, verified_fields, memory_slots,
+                               data_shield_active, action_mask,
+                               caller_utterance (new), last_agent_reply (new).
 
         Returns:
             An AgentAction that is legal according to observation['action_mask'].
@@ -61,6 +72,8 @@ class RuleBasedPolicy:
         mask: list[bool] = observation.get("action_mask", [True] * len(AGENT_ACTIONS))
         data_shield: bool = observation.get("data_shield_active", True)
         memory_slots: dict = observation.get("memory_slots", {})
+        caller_utterance: str = observation.get("caller_utterance", "")
+
 
         phase = Phase(phase_str)
 
@@ -82,11 +95,21 @@ class RuleBasedPolicy:
                 return AgentAction.ACK_EMOTION
 
         elif phase == Phase.RESOLVE_INTENT:
-            # Need to establish caller intent
-            if not memory_slots.get("topic_hint") and legal(AgentAction.RESOLVE_INTENT):
+            # Track how many times we've tried to resolve intent
+            self._resolve_intent_attempts += 1
+            # After 2 attempts without phase change, escalate (no matching claim)
+            if self._resolve_intent_attempts > 2 and legal(AgentAction.ESCALATE_HUMAN):
+                return AgentAction.ESCALATE_HUMAN
+            # Try RESOLVE_INTENT — caller will express intent in response
+            if legal(AgentAction.RESOLVE_INTENT):
                 return AgentAction.RESOLVE_INTENT
-            if not memory_slots.get("case_type_hint") and legal(AgentAction.ASK_CLAIM_CLARIFICATION):
+            # Ask for clarification once if no case type known
+            if not self._claim_clarification_done and legal(AgentAction.ASK_CLAIM_CLARIFICATION):
+                self._claim_clarification_done = True
                 return AgentAction.ASK_CLAIM_CLARIFICATION
+            # Fall through to escalation if stuck
+            if legal(AgentAction.ESCALATE_HUMAN):
+                return AgentAction.ESCALATE_HUMAN
             if legal(AgentAction.ACK_EMOTION):
                 return AgentAction.ACK_EMOTION
 
@@ -119,8 +142,8 @@ class RuleBasedPolicy:
         """Run a full episode and return a summary dict.
 
         Args:
-            env: An AgentPolicyEnv instance (already imported to avoid circular).
-            verbose: If True, print each turn's action and reward.
+            env: An AgentPolicyEnv instance (already initialized with caller_profile).
+            verbose: If True, print each turn's action, caller utterance and reward.
 
         Returns:
             {
@@ -130,12 +153,15 @@ class RuleBasedPolicy:
               "truncated": bool,
               "violations": list[str],
               "trajectory": list,
+              "final_phase": str,
             }
         """
         obs, info = env.reset()
+        self._reset_episode_state()
         done = False
         cumulative_reward = 0.0
         all_violations: list[str] = []
+        terminated = truncated = False
 
         while not done:
             action = self.select_action(obs)
@@ -144,10 +170,13 @@ class RuleBasedPolicy:
             all_violations.extend(step_info.get("structural_violations", []))
             done = terminated or truncated
             if verbose:
+                caller = obs.get("caller_utterance", "")[:60]
                 print(
                     f"  turn={step_info['turn']:2d}  action={action.value:<28s}"
                     f"  reward={reward:+.2f}  phase={obs['phase']}"
                 )
+                if caller:
+                    print(f"    caller: {caller!r}")
 
         return {
             "cumulative_reward": cumulative_reward,
@@ -156,4 +185,6 @@ class RuleBasedPolicy:
             "truncated": truncated,
             "violations": all_violations,
             "trajectory": env.trajectory,
+            "final_phase": obs.get("phase", "unknown"),
+            "verified_fields": list(obs.get("verified_fields", [])),
         }
