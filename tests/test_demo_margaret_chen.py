@@ -26,7 +26,7 @@ def test_margaret_chen_single_utterance_flow():
     assert len(sm.state.verified_fields) >= 3, "Must verify at least 3 PII fields"
     assert "name" in sm.state.verified_fields
     assert "dob" in sm.state.verified_fields
-    assert "policy_number" in sm.state.verified_fields
+    assert "policy_number" not in sm.state.verified_fields
     assert "id_last4" in sm.state.verified_fields
 
     # Assertions on cross-phase memory

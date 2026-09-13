@@ -1,163 +1,156 @@
+"""Grounded response composer, shared by deterministic and model-assisted routing.
+
+An LLM may select bounded topics and phrasing style. Only this composer inserts
+claim facts and workflow actions, so free-form model text cannot leak or invent them.
+"""
+import datetime
 import re
-from typing import Dict, Any, List
+from typing import Any, Dict, List
 from .base import BaseEngine
-from ..harness.types import Phase, PolicyHolder, ClaimRecord
+from ..harness.types import Phase
 from ..harness.grounded_data import grounded_data
+from ..harness.extractor import UtteranceExtractor, normalize
+
+LABELS = {'name': 'full name', 'dob': 'date of birth', 'phone': 'phone number', 'email': 'email address', 'id_last4': 'last four digits of your SSN'}
+EMPATHY = {
+    'frustration': "I understand this is frustrating, especially when you need an answer. ",
+    'anger': "I hear how upsetting this has been. Let's take it one step at a time. ",
+    'anxiety': "I'm sorry this is worrying you. We can take this one step at a time. ",
+    'confusion': "I understand this is confusing. Let me make the next step clearer. ",
+}
+
 
 class MockEngine(BaseEngine):
-    """
-    Deterministic domain reasoning engine that produces grounded, natural, and compliant
-    responses for testing and zero-API-key operation.
-    """
-
-    def generate_response(
-        self,
-        user_text: str,
-        state_result: Dict[str, Any],
-        history: List[Dict[str, str]]
-    ) -> str:
-        context = state_result.get("context", {})
-        allowed_actions = context.get("allowed_actions", [])
-        policyholder: PolicyHolder = state_result.get("policyholder")
-        active_claim: ClaimRecord = state_result.get("active_claim")
-        is_oos = state_result.get("is_out_of_scope", False)
-        is_frustrated = state_result.get("is_frustrated", False)
-        is_refusal = state_result.get("is_refusal", False)
-        demands_human = state_result.get("demands_human", False)
-
-        user_lower = user_text.lower()
-
-        # 1. Out of Scope Rejection
-        if "REJECT_OUT_OF_SCOPE" in allowed_actions or is_oos:
-            # Check if this triggered escalation
-            if state_result.get("demands_human") or (state_result.get("transition_note") and "human escalation" in state_result["transition_note"].lower()):
-                return (
-                    "I am an insurance claims assistant and can only assist with claims and policy questions. "
-                    "Since you have further questions outside of my scope, I am transferring you to a human customer service representative who can assist you directly. Please hold on."
-                )
-            return (
-                "I apologize, but as an insurance claims support assistant, I can only assist with policy, coverage, and claim inquiries. "
-                "I am unable to answer general or technical questions such as machine learning or reinforcement learning. "
-                "If you have any questions regarding your insurance claims or policy, I would be happy to help, or I can connect you with a human representative."
-            )
-
-        # 2. Human Escalation Demand
-        if demands_human or "HANDOFF_TO_HUMAN" in allowed_actions:
-            name_greet = f", {policyholder.name}" if policyholder else ""
-            return (
-                f"I completely understand{name_greet}. I am transferring your call right now to a senior human claims representative who will be able to assist you directly. "
-                "Please stay on the line while I connect you."
-            )
-
-        # 3. VERIFY_ID Phase
-        if "Unauthorized proxy caller" in state_result.get("transition_note", ""):
-            return (
-                "I understand you are calling regarding a policyholder's claim. However, because claim files contain protected personal health and financial data, "
-                "privacy regulations strictly require us to verify your authorization before disclosing any information. "
-                "We cannot disclose any claim information to unauthorized third parties without verified consent on file. "
-                "If you are an authorized representative, please have the policyholder contact us directly or submit an authorization designation form."
-            )
-
-        if "REQUEST_PII" in allowed_actions:
-            if is_frustrated or is_refusal:
-                return (
-                    "I completely understand your frustration, and I apologize for any inconvenience. "
-                    "Because claim files contain protected personal health and sensitive financial information, "
-                    "insurance privacy regulations strictly require us to verify your identity before we can disclose any claim details. "
-                    "We require 3 verification items to safeguard your account. If you prefer, instead of SSN, you may verify using your "
-                    "phone number, email address, or policy number. Could you please share one of those so I can safely pull up your claim?"
-                )
+    def generate_response(self, user_text: str, state_result: Dict[str, Any], history: List[Dict[str, str]]) -> str:
+        ctx = state_result.get('context', {})
+        actions = ctx.get('allowed_actions', [])
+        state = state_result.get('state')
+        phase = state.phase if state else Phase(ctx.get('phase', 'VERIFY_ID'))
+        emotion = state_result.get('emotion') or UtteranceExtractor.detect_emotion_and_intent(user_text)['emotion']
+        empathy = EMPATHY.get(emotion, '')
+        if not empathy and state_result.get('is_refusal'):
+            empathy = "You can choose which identity details you feel comfortable sharing. "
+        # Terminal behavior is determined by state, never by keywords in the last message.
+        if phase == Phase.CONCLUDED:
+            pp = state.post_process.model_dump() if state else ctx.get('post_process', {})
+            if pp.get('user_decision') == 'accepted':
+                return f"The email summary was added to the demo outbox for {pp.get('sent_to', 'your email on file')}. Delivery is simulated; no real email was sent. Thank you for contacting claims support."
+            return 'I will skip the email summary as requested. Thank you for contacting claims support.'
+        if phase == Phase.ESCALATED or 'HANDOFF_TO_HUMAN' in actions:
+            reason = 'A human representative needs to verify your identity and authorization before any claim details can be shared. ' if state_result.get('proxy_consent_status') == 'requires_human' else ''
+            return empathy + reason + 'I have recorded a request to connect you with a human claims representative. This demo simulates the handoff; no live transfer takes place. Verification is still required before protected details can be shared.'
+        if state_result.get('is_out_of_scope') or 'REJECT_OUT_OF_SCOPE' in actions:
+            return empathy + 'I can help with insurance claims, policy questions, and verification, but I am unable to answer that unrelated request. We can continue with your claim, or you can ask for a human representative.'
+        if ctx.get('data_shield_active', True):
+            if state_result.get('proxy_consent_status') == 'unauthorized':
+                return empathy + 'To protect privacy, I cannot disclose claim information to unauthorized third parties. We must verify a representative’s own identity and the policyholder’s authorization. Please ask the policyholder to contact support, or request a human representative.'
+            fields = ctx.get('collected_fields', [])
+            acknowledgement = 'I have noted the identity details you shared. ' if fields else ''
+            memory = ctx.get('memory', {})
+            remembered = 'I have also saved your claim question for after verification. ' if any(memory.get(k) for k in ['case_type_hint', 'status_hint', 'case_id_hint', 'topic_hint']) else ''
+            missing = [LABELS[k] for k in LABELS if k not in fields]
+            if len(fields) >= 3:
+                request = 'I could not verify those details together. Please double-check what you supplied, or use another of the five allowed identity fields. '
             else:
-                # Normal PII request
-                name = policyholder.name if policyholder else "there"
-                return (
-                    f"Hello! Thank you for contacting claims support. To protect your personal health information under our privacy policy, "
-                    "I need to verify your identity with at least 3 pieces of information (such as your full name, policy number, date of birth, phone number, email, or the last four digits of your SSN). "
-                    "Could you please share your verification details?"
-                )
+                request = f"Please share {max(1, 3 - len(fields))} more item{'s' if 3 - len(fields) != 1 else ''}, choosing from " + ', '.join(missing) + '. '
+            return (empathy + acknowledgement + remembered + 'To protect your private claim information, I need to verify 3 matching items before opening a claim. '
+                    + request + 'You can use phone or email instead of SSN, or ask for a human representative.')
+        if phase == Phase.RESOLVE_INTENT:
+            candidates = state_result.get('candidate_claims', [])
+            resolution = state_result.get('resolution_status', '')
+            memory = ctx.get('memory', {})
+            if candidates and len(candidates) > 1:
+                choices = '; '.join(f'{c.case_id}: {c.case_type}, {c.created_at}, {c.status}' for c in candidates)
+                return empathy + 'Your identity is verified. I kept the details you mentioned, but more than one claim matches: ' + choices + '. Which claim reference or year did you mean?'
+            if resolution == 'no_match' or any(memory.get(k) for k in ['case_type_hint', 'status_hint', 'date_hint', 'case_id_hint']):
+                return empathy + 'Your identity is verified. I kept your earlier claim details, but I could not find a matching claim on this account. Please confirm the claim reference, type, or year, or ask for a human representative.'
+            return empathy + 'Your identity is verified. What would you like help with—claim status, a denial, payment, or submitting documents? You can also give a claim reference.'
+        claim = state_result.get('active_claim')
+        # A second check prevents accidentally rendering a raw ungated record.
+        if not claim or 'grounded_claim' not in ctx:
+            return empathy + 'I do not have a verified claim record for that question. A human claims representative can help review it.'
+        if phase == Phase.POST_PROCESS:
+            pp = state.post_process if state else None
+            text = (f'Would you like an email summary of our conversation for claim {claim.case_id}, or would you prefer to skip it? '
+                    'It includes what we discussed, the claim status and outcome, and the major follow-up items. Email delivery is simulated in this demo.')
+            if pp and pp.user_decision == 'pending' and '?' in user_text:
+                topics = state_result.get('response_topics') or UtteranceExtractor.extract_topics(user_text)
+                guidance = grounded_data.get_document_guidance_for_claim(claim)
+                pieces = [self._fact(topic, claim, guidance, user_text) for topic in topics]
+                if pieces:
+                    state_result['grounded_topics'] = topics
+                    if state and hasattr(state, 'discussion_topics'):
+                        state.discussion_topics = list(dict.fromkeys(state.discussion_topics + topics))
+                    text = '\n\n'.join(p for p in pieces if p) + '\n\n' + text
+                else:
+                    text = 'You can choose freely; nothing is sent without your explicit agreement. ' + text
+            return empathy + text
+        topics = state_result.get('response_topics') or UtteranceExtractor.extract_topics(user_text)
+        # Preserve first-turn follow-up topics provided during verification.
+        if not topics and ctx.get('memory', {}).get('topic_hint'):
+            topics = [ctx['memory']['topic_hint']]
+        newly_opened = any(t.gate_evaluated == 'RESOLVE_INTENT_GATE' and t.gate_passed for t in (state.trace_log[-1:] if state else []))
+        if not topics:
+            topics = ['status'] if newly_opened else ['unknown']
+        if newly_opened:
+            topics = list(dict.fromkeys(['status', 'denial_reason', 'documents', 'appeal_deadline'] + topics))
+        guidance = grounded_data.get_document_guidance_for_claim(claim)
+        pieces = []
+        used = []
+        for topic in dict.fromkeys(topics):
+            piece = self._fact(topic, claim, guidance, user_text)
+            if piece and piece not in pieces:
+                pieces.append(piece)
+                used.append(topic)
+        state_result['grounded_topics'] = used
+        if state and hasattr(state, 'discussion_topics'):
+            state.discussion_topics = list(dict.fromkeys(state.discussion_topics + used))
+        intro = 'Your identity is verified. I used the claim details you shared earlier to find your case.\n\n' if newly_opened else ''
+        style = state_result.get('response_style', 'concise')
+        if style == 'step_by_step' and len(pieces) > 1:
+            body = '\n'.join(f'{i}. {p}' for i, p in enumerate(pieces, 1))
+        else:
+            body = '\n\n'.join(pieces)
+        ending = "\n\nWhat else would help with this claim? When you're ready, say 'That's all' and I can offer an email summary."
+        return empathy + intro + body + ending
 
-        # 4. RESOLVE_INTENT & PROCESS_CASE Transition
-        # This handles Margaret Chen's demo test case where identity is verified and cross-phase memory had "denied healthcare claim from January"
-        if active_claim and ("EXPLAIN_DENIAL" in allowed_actions or "RESOLVE_CLAIM" in allowed_actions):
-            # Check if proxy caller
-            is_proxy = state_result.get("is_proxy_caller", False)
-            rep_name = state_result.get("proxy_rep_name", "David")
-            caller_name = rep_name if is_proxy else (policyholder.name.split()[0] if policyholder else "there")
-            greeting_prefix = (
-                f"Thank you for verifying, {caller_name}. As an authorized representative for {policyholder.name if policyholder else 'the policyholder'}, I have opened the file.\n\n"
-                if is_proxy else
-                f"Thank you for verifying your details, {caller_name}. I have your account open.\n\n"
-            )
-
-            # If user asks specific follow-up questions about documents or submission
-            has_timing = any(q in user_lower for q in ["how soon", "when do i need", "when should", "deadline to submit"])
-            has_method = any(q in user_lower for q in ["how do i submit", "where do i submit", "how to submit", "how do i send", "how to send", "upload"])
-            
-            if has_timing and has_method:
-                return (
-                    f"For claim {active_claim.case_id}, please submit the missing documents ({', '.join(active_claim.documents_needed)}) within a week. "
-                    f"The best method is to upload them directly via the member portal or the claim upload link so they attach directly to your file. "
-                    f"Keep in mind that the final appeal deadline is {active_claim.appeal_deadline}."
-                )
-            elif has_timing:
-                return (
-                    f"For claim {active_claim.case_id}, please submit the missing documents ({', '.join(active_claim.documents_needed)}) within a week. "
-                    f"Keep in mind that the final appeal deadline for this claim is {active_claim.appeal_deadline}."
-                )
-            elif has_method:
-                return (
-                    f"For claim {active_claim.case_id}, the best starting point is to upload them directly via the member portal or claim upload link. "
-                    f"Each file should be clear and legible. If online upload is not available, we can help arrange fax or mail submission."
-                )
-            elif any(q in user_lower for q in ["alternative", "don't have", "cannot get", "substitute", "missing report", "what if we cannot"]):
-                return (
-                    f"If the original pathology report is not immediately available, you can request a replacement copy from the hospital or treating lab. "
-                    f"A complete, readable scan is acceptable. For the office note, ask the clinic for a visit summary or have them fax the chart directly. "
-                    f"If none of those can be obtained, a human claims representative can review manual alternatives with you."
-                )
-            elif any(q in user_lower for q in ["how much", "amount", "net pay", "reimbursement", "cost", "fee"]):
-                return (
-                    f"For claim {active_claim.case_id}, the allowed maximum amount is ${active_claim.allowed_max_amount}, and the net fee is ${active_claim.net_fee}. "
-                    f"Because the claim was denied due to missing documents, the net pay and expected reimbursement are currently ${active_claim.net_pay}."
-                )
-
-            # Default / Opening response for active claim
-            docs_needed = " and the ".join(active_claim.documents_needed)
-            return (
-                f"{greeting_prefix}"
-                f"Regarding your {active_claim.case_type} claim ({active_claim.case_id}) from {active_claim.created_at}: "
-                f"the claim was denied because {active_claim.denial_reason}. Specifically, we still need the {docs_needed}.\n\n"
-                f"You have until {active_claim.appeal_deadline} to submit these documents for an appeal. "
-                f"Would you like guidance on how to submit these files, or do you have any other questions regarding this claim?"
-            )
-
-        # 5. POST_PROCESS Phase (Offer email summary)
-        if "OFFER_EMAIL_SUMMARY" in allowed_actions:
-            caller_name = policyholder.name.split()[0] if policyholder else "there"
-            user_email = policyholder.email if policyholder else "your email address on file"
-            claim_id = active_claim.case_id if active_claim else "your claim"
-            return (
-                f"Before we conclude today, {caller_name}, I'd like to offer to send an email summary of our conversation to {user_email}. "
-                f"This will summarize what was discussed, the status of claim {claim_id} (denied), and your next steps (uploading the pathology report and office note before the March 18, 2026 appeal deadline). "
-                f"Would you like me to send this email summary, or would you prefer to skip it?"
-            )
-
-        # 6. CONCLUDED Phase
-        if "FAREWELL" in allowed_actions:
-            caller_name = policyholder.name.split()[0] if policyholder else ""
-            user_decision = state_result.get("post_process", {}).get("user_decision") if isinstance(state_result.get("post_process"), dict) else None
-            # Check decision
-            if any(w in user_lower for w in ["yes", "sure", "please", "send", "yep"]):
-                email_dest = policyholder.email if policyholder else "your email on file"
-                return (
-                    f"Great! I have sent the summary to {email_dest}. "
-                    f"Thank you for contacting claims support today{f', {caller_name}' if caller_name else ''}. Best of luck with your document submission, and have a wonderful day!"
-                )
-            else:
-                return (
-                    f"Understood, I will skip sending the email summary. "
-                    f"Thank you for contacting claims support today{f', {caller_name}' if caller_name else ''}. Have a wonderful day!"
-                )
-
-        # Fallback polite response
-        return "I am here to assist with your insurance claim. How may I assist you further?"
+    @staticmethod
+    def _fact(topic, claim, guidance, user_text):
+        docs = ', '.join(claim.documents_needed)
+        if topic == 'status':
+            return f'Claim {claim.case_id} is {claim.status}. It is a {claim.case_type} claim created on {claim.created_at}. {claim.summary}.'
+        if topic == 'denial_reason':
+            return f'The recorded denial reason is that {claim.denial_reason}.' if claim.denial_reason else ''
+        if topic == 'documents':
+            return f'The requested documents are: {docs}.' if docs else 'The record does not list any outstanding documents.'
+        if topic == 'payment':
+            labels = [('allowed_max_amount', 'Allowed maximum'), ('net_fee', 'Net fee'), ('net_pay', 'Finalized insurer payment'), ('expected_reimbursement_amount', 'Expected reimbursement')]
+            amounts = '; '.join(f'{label}: ${getattr(claim, k)}' for k, label in labels if getattr(claim, k) is not None)
+            return f'For claim {claim.case_id}: {amounts}. The allowed maximum is not a promise of reimbursement.' if amounts else 'The record does not include payment amounts.'
+        if topic == 'appeal_deadline':
+            if not claim.appeal_deadline:
+                return ''
+            past = datetime.date.fromisoformat(claim.appeal_deadline) < datetime.datetime.now(datetime.timezone.utc).date()
+            return f'The recorded appeal deadline is {claim.appeal_deadline}. ' + ('That date has passed. A human claims representative must review whether any options remain; I cannot promise an extension.' if past else 'Submitting documents does not guarantee approval.')
+        if topic == 'document_alternatives':
+            if not docs:
+                return 'The claim record does not request additional documents, so I cannot identify a required substitute from this file.'
+            if re.search(r'none|no (?:readable )?copy|cannot reissue|tried.*(?:hospital|provider)|alternatives.*(?:exhausted|unavailable)', normalize(user_text), re.I):
+                return guidance['claim_followup_settings']['human_review_after_document_alternatives_exhausted']['en']
+            specific = [d for d in claim.documents_needed if d.lower() in user_text.lower()]
+            return '\n'.join(guidance['document_alternative_guidance'][d] for d in (specific or claim.documents_needed))
+        qa_topic = {'file_format': 'file_format_requirements', 'processing_time': 'processing_time_after_submission'}.get(topic, topic)
+        if topic == 'submission_method':
+            return guidance['default_guidance']
+        if topic in ['file_format', 'submission_timing', 'processing_time', 'receipt_confirmation']:
+            if not docs:
+                return 'The record lists no outstanding documents or document review estimate for this claim.'
+            item = next((q for q in guidance['followup_qa'] if q['topic'] == qa_topic), None)
+            if item:
+                text = item['en'].format(case_id=claim.case_id, documents=docs, average_processing_time_after_submission=guidance['claim_followup_settings']['average_processing_time_after_submission']['en'])
+                if topic == 'submission_timing' and claim.appeal_deadline and datetime.date.fromisoformat(claim.appeal_deadline) < datetime.datetime.now(datetime.timezone.utc).date():
+                    text = 'The general document guidance says to submit within a week, but ' + MockEngine._fact('appeal_deadline', claim, guidance, user_text)
+                if topic == 'file_format':
+                    text += ' ' + ' '.join(guidance['document_guidance'].values())
+                return text
+        return 'I do not have a grounded rule or claim detail that answers that question. A human claims representative can review it; I cannot change a claim decision or promise coverage.'

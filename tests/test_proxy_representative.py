@@ -4,16 +4,7 @@ from backend.harness.types import Phase
 from backend.engine.mock_engine import MockEngine
 
 def test_authorized_proxy_representative_flow():
-    """
-    Test authorized representative calling on behalf of policyholder:
-    Caller: "I am David Chen, son of Margaret Chen (POL-9921, DOB 1985-03-15, SSN last 4 is 4472). I need to check her healthcare claim from January."
-    Expected behavior:
-    - Identified as proxy caller (David Chen, son)
-    - Checks representative database -> Authorized!
-    - Consent status simulated -> Approved!
-    - Verifies Margaret Chen (POL-9921, DOB 1985-03-15, SSN last 4 4472)
-    - Unlocks CL-2048 and addresses David Chen respectfully as authorized representative
-    """
+    """A listed relationship cannot replace representative ID and consent checks."""
     sm = SOPStateMachine(session_id="test_proxy_authorized")
     engine = MockEngine()
     history = []
@@ -25,12 +16,14 @@ def test_authorized_proxy_representative_flow():
     assert sm.state.is_proxy_caller is True
     assert sm.state.proxy_rep_name == "David Chen"
     assert sm.state.proxy_relationship == "son"
-    assert sm.state.proxy_consent_status == "approved"
-    assert sm.state.verified_party_id == "P9"
-    assert sm.state.active_case_id == "CL-2048"
-    assert "David" in reply
-    assert "Margaret Chen" in reply
-    assert "pathology report" in reply.lower()
+    assert sm.state.proxy_consent_status == "requires_human"
+    assert sm.state.phase == Phase.ESCALATED
+    assert sm.state.verified_party_id is None
+    assert sm.state.active_case_id is None
+    assert state_result["context"]["data_shield_active"] is True
+    assert "pathology report" not in reply.lower()
+    assert "human" in reply.lower()
+    assert "simulates" in reply.lower()
 
 def test_unauthorized_proxy_caller_blocked():
     """

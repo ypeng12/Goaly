@@ -3,279 +3,106 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Aegis ClaimShield • Insurance SOP Agent Harness</title>
-  <meta name="description" content="Standard Operating Procedure (SOP) harness for insurance claims support agent with deterministic workflow control and natural LLM reasoning.">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <meta name="description" content="An insurance claims support demo with a conversational agent, identity verification, grounded answers, and optional email follow-up.">
+  <meta name="theme-color" content="#143d39">
+  <title>Aegis — Claims Support Studio</title>
   <link rel="stylesheet" href="/static/style.css">
+  <script src="/static/app.js" defer></script>
 </head>
 <body>
+  <a href="#user-input" class="skip-link">Skip to conversation</a>
   <div class="app-shell">
-    <!-- Top Navigation -->
     <header class="header">
-      <div class="header-brand">
-        <div class="logo-mark">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-            <path d="M9 12l2 2 4-4"/>
-          </svg>
-        </div>
-        <div>
-          <h1 class="header-title">Aegis ClaimShield</h1>
-          <p class="header-subtitle">Insurance Claims SOP Harness • Deterministic Gates + Empathetic LLM</p>
-        </div>
-      </div>
+      <a class="brand" href="/" aria-label="Aegis Claims Support Studio home">
+        <span class="logo-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/><path d="m8.5 12 2.5 2.5 4.5-5"/></svg></span>
+        <span class="brand-name">aegis<span class="brand-divider"></span><span class="brand-subtitle">Claims support studio</span></span>
+      </a>
       <div class="header-actions">
-        <div class="engine-indicator" id="engine-badge">
-          <span class="pulse-dot"></span>
-          <span id="engine-label">Mock Engine (Deterministic)</span>
-        </div>
-        <button id="btn-config" class="btn btn-secondary" title="Configure AI Model or API Key">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="3"/>
-            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
-          </svg>
-          API Settings
-        </button>
-        <button id="btn-reset" class="btn btn-outline" title="Reset Session">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polyline points="1 4 1 10 7 10"/>
-            <polyline points="23 20 23 14 17 14"/>
-            <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/>
-          </svg>
-          New Call
-        </button>
+        <span class="engine-badge" id="engine-badge"><span class="status-dot"></span><span id="engine-label">Connecting</span></span>
+        <button id="btn-config" class="btn btn-secondary" type="button">API settings</button>
+        <button id="btn-reset" class="btn btn-primary" type="button"><span aria-hidden="true">＋</span> New call</button>
       </div>
     </header>
 
-    <!-- Visual SOP Progress Pipeline Stepper -->
-    <div class="stepper-bar">
-      <div class="step-item active" id="step-verify">
-        <div class="step-circle"><span class="step-num">1</span></div>
-        <div class="step-info">
-          <span class="step-name">VERIFY_ID</span>
-          <span class="step-sub">3+ PII Gate</span>
-        </div>
+    <main>
+      <div class="page-heading">
+        <div><p class="eyebrow">THE CONVERSATION, WITH GUARDRAILS</p><h1>Support that follows through.</h1><p class="page-description">Natural conversation. Verified identity. A clear next step.</p></div>
+        <div class="sandbox-note"><span class="sandbox-pill">DEMO WORKSPACE</span><p>Synthetic records · Simulated email &amp; handoff</p></div>
       </div>
-      <div class="step-divider" id="div-1"></div>
-      <div class="step-item" id="step-intent">
-        <div class="step-circle"><span class="step-num">2</span></div>
-        <div class="step-info">
-          <span class="step-name">RESOLVE_INTENT</span>
-          <span class="step-sub">Memory Match</span>
-        </div>
-      </div>
-      <div class="step-divider" id="div-2"></div>
-      <div class="step-item" id="step-process">
-        <div class="step-circle"><span class="step-num">3</span></div>
-        <div class="step-info">
-          <span class="step-name">PROCESS_CASE</span>
-          <span class="step-sub">Grounded Q&A</span>
-        </div>
-      </div>
-      <div class="step-divider" id="div-3"></div>
-      <div class="step-item" id="step-post">
-        <div class="step-circle"><span class="step-num">4</span></div>
-        <div class="step-info">
-          <span class="step-name">POST_PROCESS</span>
-          <span class="step-sub">Email Summary</span>
-        </div>
-      </div>
-    </div>
 
-    <!-- Time-Travel State Replay Bar -->
-    <div class="time-travel-bar">
-      <div class="time-travel-meta">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="12" cy="12" r="10"/>
-          <polyline points="12 6 12 12 14 14"/>
-        </svg>
-        <span class="time-travel-title">Time-Travel State Debugger:</span>
-        <span class="time-travel-badge" id="time-travel-badge">Live Turn 0</span>
-      </div>
-      <div class="time-travel-controls">
-        <span class="slider-label">Step:</span>
-        <input type="range" id="time-travel-slider" min="0" max="0" value="0" disabled>
-        <button id="btn-revert-live" class="btn-xs" style="display:none;">Return to Live</button>
-      </div>
-    </div>
+      <ol class="stepper" aria-label="Insurance support workflow">
+        <li class="step-item active" id="step-verify" aria-current="step"><span class="step-number">01</span><div><span class="step-name">Verify identity</span><span class="step-code">VERIFY_ID</span></div><span class="step-type">Strict gate</span></li>
+        <li class="step-item" id="step-intent"><span class="step-number">02</span><div><span class="step-name">Understand the need</span><span class="step-code">RESOLVE_INTENT</span></div><span class="step-type">Bounded reasoning</span></li>
+        <li class="step-item" id="step-process"><span class="step-number">03</span><div><span class="step-name">Work through the claim</span><span class="step-code">PROCESS_CASE</span></div><span class="step-type">Grounded answers</span></li>
+        <li class="step-item" id="step-post"><span class="step-number">04</span><div><span class="step-name">Wrap up &amp; follow up</span><span class="step-code">POST_PROCESS</span></div><span class="step-type">Consent required</span></li>
+      </ol>
 
-    <!-- Main Content: Dual-Column Studio -->
-    <div class="main-layout">
-      <!-- Left: Chat Studio -->
-      <section class="chat-section">
-        <!-- Quick Scenario Chips -->
-        <div class="scenario-tray">
-          <span class="scenario-label">Quick Scenarios:</span>
-          <div class="scenario-chips">
-            <button class="chip-btn" id="scenario-margaret">🎯 Margaret Chen Demo</button>
-            <button class="chip-btn" id="scenario-proxy">🤝 David Chen (Proxy Son)</button>
-            <button class="chip-btn" id="scenario-frustrated">⚡ Frustrated Caller</button>
-            <button class="chip-btn" id="scenario-oos">🛡️ Out of Scope ("RL?")</button>
-            <button class="chip-btn" id="scenario-partial">👤 Step-by-Step PII</button>
+      <div id="service-notice" class="service-notice" role="status" hidden></div>
+      <div class="main-layout">
+        <section class="conversation-panel" aria-labelledby="conversation-heading">
+          <div class="panel-heading"><div class="panel-title"><span class="live-dot" aria-hidden="true"></span><h2 id="conversation-heading">Your conversation</h2></div><span class="quiet-label" id="call-status">Identity verification</span></div>
+          <div class="scenario-tray"><span class="eyebrow">TRY A TEST CALL</span><div class="scenario-chips" aria-label="Send a sample caller message">
+            <button class="chip featured" id="scenario-margaret" type="button">Margaret’s January claim <span aria-hidden="true">↗</span></button>
+            <button class="chip" id="scenario-partial" type="button">One detail at a time</button>
+            <button class="chip" id="scenario-frustrated" type="button">Frustrated caller</button>
+            <button class="chip" id="scenario-oos" type="button">Outside scope</button>
+            <button class="chip" id="scenario-proxy" type="button">Representative</button>
+          </div><p class="scenario-hint">Each chip sends one message in this call. Use New call to start a separate scenario.</p></div>
+
+          <div class="chat-window" id="chat-window" role="log" aria-label="Conversation messages" aria-live="polite" aria-relevant="additions text" tabindex="0"></div>
+          <div class="quick-actions" id="process-actions" hidden><span>Ready to wrap up?</span><button class="chip" id="btn-wrap-up" type="button">That answers my question</button></div>
+          <div class="quick-actions consent-actions" id="post-process-actions" hidden><span>Would you like a summary?</span><button class="btn btn-primary" id="btn-accept-email" type="button">Yes, send summary</button><button class="btn btn-secondary" id="btn-decline-email" type="button">No thanks, skip</button></div>
+          <div class="replay-notice" id="replay-notice" hidden>Viewing a saved turn. Return to live to continue the conversation.</div>
+          <div class="input-container">
+            <form id="chat-form"><label class="sr-only" for="user-input">Your message</label><textarea id="user-input" rows="2" maxlength="6000" placeholder="Tell us what you need help with…" required aria-describedby="input-hint"></textarea><button type="submit" id="btn-send" class="send-button" aria-label="Send message"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m5 12 7-7 7 7M12 5v15"/></svg></button></form>
+            <div class="input-footer"><span id="input-hint">Use the synthetic test identities provided for this demo.</span><span class="keyboard-hint">Enter to send <span aria-hidden="true">·</span> Shift + Enter for a new line</span></div>
           </div>
-        </div>
+        </section>
 
-        <!-- Chat Transcript Window -->
-        <div class="chat-window" id="chat-window">
-          <div class="chat-msg system">
-            <div class="msg-avatar system">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-              </svg>
+        <aside class="inspector-panel" aria-label="Workflow inspector">
+          <div class="inspector-heading"><div><p class="eyebrow">BEHIND THE CONVERSATION</p><h2>Workflow inspector</h2></div><span class="tag" id="inspector-mode">LIVE</span></div>
+          <section class="inspector-card" aria-labelledby="identity-heading">
+            <div class="card-heading"><h3 id="identity-heading">Identity gate</h3><span class="tag pending" id="verify-status-badge">0 / 3 matched</span></div>
+            <div class="progress-track" role="progressbar" id="pii-progress" aria-label="Matching identity fields" aria-valuemin="0" aria-valuemax="3" aria-valuenow="0"><div id="pii-progress-fill"></div></div>
+            <div class="pii-grid">
+              <span class="pii-item" id="pii-name"><span class="pii-icon" aria-hidden="true">○</span>Full name</span>
+              <span class="pii-item" id="pii-dob"><span class="pii-icon" aria-hidden="true">○</span>Date of birth</span>
+              <span class="pii-item" id="pii-phone"><span class="pii-icon" aria-hidden="true">○</span>Phone</span>
+              <span class="pii-item" id="pii-email"><span class="pii-icon" aria-hidden="true">○</span>Email</span>
+              <span class="pii-item" id="pii-id4"><span class="pii-icon" aria-hidden="true">○</span>SSN last four</span>
             </div>
-            <div class="msg-bubble">
-              <div class="msg-meta">
-                <span class="msg-sender">Aegis SOP Engine</span>
-                <span class="badge-phase badge-verify">VERIFY_ID</span>
-              </div>
-              <div class="msg-text">
-                Welcome to Insurance Claims Customer Support. The SOP security gate is active: identity verification is required before any claim details can be accessed.
-              </div>
-            </div>
-          </div>
-        </div>
+            <p class="card-note">Any 3 matching fields unlock claim access. A policy number helps locate a record; it does not count.</p>
+            <div class="shield-status" id="data-shield-badge">Claim information is protected</div>
+          </section>
 
-        <!-- Context Quick Action Buttons (shown during POST_PROCESS) -->
-        <div class="quick-actions-bar" id="post-process-actions" style="display: none;">
-          <button class="action-btn accept" id="btn-accept-email">✉️ Yes, send email summary</button>
-          <button class="action-btn decline" id="btn-decline-email">⏭️ No thanks, skip it</button>
-        </div>
+          <section class="inspector-card" aria-labelledby="memory-heading"><div class="card-heading"><h3 id="memory-heading">Remembered for later</h3><span class="small-mark" aria-hidden="true">↳</span></div><div class="memory-chips" id="memory-chips-container"></div><p class="card-note">Caller-provided hints stay available across phases. They are not verified claim facts.</p></section>
 
-        <!-- Input Area -->
-        <div class="input-container">
-          <form id="chat-form" class="chat-form">
-            <textarea
-              id="user-input"
-              class="chat-input"
-              rows="2"
-              placeholder="Type customer message or click a scenario above..."
-              required
-            ></textarea>
-            <button type="submit" id="btn-send" class="btn btn-primary" title="Send (Enter)">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <line x1="22" y1="2" x2="11" y2="13"/>
-                <polygon points="22 2 15 22 11 13 2 9 22 2"/>
-              </svg>
-            </button>
-          </form>
-          <div class="input-hint">Press <kbd>Enter</kbd> to send, <kbd>Shift + Enter</kbd> for newline</div>
-        </div>
-      </section>
+          <section class="inspector-card" aria-labelledby="claim-heading"><div class="card-heading"><h3 id="claim-heading">Claim record</h3><span class="tag" id="claim-shield-status">LOCKED</span></div><div id="claim-details-container"></div></section>
+          <section class="inspector-card" id="summary-card" aria-labelledby="summary-heading" hidden><div class="card-heading"><h3 id="summary-heading">Follow-up summary</h3><span class="tag" id="summary-status">DRAFT</span></div><p class="summary-text" id="summary-text"></p><p class="card-note" id="summary-note">Sending requires your explicit choice. Delivery is simulated in this demo.</p></section>
 
-      <!-- Right: Live SOP Harness Inspector -->
-      <aside class="inspector-section">
-        <div class="inspector-header">
-          <h2>Live SOP Harness Inspector</h2>
-          <span class="badge-shield active" id="data-shield-badge">🔒 DATA SHIELD ACTIVE</span>
-        </div>
+          <section class="inspector-card audit-card" aria-labelledby="audit-heading"><div class="card-heading"><h3 id="audit-heading">Decision trail</h3><span class="quiet-label" id="trace-counter">0 events</span></div><div id="trace-stream" class="trace-stream"></div></section>
+        </aside>
+      </div>
 
-        <!-- Card 1: Identity & Verification Meter -->
-        <div class="inspector-card">
-          <div class="card-header">
-            <h3>Identity Verification Gate</h3>
-            <span class="badge-status pending" id="verify-status-badge">0 / 3 PII Verified</span>
-          </div>
-          <div class="pii-progress-bar">
-            <div class="progress-fill" id="pii-progress-fill" style="width: 0%;"></div>
-          </div>
-          <div class="pii-grid">
-            <div class="pii-item" id="pii-name"><span class="pii-icon">✗</span> Full Name</div>
-            <div class="pii-item" id="pii-dob"><span class="pii-icon">✗</span> Date of Birth</div>
-            <div class="pii-item" id="pii-policy"><span class="pii-icon">✗</span> Policy #</div>
-            <div class="pii-item" id="pii-id4"><span class="pii-icon">✗</span> SSN / ID Last 4</div>
-            <div class="pii-item" id="pii-phone"><span class="pii-icon">✗</span> Phone</div>
-            <div class="pii-item" id="pii-email"><span class="pii-icon">✗</span> Email</div>
-          </div>
-          <div class="policyholder-details" id="ph-card" style="display: none;">
-            <div class="ph-name" id="ph-name-val">Margaret Chen</div>
-            <div class="ph-meta" id="ph-meta-val">POL-9921 • margaret@email.com</div>
-          </div>
-        </div>
-
-        <!-- Card 2: Proactive Cross-Phase Memory -->
-        <div class="inspector-card">
-          <div class="card-header">
-            <h3>Cross-Phase Memory Store</h3>
-            <span class="badge-info">Proactive Slots</span>
-          </div>
-          <div class="memory-chips" id="memory-chips-container">
-            <span class="memory-placeholder">No early hints captured yet.</span>
-          </div>
-        </div>
-
-        <!-- Card 3: Active Grounded Claim Details (Shielded until verified) -->
-        <div class="inspector-card">
-          <div class="card-header">
-            <h3>Grounded Case Details</h3>
-            <span class="badge-shield" id="claim-shield-status">Locked</span>
-          </div>
-          <div id="claim-details-container">
-            <div class="shielded-placeholder">
-              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-              </svg>
-              <p>Protected health & claim information is shielded by SOP policy until 3 PII items are verified.</p>
-            </div>
-          </div>
-        </div>
-
-        <!-- Card 4: SOP Audit Trail & Guardrails -->
-        <div class="inspector-card trace-card">
-          <div class="card-header">
-            <h3>SOP Audit Log & Gate Checks</h3>
-            <span class="badge-counter" id="trace-counter">0 events</span>
-          </div>
-          <div class="trace-stream" id="trace-stream">
-            <div class="trace-empty">Audit events will stream here in real time...</div>
-          </div>
-        </div>
-      </aside>
-    </div>
+      <div class="replay-bar"><div><span class="replay-icon" aria-hidden="true">↶</span><strong>Session replay</strong><span class="quiet-label">Read-only snapshots</span></div><div class="replay-controls"><label for="time-travel-slider" id="time-travel-badge">Live · Turn 0</label><input type="range" id="time-travel-slider" min="0" max="0" value="0" disabled aria-label="Replay a completed conversation turn"><button id="btn-revert-live" class="text-button" type="button" hidden>Return to live →</button></div></div>
+      <footer class="page-footer"><span>AEGIS / SOP HARNESS</span><span>Fixed phase order. Flexible conversation. Customer-controlled follow-up.</span></footer>
+    </main>
   </div>
 
-  <!-- API Settings Modal -->
-  <div class="modal-backdrop" id="config-modal" style="display: none;">
-    <div class="modal-card">
-      <div class="modal-header">
-        <h2>AI Model & Harness Configuration</h2>
-        <button class="btn-close" id="modal-close">&times;</button>
+  <dialog id="config-modal" aria-labelledby="config-title">
+    <div class="modal-heading"><div><p class="eyebrow">MODEL CONNECTION</p><h2 id="config-title">API settings</h2></div><button class="close-button" id="modal-close" aria-label="Close settings" type="button">×</button></div>
+    <p class="modal-description">Choose how the agent interprets and responds. The same workflow gates apply in both modes.</p>
+    <form id="config-form">
+      <label for="cfg-engine-mode">Response engine</label><select id="cfg-engine-mode"><option value="mock">Offline demo — deterministic responses</option><option value="llm">Live model — OpenAI-compatible API</option></select>
+      <p class="field-help">Offline mode is useful for repeatable tests. Live mode adds natural-language interpretation.</p>
+      <div id="llm-config-fields" hidden>
+        <label for="cfg-api-key">API auth token</label><input type="password" id="cfg-api-key" autocomplete="off" spellcheck="false" placeholder="Paste your API token" aria-describedby="token-help"><p class="field-help" id="token-help">Held in server memory for this session. Never saved in browser storage.</p>
+        <label for="cfg-base-url">API base URL</label><input type="url" id="cfg-base-url" placeholder="https://api.openai.com/v1" spellcheck="false"><p class="field-help">Your token and conversation are sent to this provider. Use a trusted endpoint.</p>
+        <label for="cfg-model">Model name</label><input type="text" id="cfg-model" placeholder="gpt-4o-mini" spellcheck="false">
       </div>
-      <form id="config-form">
-        <div class="form-group">
-          <label for="cfg-engine-mode">Execution Engine Mode</label>
-          <select id="cfg-engine-mode" class="form-select">
-            <option value="mock">Deterministic Mock Engine (Offline / Zero-Token)</option>
-            <option value="llm">Live LLM (OpenAI / Gemini / OpenRouter Compatible)</option>
-          </select>
-          <small class="form-help">Deterministic Mock runs all demo test cases out-of-the-box with 100% adherence.</small>
-        </div>
-
-        <div id="llm-config-fields" style="display: none;">
-          <div class="form-group">
-            <label for="cfg-api-key">API Auth Token / Key</label>
-            <input type="password" id="cfg-api-key" class="form-input" placeholder="sk-... (Leave empty to keep current)">
-          </div>
-          <div class="form-group">
-            <label for="cfg-base-url">API Base URL</label>
-            <input type="text" id="cfg-base-url" class="form-input" placeholder="https://api.openai.com/v1">
-          </div>
-          <div class="form-group">
-            <label for="cfg-model">Model Name</label>
-            <input type="text" id="cfg-model" class="form-input" placeholder="gpt-4o-mini">
-          </div>
-        </div>
-
-        <div class="modal-actions">
-          <button type="button" class="btn btn-secondary" id="modal-cancel">Cancel</button>
-          <button type="submit" class="btn btn-primary">Save Configuration</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <script src="/static/app.js"></script>
+      <p id="config-error" class="form-error" role="alert" hidden></p>
+      <div class="modal-actions"><button type="button" class="btn btn-secondary" id="modal-cancel">Cancel</button><button type="submit" class="btn btn-primary" id="config-save">Save settings</button></div>
+    </form>
+  </dialog>
 </body>
 </html>

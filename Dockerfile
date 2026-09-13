@@ -1,20 +1,15 @@
 FROM python:3.11-slim
 
+ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
 WORKDIR /app
-
-# Install dependencies
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
-
-# Copy application files and fixtures
-COPY fixtures/ fixtures/
-COPY backend/ backend/
-COPY frontend/ frontend/
-COPY tests/ tests/
-
-ENV PYTHONUNBUFFERED=1
-ENV PORT=8000
-
-EXPOSE 8000
-
-CMD ["uvicorn", "backend.app:app", "--host", "0.0.0.0", "--port", "8000"]
+COPY requirements.txt ./
+RUN pip install --no-cache-dir -r requirements.txt \
+    && useradd --create-home --uid 10001 appuser
+COPY --chown=appuser:appuser backend/ backend/
+COPY --chown=appuser:appuser frontend/ frontend/
+COPY --chown=appuser:appuser fixtures/ fixtures/
+COPY --chown=appuser:appuser tests/ tests/
+COPY --chown=appuser:appuser eval/ eval/
+USER appuser
+EXPOSE 8080
+CMD ["python", "-m", "uvicorn", "backend.app:app", "--host", "0.0.0.0", "--port", "8080"]

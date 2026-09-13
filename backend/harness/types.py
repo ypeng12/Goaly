@@ -48,12 +48,14 @@ class ClaimRecord(BaseModel):
     net_fee: Optional[str] = None
 
 class CrossPhaseMemory(BaseModel):
+    case_id_hint: Optional[str] = None
     case_type_hint: Optional[str] = None
     status_hint: Optional[str] = None
     date_hint: Optional[str] = None
     topic_hint: Optional[str] = None
     raw_utterance_snippet: Optional[str] = None
     notes: List[str] = Field(default_factory=list)
+    hint_history: Dict[str, List[str]] = Field(default_factory=dict)
 
 class TraceEvent(BaseModel):
     timestamp: str
@@ -69,6 +71,8 @@ class PostProcessState(BaseModel):
     draft_summary: Optional[str] = None
     user_decision: Optional[str] = None  # "pending", "accepted", "declined"
     sent_to: Optional[str] = None
+    delivery_status: Optional[str] = None  # "simulated" or "skipped"; never actual delivery
+    outbox_id: Optional[str] = None
 
 class Representative(BaseModel):
     rep_name: str
@@ -89,6 +93,7 @@ class SOPState(BaseModel):
     phase: Phase = Phase.VERIFY_ID
     accumulated_pii: PIIFields = Field(default_factory=PIIFields)
     verified_party_id: Optional[str] = None
+    identity_verified: bool = False
     verified_fields: List[str] = Field(default_factory=list)
     cross_phase_memory: CrossPhaseMemory = Field(default_factory=CrossPhaseMemory)
     active_case_id: Optional[str] = None
@@ -96,11 +101,17 @@ class SOPState(BaseModel):
     refusal_count: int = 0
     post_process: PostProcessState = Field(default_factory=PostProcessState)
     trace_log: List[TraceEvent] = Field(default_factory=list)
+    discussion_topics: List[str] = Field(default_factory=list)
+    mock_outbox: List[Dict[str, Any]] = Field(default_factory=list)
+    resolution_status: Optional[str] = None
+    pii_conflicts: List[str] = Field(default_factory=list)
     # Proxy / Authorized Representative fields
     is_proxy_caller: bool = False
     proxy_rep_name: Optional[str] = None
     proxy_relationship: Optional[str] = None
     proxy_consent_status: Optional[str] = None  # "pending", "approved", "timeout", "unauthorized"
+    proxy_identity_verified: bool = False
+    proxy_authorized_party_id: Optional[str] = None
     # Time-travel history snapshots
     history_snapshots: List[StateSnapshot] = Field(default_factory=list)
 

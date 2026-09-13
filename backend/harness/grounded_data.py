@@ -59,19 +59,23 @@ class GroundedDataManager:
                 self.consent_scenarios = json.load(f)
 
     def find_representative(self, rep_name: str, policyholder_name: Optional[str] = None) -> Optional[Representative]:
+        """A roster entry is an authorization hint, never identity or consent proof."""
         clean_rep = self._clean_str(rep_name)
-        clean_ph = self._clean_str(policyholder_name) if policyholder_name else ""
-        for r in self.representatives:
-            if self._clean_str(r.rep_name) in clean_rep or clean_rep in self._clean_str(r.rep_name):
-                if not clean_ph or (self._clean_str(r.buyer_name) in clean_ph or clean_ph in self._clean_str(r.buyer_name)):
-                    return r
-        return None
+        if not clean_rep:
+            return None
+        clean_ph = self._clean_str(policyholder_name)
+        candidates = [r for r in self.representatives
+                      if self._clean_str(r.rep_name) == clean_rep
+                      and (not clean_ph or self._clean_str(r.buyer_name) == clean_ph)]
+        return candidates[0] if len(candidates) == 1 else None
 
-    def simulate_consent_check(self, scenario_name: str = "default", attempt_index: int = 1) -> str:
-        scenario = self.consent_scenarios.get(scenario_name, self.consent_scenarios.get("default", {}))
-        sequence = scenario.get("status_sequence", ["pending", "approved"])
-        idx = min(attempt_index, len(sequence) - 1)
-        return sequence[idx]
+    def simulate_consent_check(self, scenario_name: str = "default", attempt_index: int = 0) -> str:
+        """Fixture viewer only. No workflow gate trusts this simulated result."""
+        scenario = self.consent_scenarios.get(scenario_name, {})
+        sequence = scenario.get("status_sequence", ["pending"])
+        if not sequence:
+            return "pending"
+        return sequence[max(0, min(attempt_index, len(sequence) - 1))]
 
     def get_document_alternative(self, doc_name: str) -> str:
         all_alt_g = self.document_guideline.get("document_alternative_guidance", {})
@@ -82,122 +86,120 @@ class GroundedDataManager:
 
     @staticmethod
     def _clean_phone(phone: Optional[str]) -> str:
-        if not phone:
-            return ""
-        return re.sub(r"\D", "", phone)
+        digits = re.sub(r"\D", "", phone or "")
+        # This demo contains North American numbers; normalize the local form,
+        # but never authenticate by a matching suffix of an arbitrary number.
+        return "1" + digits if len(digits) == 10 else digits
 
     @staticmethod
     def _clean_str(s: Optional[str]) -> str:
-        if not s:
-            return ""
-        return s.strip().lower()
+        return " ".join((s or "").split()).casefold()
 
     def verify_identity(self, pii: PIIFields) -> Tuple[bool, Optional[PolicyHolder], List[str]]:
-        """
-        Verify if accumulated PII matches a known policyholder with at least 3 matching fields.
-        Allowed verification fields: Full name, DOB, Phone, Email, SSN/National ID last 4 digits, Policy number.
-        Returns: (is_verified, matched_policyholder, matched_field_names)
-        """
-        best_match: Optional[PolicyHolder] = None
-        max_matched_fields: List[str] = []
+        """Require three distinct allowed PII fields and no contradictory input.
 
+        A policy number only narrows the lookup. Last-four digits count only
+        when the fixture AND submitted ID type identify an SSN. Aliases must
+        match a complete configured value. Multiple eligible people fail closed.
+        """
+        eligible = []
+        partial = []
         for ph in self.policyholders:
-            matched_fields: List[str] = []
-
-            # 1. Full name (support primary name and aliases)
+            if pii.policy_number and self._clean_str(pii.policy_number) != self._clean_str(ph.policy_number):
+                continue
+            checks = {}
             if pii.name:
-                user_name = self._clean_str(pii.name)
-                candidate_names = [self._clean_str(ph.name)] + [self._clean_str(a) for a in ph.name_aliases]
-                if any(user_name in c or c in user_name for c in candidate_names):
-                    matched_fields.append("name")
-
-            # 2. Policy number
-            if pii.policy_number:
-                if self._clean_str(pii.policy_number) == self._clean_str(ph.policy_number):
-                    matched_fields.append("policy_number")
-
-            # 3. DOB (supports exact or normalized date)
+                checks["name"] = self._clean_str(pii.name) in {
+                    self._clean_str(n) for n in [ph.name, *ph.name_aliases]
+                }
             if pii.dob:
-                if self._clean_str(pii.dob) == self._clean_str(ph.dob):
-                    matched_fields.append("dob")
-
-            # 4. SSN last 4 or ID last 4
-            if pii.id_last4:
-                if pii.id_last4.strip() == ph.id_last4.strip():
-                    matched_fields.append("id_last4")
-
-            # 5. Phone
+                checks["dob"] = pii.dob.strip() == ph.dob
             if pii.phone:
-                clean_user_phone = self._clean_phone(pii.phone)
-                candidate_phones = [self._clean_phone(ph.phone)] + [self._clean_phone(a) for a in ph.phone_aliases]
-                if any(clean_user_phone[-10:] == c[-10:] for c in candidate_phones if len(c) >= 10):
-                    matched_fields.append("phone")
-
-            # 6. Email
+                checks["phone"] = self._clean_phone(pii.phone) in {
+                    self._clean_phone(n) for n in [ph.phone, *ph.phone_aliases]
+                }
             if pii.email:
-                clean_user_email = self._clean_str(pii.email)
-                candidate_emails = [self._clean_str(ph.email)] + [self._clean_str(a) for a in ph.email_aliases]
-                if clean_user_email in candidate_emails:
-                    matched_fields.append("email")
-
-            if len(matched_fields) > len(max_matched_fields):
-                max_matched_fields = matched_fields
-                best_match = ph
-
-        # Rule: At least 3 PII info fields verified
-        is_verified = len(max_matched_fields) >= 3 and best_match is not None
-        return is_verified, best_match, max_matched_fields
+                checks["email"] = self._clean_str(pii.email) in {
+                    self._clean_str(e) for e in [ph.email, *ph.email_aliases]
+                }
+            if pii.id_last4:
+                supplied_type = pii.id_type or "ssn_last4"
+                # An explicitly supplied non-SSN identifier cannot satisfy this SOP.
+                if supplied_type != ph.id_type or not re.fullmatch(r"\d{4}", pii.id_last4) or pii.id_last4 != ph.id_last4:
+                    continue
+                if supplied_type == "ssn_last4":
+                    checks["id_last4"] = True
+            matched = [field for field, matches in checks.items() if matches]
+            if not all(checks.values()):
+                continue
+            partial.append((ph, matched))
+            if len(matched) >= 3:
+                eligible.append((ph, matched))
+        if len(eligible) == 1:
+            ph, matched = eligible[0]
+            return True, ph, matched
+        if len(eligible) > 1:
+            return False, None, []
+        if len(partial) == 1:
+            ph, matched = partial[0]
+            return False, ph, matched
+        return False, None, []
 
     def get_claims_for_party(self, party_id: str) -> List[ClaimRecord]:
         return [c for c in self.claims if c.party_id == party_id]
 
+    @staticmethod
+    def _date_matches(created_at: str, hint: str) -> bool:
+        """Intersect every supplied calendar component, including full dates."""
+        import calendar
+        from datetime import date
+        try:
+            created = date.fromisoformat(created_at)
+        except ValueError:
+            return False
+        text = hint.strip().casefold()
+        components = 0
+        dates = re.findall(r"\b((?:19|20)\d{2})[-/]([01]?\d)(?:[-/]([0-3]?\d))?\b", text)
+        if dates:
+            for year, month, day in dates:
+                components += 1
+                if created.year != int(year) or created.month != int(month) or (day and created.day != int(day)):
+                    return False
+        for month in range(1, 13):
+            names = {calendar.month_name[month].casefold(), calendar.month_abbr[month].casefold()}
+            if any(re.search(r"\b" + re.escape(name) + r"\b", text) for name in names):
+                components += 1
+                if created.month != month:
+                    return False
+        for year in re.findall(r"\b(?:19|20)\d{2}\b", text):
+            components += 1
+            if created.year != int(year):
+                return False
+        return components > 0
+
     def find_claim(self, party_id: str, memory: CrossPhaseMemory) -> Tuple[Optional[ClaimRecord], List[ClaimRecord]]:
+        """Resolve only within the owner and by strict intersection of all hints.
+
+        Empty filters remain empty. An explicit foreign case, wrong year, or
+        contradictory hint can never fall back to a convenient owned claim.
         """
-        Attempts to resolve the target claim using cross-phase memory hints.
-        Returns: (uniquely_matched_claim, candidate_claims)
-        """
-        user_claims = self.get_claims_for_party(party_id)
-        if not user_claims:
-            return None, []
-
-        candidates = list(user_claims)
-
-        # Filter by case type if hint present
-        if memory.case_type_hint:
-            ct = memory.case_type_hint.lower()
-            filtered = [c for c in candidates if c.case_type.lower() in ct or ct in c.case_type.lower()]
-            if filtered:
-                candidates = filtered
-
-        # Filter by status if hint present
-        if memory.status_hint:
-            st = memory.status_hint.lower()
-            filtered = [c for c in candidates if c.status.lower() == st]
-            if filtered:
-                candidates = filtered
-
-        # Filter by date hint if present
-        if memory.date_hint:
-            dh = memory.date_hint.lower()
-            filtered = []
-            for c in candidates:
-                # e.g. "January" -> month "01", or "2026-01-12"
-                if "jan" in dh and "-01-" in c.created_at:
-                    filtered.append(c)
-                elif "feb" in dh and "-02-" in c.created_at:
-                    filtered.append(c)
-                elif "mar" in dh and "-03-" in c.created_at:
-                    filtered.append(c)
-                elif "nov" in dh and "-11-" in c.created_at:
-                    filtered.append(c)
-                elif dh in c.created_at:
-                    filtered.append(c)
-            if filtered:
-                candidates = filtered
-
-        if len(candidates) == 1:
-            return candidates[0], candidates
-        return None, candidates
+        candidates = list(self.get_claims_for_party(party_id))
+        hint_fields = ("case_id_hint", "case_type_hint", "status_hint", "date_hint")
+        has_hint = any(getattr(memory, field, None) or memory.hint_history.get(field) for field in hint_fields)
+        if not has_hint and not memory.topic_hint:
+            return None, candidates
+        for field in hint_fields:
+            values = list(memory.hint_history.get(field, []))
+            current = getattr(memory, field, None)
+            if current and current not in values:
+                values.append(current)
+            for value in values:
+                if field == "date_hint":
+                    candidates = [c for c in candidates if self._date_matches(c.created_at, value)]
+                else:
+                    claim_field = {"case_id_hint": "case_id", "case_type_hint": "case_type", "status_hint": "status"}[field]
+                    candidates = [c for c in candidates if self._clean_str(getattr(c, claim_field)) == self._clean_str(value)]
+        return (candidates[0] if len(candidates) == 1 else None), candidates
 
     def get_claim_by_id(self, case_id: str) -> Optional[ClaimRecord]:
         for c in self.claims:
