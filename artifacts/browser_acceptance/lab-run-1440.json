@@ -21,7 +21,7 @@
       "opening": "This is absolutely ridiculous — I've been waiting for weeks! My name is Margaret Chen and I need help with my denied healthcare claim.",
       "turns": [
         {
-          "session_id": "65b285c9-cd64-4d50-a805-09a000e2b4e4",
+          "session_id": "1156ce66-f710-4279-8de8-69abbdc10b3b",
           "turn": 1,
           "agent_action": "ACK_EMOTION",
           "agent_reply": "I hear how frustrating this is. Thank you for explaining your concern. We can take this at your pace.",
@@ -140,7 +140,7 @@
           "distribution_note": "Rule decision shown as one-hot; not a neural probability."
         },
         {
-          "session_id": "65b285c9-cd64-4d50-a805-09a000e2b4e4",
+          "session_id": "1156ce66-f710-4279-8de8-69abbdc10b3b",
           "turn": 2,
           "agent_action": "ASK_IDENTITY_FIELD",
           "agent_reply": "Please share your date of birth.",
@@ -260,7 +260,7 @@
           "distribution_note": "Rule decision shown as one-hot; not a neural probability."
         },
         {
-          "session_id": "65b285c9-cd64-4d50-a805-09a000e2b4e4",
+          "session_id": "1156ce66-f710-4279-8de8-69abbdc10b3b",
           "turn": 3,
           "agent_action": "ASK_IDENTITY_FIELD",
           "agent_reply": "Please share your phone number.",
@@ -382,7 +382,7 @@
           "distribution_note": "Rule decision shown as one-hot; not a neural probability."
         },
         {
-          "session_id": "65b285c9-cd64-4d50-a805-09a000e2b4e4",
+          "session_id": "1156ce66-f710-4279-8de8-69abbdc10b3b",
           "turn": 4,
           "agent_action": "ANSWER_GROUNDED",
           "agent_reply": "Your identity is verified. I used the claim details you shared earlier to find your case.\n\nClaim CL-2048 is denied. It is a healthcare claim created on 2026-01-12.\n\nThe recorded denial reason is that the review file did not include the pathology report and the treating provider office note.\n\nThe requested documents are: pathology report, office note.\n\nThe recorded appeal deadline is 2026-03-18. That date has passed. A human claims representative must review whether any options remain; I cannot promise an extension.\n\nWhat else would help? You can ask for more detail, or say 'That's all' for an optional email summary.",
@@ -505,7 +505,7 @@
           "distribution_note": "Rule decision shown as one-hot; not a neural probability."
         },
         {
-          "session_id": "65b285c9-cd64-4d50-a805-09a000e2b4e4",
+          "session_id": "1156ce66-f710-4279-8de8-69abbdc10b3b",
           "turn": 5,
           "agent_action": "OFFER_EMAIL_SUMMARY",
           "agent_reply": "Would you like an email summary of what we discussed, the claim outcome and next steps, or would you prefer to skip it?",
@@ -644,7 +644,7 @@
       "opening": "This is absolutely ridiculous — I've been waiting for weeks! My name is Margaret Chen and I need help with my denied healthcare claim.",
       "turns": [
         {
-          "session_id": "b77db407-bba8-4500-8730-663b136a46fa",
+          "session_id": "40329f26-7de1-4c4e-8274-289403b0b87d",
           "turn": 1,
           "agent_action": "ACK_EMOTION",
           "agent_reply": "I hear how frustrating this is. Thank you for explaining your concern. We can take this at your pace.",
@@ -763,7 +763,7 @@
           "distribution_note": "Uniform probabilities over legal actions; execution samples with the chosen seed."
         },
         {
-          "session_id": "b77db407-bba8-4500-8730-663b136a46fa",
+          "session_id": "40329f26-7de1-4c4e-8274-289403b0b87d",
           "turn": 2,
           "agent_action": "ACK_EMOTION",
           "agent_reply": "I hear how difficult this is. Thank you for explaining your concern. We can take this at your pace.",
@@ -882,7 +882,7 @@
           "distribution_note": "Uniform probabilities over legal actions; execution samples with the chosen seed."
         },
         {
-          "session_id": "b77db407-bba8-4500-8730-663b136a46fa",
+          "session_id": "40329f26-7de1-4c4e-8274-289403b0b87d",
           "turn": 3,
           "agent_action": "EXPLAIN_VERIFICATION_GATE",
           "agent_reply": "To protect your claim information, we need three matching identity details. You can use phone or email instead of a government ID. Let's take one thing at a time. Please share your date of birth.",
@@ -1002,7 +1002,7 @@
           "distribution_note": "Uniform probabilities over legal actions; execution samples with the chosen seed."
         },
         {
-          "session_id": "b77db407-bba8-4500-8730-663b136a46fa",
+          "session_id": "40329f26-7de1-4c4e-8274-289403b0b87d",
           "turn": 4,
           "agent_action": "ASK_IDENTITY_FIELD",
           "agent_reply": "Please share your phone number.",
@@ -1124,7 +1124,7 @@
           "distribution_note": "Uniform probabilities over legal actions; execution samples with the chosen seed."
         },
         {
-          "session_id": "b77db407-bba8-4500-8730-663b136a46fa",
+          "session_id": "40329f26-7de1-4c4e-8274-289403b0b87d",
           "turn": 5,
           "agent_action": "RESOLVE_INTENT",
           "agent_reply": "I saved your earlier claim question: healthcare / denied. What would you like to understand about it?",
@@ -1247,7 +1247,7 @@
           "distribution_note": "Uniform probabilities over legal actions; execution samples with the chosen seed."
         },
         {
-          "session_id": "b77db407-bba8-4500-8730-663b136a46fa",
+          "session_id": "40329f26-7de1-4c4e-8274-289403b0b87d",
           "turn": 6,
           "agent_action": "RESOLVE_INTENT",
           "agent_reply": "I saved your earlier claim question: healthcare / denied. What would you like to understand about it?",
@@ -1370,7 +1370,7 @@
           "distribution_note": "Uniform probabilities over legal actions; execution samples with the chosen seed."
         },
         {
-          "session_id": "b77db407-bba8-4500-8730-663b136a46fa",
+          "session_id": "40329f26-7de1-4c4e-8274-289403b0b87d",
           "turn": 7,
           "agent_action": "ACK_EMOTION",
           "agent_reply": "I hear how difficult this is. Thank you for explaining your concern. We can take this at your pace.",
@@ -1493,7 +1493,7 @@
           "distribution_note": "Uniform probabilities over legal actions; execution samples with the chosen seed."
         },
         {
-          "session_id": "b77db407-bba8-4500-8730-663b136a46fa",
+          "session_id": "40329f26-7de1-4c4e-8274-289403b0b87d",
           "turn": 8,
           "agent_action": "ESCALATE_HUMAN",
           "agent_reply": "I will connect you with a human claims representative. This demo simulates the handoff; verification is still required for protected details.",
@@ -1638,7 +1638,7 @@
       "opening": "This is absolutely ridiculous — I've been waiting for weeks! My name is Margaret Chen and I need help with my denied healthcare claim.",
       "turns": [
         {
-          "session_id": "840302d3-0c68-42f3-b8b2-d20067768128",
+          "session_id": "0676e4fd-c19f-4ca3-9289-9432180eb329",
           "turn": 1,
           "agent_action": "ACK_EMOTION",
           "agent_reply": "I hear how frustrating this is. Thank you for explaining your concern. We can take this at your pace.",
@@ -1757,7 +1757,7 @@
           "distribution_note": "Masked policy probabilities; execution selects the largest probability."
         },
         {
-          "session_id": "840302d3-0c68-42f3-b8b2-d20067768128",
+          "session_id": "0676e4fd-c19f-4ca3-9289-9432180eb329",
           "turn": 2,
           "agent_action": "ASK_IDENTITY_FIELD",
           "agent_reply": "Please share your date of birth.",
@@ -1877,7 +1877,7 @@
           "distribution_note": "Masked policy probabilities; execution selects the largest probability."
         },
         {
-          "session_id": "840302d3-0c68-42f3-b8b2-d20067768128",
+          "session_id": "0676e4fd-c19f-4ca3-9289-9432180eb329",
           "turn": 3,
           "agent_action": "ASK_IDENTITY_FIELD",
           "agent_reply": "Please share your phone number.",
@@ -1999,7 +1999,7 @@
           "distribution_note": "Masked policy probabilities; execution selects the largest probability."
         },
         {
-          "session_id": "840302d3-0c68-42f3-b8b2-d20067768128",
+          "session_id": "0676e4fd-c19f-4ca3-9289-9432180eb329",
           "turn": 4,
           "agent_action": "ANSWER_GROUNDED",
           "agent_reply": "Your identity is verified. I used the claim details you shared earlier to find your case.\n\nClaim CL-2048 is denied. It is a healthcare claim created on 2026-01-12.\n\nThe recorded denial reason is that the review file did not include the pathology report and the treating provider office note.\n\nThe requested documents are: pathology report, office note.\n\nThe recorded appeal deadline is 2026-03-18. That date has passed. A human claims representative must review whether any options remain; I cannot promise an extension.\n\nWhat else would help? You can ask for more detail, or say 'That's all' for an optional email summary.",
@@ -2122,7 +2122,7 @@
           "distribution_note": "Masked policy probabilities; execution selects the largest probability."
         },
         {
-          "session_id": "840302d3-0c68-42f3-b8b2-d20067768128",
+          "session_id": "0676e4fd-c19f-4ca3-9289-9432180eb329",
           "turn": 5,
           "agent_action": "OFFER_EMAIL_SUMMARY",
           "agent_reply": "Would you like an email summary of what we discussed, the claim outcome and next steps, or would you prefer to skip it?",
@@ -2267,7 +2267,7 @@
       "opening": "This is absolutely ridiculous — I've been waiting for weeks! My name is Margaret Chen and I need help with my denied healthcare claim.",
       "turns": [
         {
-          "session_id": "a02d525d-6571-4266-9d47-b4c216610d69",
+          "session_id": "b0d82935-e198-4dea-874f-42152344f08b",
           "turn": 1,
           "agent_action": "ACK_EMOTION",
           "agent_reply": "I hear how frustrating this is. Thank you for explaining your concern. We can take this at your pace.",
@@ -2386,7 +2386,7 @@
           "distribution_note": "Masked policy probabilities; execution selects the largest probability."
         },
         {
-          "session_id": "a02d525d-6571-4266-9d47-b4c216610d69",
+          "session_id": "b0d82935-e198-4dea-874f-42152344f08b",
           "turn": 2,
           "agent_action": "ACK_EMOTION",
           "agent_reply": "I hear how difficult this is. Thank you for explaining your concern. We can take this at your pace.",
@@ -2505,7 +2505,7 @@
           "distribution_note": "Masked policy probabilities; execution selects the largest probability."
         },
         {
-          "session_id": "a02d525d-6571-4266-9d47-b4c216610d69",
+          "session_id": "b0d82935-e198-4dea-874f-42152344f08b",
           "turn": 3,
           "agent_action": "ACK_EMOTION",
           "agent_reply": "I hear how difficult this is. Thank you for explaining your concern. We can take this at your pace.",
@@ -2624,7 +2624,7 @@
           "distribution_note": "Masked policy probabilities; execution selects the largest probability."
         },
         {
-          "session_id": "a02d525d-6571-4266-9d47-b4c216610d69",
+          "session_id": "b0d82935-e198-4dea-874f-42152344f08b",
           "turn": 4,
           "agent_action": "ACK_EMOTION",
           "agent_reply": "I hear how difficult this is. Thank you for explaining your concern. We can take this at your pace.",
@@ -2743,7 +2743,7 @@
           "distribution_note": "Masked policy probabilities; execution selects the largest probability."
         },
         {
-          "session_id": "a02d525d-6571-4266-9d47-b4c216610d69",
+          "session_id": "b0d82935-e198-4dea-874f-42152344f08b",
           "turn": 5,
           "agent_action": "ACK_EMOTION",
           "agent_reply": "I hear how difficult this is. Thank you for explaining your concern. We can take this at your pace.",
@@ -2862,7 +2862,7 @@
           "distribution_note": "Masked policy probabilities; execution selects the largest probability."
         },
         {
-          "session_id": "a02d525d-6571-4266-9d47-b4c216610d69",
+          "session_id": "b0d82935-e198-4dea-874f-42152344f08b",
           "turn": 6,
           "agent_action": "ACK_EMOTION",
           "agent_reply": "I hear how difficult this is. Thank you for explaining your concern. We can take this at your pace.",
@@ -2981,7 +2981,7 @@
           "distribution_note": "Masked policy probabilities; execution selects the largest probability."
         },
         {
-          "session_id": "a02d525d-6571-4266-9d47-b4c216610d69",
+          "session_id": "b0d82935-e198-4dea-874f-42152344f08b",
           "turn": 7,
           "agent_action": "EXPLAIN_VERIFICATION_GATE",
           "agent_reply": "To protect your claim information, we need three matching identity details. You can use phone or email instead of a government ID. Let's take one thing at a time. Please share your date of birth.",
@@ -3101,7 +3101,7 @@
           "distribution_note": "Masked policy probabilities; execution selects the largest probability."
         },
         {
-          "session_id": "a02d525d-6571-4266-9d47-b4c216610d69",
+          "session_id": "b0d82935-e198-4dea-874f-42152344f08b",
           "turn": 8,
           "agent_action": "EXPLAIN_VERIFICATION_GATE",
           "agent_reply": "To protect your claim information, we need three matching identity details. You can use phone or email instead of a government ID. Let's take one thing at a time. Please share your phone number.",
@@ -3223,7 +3223,7 @@
           "distribution_note": "Masked policy probabilities; execution selects the largest probability."
         },
         {
-          "session_id": "a02d525d-6571-4266-9d47-b4c216610d69",
+          "session_id": "b0d82935-e198-4dea-874f-42152344f08b",
           "turn": 9,
           "agent_action": "ANSWER_GROUNDED",
           "agent_reply": "Your identity is verified. I used the claim details you shared earlier to find your case.\n\nClaim CL-2048 is denied. It is a healthcare claim created on 2026-01-12.\n\nThe recorded denial reason is that the review file did not include the pathology report and the treating provider office note.\n\nThe requested documents are: pathology report, office note.\n\nThe recorded appeal deadline is 2026-03-18. That date has passed. A human claims representative must review whether any options remain; I cannot promise an extension.\n\nWhat else would help? You can ask for more detail, or say 'That's all' for an optional email summary.",
@@ -3346,7 +3346,7 @@
           "distribution_note": "Masked policy probabilities; execution selects the largest probability."
         },
         {
-          "session_id": "a02d525d-6571-4266-9d47-b4c216610d69",
+          "session_id": "b0d82935-e198-4dea-874f-42152344f08b",
           "turn": 10,
           "agent_action": "OFFER_EMAIL_SUMMARY",
           "agent_reply": "Would you like an email summary of what we discussed, the claim outcome and next steps, or would you prefer to skip it?",

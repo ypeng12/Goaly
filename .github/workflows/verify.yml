@@ -23,7 +23,7 @@ jobs:
       - name: Start demo
         run: docker run -d --rm --name aegis-demo -p 127.0.0.1:8080:8080 -e OMP_NUM_THREADS=1 aegis-acceptance
       - name: Check HTTP readiness
-        run: curl --fail --retry 15 --retry-connrefused --retry-delay 2 http://127.0.0.1:8080/api/health
+        run: curl --fail --retry 15 --retry-all-errors --retry-delay 2 --retry-max-time 45 --connect-timeout 2 --max-time 5 http://127.0.0.1:8080/api/health
       - name: Install browser checks
         run: |
           python3 -m venv /tmp/aegis-browser
@@ -31,6 +31,9 @@ jobs:
           /tmp/aegis-browser/bin/playwright install --with-deps chromium
       - name: Desktop and mobile customer and RL Lab flows
         run: /tmp/aegis-browser/bin/python -m eval.browser_acceptance --output-dir /tmp/browser-evidence
+      - name: Show demo logs on failure
+        if: failure()
+        run: docker logs aegis-demo || true
       - name: Stop demo
         if: always()
         run: docker stop aegis-demo || true

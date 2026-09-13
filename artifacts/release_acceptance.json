@@ -58,7 +58,12 @@
     "reason": "No API token configured; not counted as a pass."
   },
   "docker_ci": {
-    "status": "configured_not_yet_run",
-    "note": "Local Docker daemon unavailable. Inspect the GitHub Actions run for the delivered commit."
+    "status": "backend_passed_browser_pending",
+    "run_url": "https://github.com/ypeng12/Goaly/actions/runs/34789871326",
+    "image_build": "passed",
+    "container_pytest": 167,
+    "sop_assertions": 650,
+    "two_seed_audit": "passed",
+    "remaining": "HTTP readiness had a startup connection reset; bounded retries added before rerunning browser acceptance."
   }
 }
