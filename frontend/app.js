@@ -335,55 +335,55 @@ function renderVerificationCard() {
   card.id = "security-card-el";
   card.innerHTML = `
     <div class="security-card-header">
-      <div class="security-card-title"><span>🛡️</span> Security Verification Card</div>
-      <span class="security-card-badge">Deterministic Security Gate</span>
+      <div class="security-card-title"><span>🛡️</span> Secure Verification</div>
+      <span class="security-card-badge">Verified-First Gate</span>
     </div>
     <div class="security-card-desc">
-      Submit any 3 details to unlock claim access. Form submissions bypass LLM text processing directly into deterministic validation.
+      Enter any 3 details. They must match your policy record.
     </div>
 
     <div class="experiment-presets-tray">
       <div class="experiment-presets-title">
-        <span>🧪 Experiment Presets (One-click auto fill):</span>
-        <span>Select test caller case</span>
+        <span>Use a demo identity for testing:</span>
+        <span>Select to auto-fill</span>
       </div>
       <div class="experiment-preset-chips">
-        <button type="button" class="preset-chip active" id="preset-margaret">🟢 Margaret Chen (Jan Denied)</button>
-        <button type="button" class="preset-chip" id="preset-ava">🔵 Ava Lopez (POL-1044)</button>
-        <button type="button" class="preset-chip" id="preset-matian">🟡 Ma Tian (March Denied)</button>
-        <button type="button" class="preset-chip" id="preset-yawen">🟣 Ya Wen Li (POL-7742)</button>
+        <button type="button" class="preset-chip" id="preset-margaret">🟢 Margaret Chen</button>
+        <button type="button" class="preset-chip" id="preset-ava">🔵 Ava Lopez</button>
+        <button type="button" class="preset-chip" id="preset-matian">🟡 Ma Tian</button>
+        <button type="button" class="preset-chip" id="preset-yawen">🟣 Ya Wen Li</button>
       </div>
     </div>
 
     <div class="security-card-grid">
       <div class="security-card-field">
         <label for="card-name">Full name <span class="field-tag">Match field</span></label>
-        <input type="text" id="card-name" placeholder="e.g. Margaret Chen" autocomplete="name">
+        <input type="text" id="card-name" placeholder="e.g. Margaret Chen" autocomplete="name" aria-label="Full name">
       </div>
       <div class="security-card-field">
-        <label for="card-dob">Date of birth <span class="field-tag">Format: YYYY-MM-DD or MM/DD/YYYY</span></label>
+        <label for="card-dob">Date of birth <span class="field-tag">MM/DD/YYYY or YYYY-MM-DD</span></label>
         <div class="dob-input-wrapper">
-          <input type="text" id="card-dob" placeholder="e.g. 1985-03-15 or 03/15/1985">
-          <button type="button" class="dob-picker-btn" title="Open date picker">📅</button>
-          <input type="date" id="card-dob-picker" class="dob-native-picker" title="Select birth date">
+          <input type="text" id="card-dob" placeholder="e.g. 03/15/1985 or 1985-03-15" aria-label="Date of birth">
+          <button type="button" class="dob-picker-btn" id="btn-dob-calendar" aria-label="Select date of birth from calendar">📅</button>
+          <input type="date" id="card-dob-picker" class="dob-native-picker" aria-label="Birth date calendar picker">
         </div>
       </div>
       <div class="security-card-field">
         <label for="card-phone">Phone number <span class="field-tag">Auto-formatted</span></label>
-        <input type="tel" id="card-phone" placeholder="e.g. (650) 521-2836">
+        <input type="tel" id="card-phone" placeholder="e.g. (650) 521-2836" aria-label="Phone number">
       </div>
       <div class="security-card-field">
         <label for="card-email">Email address <span class="field-tag">Email</span></label>
-        <input type="email" id="card-email" placeholder="e.g. margaret@email.com">
+        <input type="email" id="card-email" placeholder="e.g. margaret@email.com" aria-label="Email address">
       </div>
       <div class="security-card-field">
-        <label for="card-id4">SSN last 4 <span class="field-tag">Optional</span></label>
-        <input type="text" id="card-id4" maxlength="4" placeholder="e.g. 4472">
+        <label for="card-id4">Government ID / SSN last 4 <span class="field-tag">Optional</span></label>
+        <input type="text" id="card-id4" maxlength="4" placeholder="e.g. 4472" aria-label="Government ID or SSN last 4 digits">
       </div>
     </div>
     <div class="security-card-actions">
-      <button type="button" class="security-card-instant-submit" id="btn-card-instant">⚡ Fill & Submit Instantly</button>
-      <button type="button" class="security-card-submit" id="btn-card-submit">Submit Verification Card</button>
+      <button type="button" class="security-card-instant-submit" id="btn-card-instant">Use sample and verify</button>
+      <button type="button" class="security-card-submit" id="btn-card-submit">Verify identity</button>
     </div>
   `;
 
@@ -414,8 +414,20 @@ function renderVerificationCard() {
     if (btn) btn.addEventListener("click", () => fillPreset(key));
   });
 
+  const dobBtn = card.querySelector("#btn-dob-calendar");
   const dobPicker = card.querySelector("#card-dob-picker");
   const dobInput = card.querySelector("#card-dob");
+  if (dobBtn && dobPicker) {
+    dobBtn.addEventListener("click", () => {
+      if (typeof dobPicker.showPicker === "function") {
+        dobPicker.showPicker();
+      } else {
+        dobPicker.focus();
+        dobPicker.click();
+      }
+    });
+  }
+
   if (dobPicker && dobInput) {
     dobPicker.addEventListener("change", (e) => {
       if (e.target.value) dobInput.value = e.target.value;
@@ -442,11 +454,15 @@ function renderVerificationCard() {
     });
   }
 
-  fillPreset("margaret");
+  // Inputs remain blank by default for real identity verification authenticity.
 
   const instantBtn = card.querySelector("#btn-card-instant");
   if (instantBtn) {
     instantBtn.addEventListener("click", () => {
+      // If form is blank, fill default sample Margaret Chen before instant submit
+      if (!card.querySelector("#card-name").value && !card.querySelector("#card-phone").value && !card.querySelector("#card-email").value) {
+        fillPreset("margaret");
+      }
       const form = {
         name: card.querySelector("#card-name").value.trim(),
         dob: card.querySelector("#card-dob").value.trim(),
@@ -472,6 +488,7 @@ function renderVerificationCard() {
     });
   }
 }
+
 
 
 async function submitVerificationCard(form) {
