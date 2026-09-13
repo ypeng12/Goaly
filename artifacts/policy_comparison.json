@@ -1,0 +1,78 @@
+{
+  "schema_version": 1,
+  "config": {
+    "split": "all",
+    "episodes_per_policy": 50,
+    "profile_templates": 4,
+    "max_turns": 15,
+    "seed": 42
+  },
+  "policies": {
+    "RuleBased": {
+      "episodes": 50,
+      "goal_success_rate": 76.0,
+      "appropriate_escalation_rate": 24.0,
+      "premature_termination_rate": 0.0,
+      "clean_termination_rate": 100.0,
+      "truncation_rate": 0.0,
+      "terminal_consistency_rate": 100.0,
+      "constraint_violation_rate": 0.0,
+      "mean_verified_fields": 2.28,
+      "mean_episode_turns": 3.52,
+      "mean_cumulative_reward": 13.528,
+      "final_phase_distribution": {
+        "CONCLUDED": 38,
+        "ESCALATED": 12
+      }
+    },
+    "Random": {
+      "episodes": 50,
+      "goal_success_rate": 10.0,
+      "appropriate_escalation_rate": 48.0,
+      "premature_termination_rate": 40.0,
+      "clean_termination_rate": 98.0,
+      "truncation_rate": 2.0,
+      "terminal_consistency_rate": 98.0,
+      "constraint_violation_rate": 0.0,
+      "mean_verified_fields": 1.78,
+      "mean_episode_turns": 4.0,
+      "mean_cumulative_reward": 2.44,
+      "final_phase_distribution": {
+        "CONCLUDED": 5,
+        "ESCALATED": 44,
+        "POST_PROCESS": 1
+      }
+    },
+    "PPO (Learned)": {
+      "episodes": 50,
+      "goal_success_rate": 76.0,
+      "appropriate_escalation_rate": 24.0,
+      "premature_termination_rate": 0.0,
+      "clean_termination_rate": 100.0,
+      "truncation_rate": 0.0,
+      "terminal_consistency_rate": 100.0,
+      "constraint_violation_rate": 0.0,
+      "mean_verified_fields": 2.28,
+      "mean_episode_turns": 3.28,
+      "mean_cumulative_reward": 13.082,
+      "final_phase_distribution": {
+        "CONCLUDED": 38,
+        "ESCALATED": 12
+      }
+    }
+  },
+  "ppo_vs_rule": {
+    "terminal_outcome_agreement_rate": 100.0,
+    "exact_action_sequence_agreement_rate": 24.0
+  },
+  "acceptance": {
+    "passed": true,
+    "checks": {
+      "terminal_consistency_is_100": true,
+      "constraint_violation_is_0": true,
+      "premature_termination_is_0": true,
+      "truncation_is_0": true,
+      "reward_beats_random": true
+    }
+  }
+}

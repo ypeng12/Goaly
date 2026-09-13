@@ -8,6 +8,19 @@ A constrained environment, Masked PPO training loop, and evaluation harness for 
 
 **Core design**: A deterministic SOP harness separates safety enforcement from model-generated language. The model handles clarification, empathy, and path selection; deterministic code enforces identity gates, data shielding, and consent.
 
+### What the project demonstrates
+
+| Capability | Concrete implementation | Evidence |
+|---|---|---|
+| SOP constraints | Explicit phase transitions plus per-state action masks | Claim access remains locked before 3-of-5 PII verification; email send remains locked before consent |
+| RL post-training | 20-feature observation, masked Actor-Critic policy, GAE, clipped PPO objective, anti-hacking rewards | Learned checkpoint evaluated against RuleBased and Random policies |
+| Closed-loop interaction | The policy selects an action, a stateful Caller Simulator reacts, and the SOP machine consumes the caller response | Five caller styles with separate train, validation, and held-out test profile factories |
+| Evaluation and alignment | Slicing benchmark, machine-readable policy arena, acceptance gates, and same-state DPO branching | 650 SOP assertions, policy metrics JSON, and 50 preference pairs with positive reward margin |
+
+The customer UI demonstrates the protected SOP runtime. PPO training and policy
+selection run in `AgentPolicyEnv` and are evaluated in the policy arena; the UI
+does not claim that a learned checkpoint controls customer-facing responses.
+
 ### Infrastructure & Algorithm Built
 
 | Component | What it demonstrates |
@@ -19,7 +32,7 @@ A constrained environment, Masked PPO training loop, and evaluation harness for 
 | **DPO Alignment Pipeline** (`eval/generate_dpo_pairs.py`) | Automated synthesis of `(prompt, chosen, rejected)` preference pairs from rollout delta |
 | `RuleBasedPolicy` baseline | Deterministic SOP-aligned policy for comparison with learned policies |
 | 33-scenario benchmark, 650 assertions | Behavior slicing: identity gates, ownership, memory, scope, consent, disclosure |
-| 126 automated tests | Unit + integration coverage including RL-specific action mask, Gym spaces, and PPO tests |
+| 127 automated tests | Unit + integration coverage including RL-specific action mask, Gym spaces, PPO math, and policy-report semantics |
 | Trajectory export (JSONL) | SFT/DPO/RL-ready, one turn per line with reward components and violations |
 | Audit trail + time-travel replay | Every gate decision logged; UI slider replays any prior state |
 | Verified-first identity gate | 3-of-5 PII required; structural violation = −100 reward, not soft penalty |
@@ -97,9 +110,15 @@ Saves the trained weights to `artifacts/ppo_policy.pt` and metrics to `artifacts
 
 #### 2. Run Multi-Policy Arena Comparison
 ```bash
-python3 -m eval.policy_comparison
+python3 -m eval.policy_comparison \
+  --split all \
+  --episodes 50 \
+  --json-output artifacts/policy_comparison.json \
+  --assert-thresholds
 ```
 Evaluates Rule-based, Random, and Learned PPO policies in a standardized arena.
+Use `--split train`, `--split val`, or `--split test` to measure the profile
+families independently. `--assert-thresholds` makes the command suitable for CI.
 
 #### 3. Generate DPO Preference Dataset
 ```bash

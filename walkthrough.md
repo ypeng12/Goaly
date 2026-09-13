@@ -215,8 +215,19 @@ python3 train_ppo.py \
 
 ### Multi-Policy Standard Arena Comparison
 ```bash
-python3 -m eval.policy_comparison
+python3 -m eval.policy_comparison \
+  --split all \
+  --episodes 50 \
+  --json-output artifacts/policy_comparison.json \
+  --assert-thresholds
 ```
+
+The CLI supports `train`, `val`, `test`, and `all` profile splits. The JSON
+artifact separates terminal-outcome agreement from exact action-sequence
+agreement, so matching final counts cannot be misreported as identical policy
+behavior. The acceptance gate requires 100% terminal consistency, zero PPO
+constraint violations, zero premature terminations, zero truncations, and PPO
+mean reward above the random baseline.
 
 ### Same-State DPO Dataset Generation
 ```bash
@@ -253,7 +264,7 @@ python3 -m eval.eval_benchmark
 - **`RandomPolicy`**: `CONCLUDED: 5 (10%)`, `ESCALATED: 44 (88%)`, `POST_PROCESS (truncated): 1 (2%)`
 - **`PPO (Learned)`**: `CONCLUDED: 38 (76%)`, `ESCALATED: 12 (24%)`
 
-The learned PPO agent matches the RuleBased policy's **terminal outcome distribution** across these 50 episodes (38 concluded, 12 escalated), while its surface action sequence can differ. It has 0% premature termination and 0% constraint violations in this fixture benchmark.
+The learned PPO agent matches the RuleBased policy's **terminal outcome distribution** across these 50 episodes (38 concluded, 12 escalated), while exact action sequences match in 24% of paired episodes. It has 0% premature termination and 0% constraint violations in this fixture benchmark.
 
 ---
 

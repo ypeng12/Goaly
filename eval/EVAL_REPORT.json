@@ -1,12 +1,12 @@
 {
-  "timestamp": "2026-09-13T15:11:45.750016+00:00",
+  "timestamp": "2026-09-13T20:44:46.096385+00:00",
   "engine": "MockEngine (no live provider calls)",
   "dataset": "eval_dataset.json",
   "total_scenarios": 33,
   "passed_scenarios": 33,
   "total_turns": 50,
   "overall_pass_rate": 100.0,
-  "avg_latency_ms": 1.508,
+  "avg_latency_ms": 18.213,
   "assertion_groups": {
     "sop_invariants": {
       "passed": 413,
@@ -122,7 +122,7 @@
           "turn": 1,
           "phase": "VERIFY_ID",
           "reply": "To protect privacy, I cannot disclose claim information to unauthorized third parties. We must verify a representative\u2019s own identity and the policyholder\u2019s authorization. Please ask the policyholder to contact support, or request a human representative.",
-          "latency_ms": 15.151
+          "latency_ms": 194.841
         }
       ]
     },
@@ -199,7 +199,7 @@
           "turn": 1,
           "phase": "VERIFY_ID",
           "reply": "To protect privacy, I cannot disclose claim information to unauthorized third parties. We must verify a representative\u2019s own identity and the policyholder\u2019s authorization. Please ask the policyholder to contact support, or request a human representative.",
-          "latency_ms": 1.508
+          "latency_ms": 20.17
         }
       ]
     },
@@ -276,7 +276,7 @@
           "turn": 1,
           "phase": "VERIFY_ID",
           "reply": "To protect privacy, I cannot disclose claim information to unauthorized third parties. We must verify a representative\u2019s own identity and the policyholder\u2019s authorization. Please ask the policyholder to contact support, or request a human representative.",
-          "latency_ms": 1.722
+          "latency_ms": 20.608
         }
       ]
     },
@@ -363,7 +363,7 @@
           "turn": 1,
           "phase": "VERIFY_ID",
           "reply": "I understand this is frustrating, especially when you need an answer. I have noted the identity details you shared. I have also saved your claim question for after verification. To protect your private claim information, I need to verify 3 matching items before opening a claim. Please share 2 more items, choosing from date of birth, phone number, email address, last four digits of your SSN. You can use phone or email instead of SSN, or ask for a human representative.",
-          "latency_ms": 1.374
+          "latency_ms": 8.588
         }
       ]
     },
@@ -460,7 +460,7 @@
           "turn": 1,
           "phase": "VERIFY_ID",
           "reply": "I understand this is frustrating, especially when you need an answer. I have also saved your claim question for after verification. To protect your private claim information, I need to verify 3 matching items before opening a claim. Please share 3 more items, choosing from full name, date of birth, phone number, email address, last four digits of your SSN. You can use phone or email instead of SSN, or ask for a human representative.",
-          "latency_ms": 1.082
+          "latency_ms": 18.647
         }
       ]
     },
@@ -547,7 +547,7 @@
           "turn": 1,
           "phase": "VERIFY_ID",
           "reply": "I understand this is frustrating, especially when you need an answer. To protect your private claim information, I need to verify 3 matching items before opening a claim. Please share 3 more items, choosing from full name, date of birth, phone number, email address, last four digits of your SSN. You can use phone or email instead of SSN, or ask for a human representative.",
-          "latency_ms": 1.12
+          "latency_ms": 6.401
         }
       ]
     },
@@ -624,7 +624,7 @@
           "turn": 1,
           "phase": "ESCALATED",
           "reply": "You can choose which identity details you feel comfortable sharing. I have recorded a request to connect you with a human claims representative. This demo simulates the handoff; no live transfer takes place. Verification is still required before protected details can be shared.",
-          "latency_ms": 0.877
+          "latency_ms": 16.884
         }
       ]
     },
@@ -756,13 +756,13 @@
           "turn": 1,
           "phase": "VERIFY_ID",
           "reply": "I understand this is frustrating, especially when you need an answer. I have noted the identity details you shared. To protect your private claim information, I need to verify 3 matching items before opening a claim. Please share 2 more items, choosing from date of birth, phone number, email address, last four digits of your SSN. You can use phone or email instead of SSN, or ask for a human representative.",
-          "latency_ms": 1.384
+          "latency_ms": 20.62
         },
         {
           "turn": 2,
           "phase": "RESOLVE_INTENT",
           "reply": "Your identity is verified. I kept the details you mentioned, but more than one claim matches: CL-2048: healthcare, 2026-01-12, denied; CL-2011: healthcare, 2025-01-28, closed; CL-1899: dental, 2025-11-03, closed; CL-2102: auto, 2026-02-28, open. Which claim reference or year did you mean?",
-          "latency_ms": 1.247
+          "latency_ms": 5.969
         }
       ]
     },
@@ -894,7 +894,7 @@
           "turn": 1,
           "phase": "PROCESS_CASE",
           "reply": "Your identity is verified. I used the claim details you shared earlier to find your case.\n\nClaim CL-2048 is denied. It is a healthcare claim created on 2026-01-12. Healthcare claim denied due to missing pathology report and office note.\n\nThe recorded denial reason is that the review file did not include the pathology report and the treating provider office note.\n\nThe requested documents are: pathology report, office note.\n\nThe recorded appeal deadline is 2026-03-18. That date has passed. A human claims representative must review whether any options remain; I cannot promise an extension.\n\nWhat else would help with this claim? When you're ready, say 'That's all' and I can offer an email summary.",
-          "latency_ms": 2.775
+          "latency_ms": 25.595
         }
       ]
     },
@@ -991,7 +991,7 @@
           "turn": 1,
           "phase": "RESOLVE_INTENT",
           "reply": "Your identity is verified. What would you like help with\u2014claim status, a denial, payment, or submitting documents? You can also give a claim reference.",
-          "latency_ms": 1.144
+          "latency_ms": 17.748
         }
       ]
     },
@@ -1083,7 +1083,7 @@
           "turn": 1,
           "phase": "PROCESS_CASE",
           "reply": "Your identity is verified. I used the claim details you shared earlier to find your case.\n\nClaim CL-3001 is denied. It is a healthcare claim created on 2026-03-01. Healthcare claim denied because the diagnosis report is missing.\n\nThe recorded denial reason is that the submitted materials did not include the treating provider diagnosis report.\n\nThe requested documents are: diagnosis report.\n\nThe recorded appeal deadline is 2026-04-15. That date has passed. A human claims representative must review whether any options remain; I cannot promise an extension.\n\nWhat else would help with this claim? When you're ready, say 'That's all' and I can offer an email summary.",
-          "latency_ms": 1.287
+          "latency_ms": 8.193
         }
       ]
     },
@@ -1205,13 +1205,13 @@
           "turn": 1,
           "phase": "VERIFY_ID",
           "reply": "I have noted the identity details you shared. To protect your private claim information, I need to verify 3 matching items before opening a claim. Please share 2 more items, choosing from date of birth, phone number, email address, last four digits of your SSN. You can use phone or email instead of SSN, or ask for a human representative.",
-          "latency_ms": 0.909
+          "latency_ms": 5.126
         },
         {
           "turn": 2,
           "phase": "RESOLVE_INTENT",
           "reply": "Your identity is verified. What would you like help with\u2014claim status, a denial, payment, or submitting documents? You can also give a claim reference.",
-          "latency_ms": 1.346
+          "latency_ms": 19.221
         }
       ]
     },
@@ -1308,7 +1308,7 @@
           "turn": 1,
           "phase": "ESCALATED",
           "reply": "A human representative needs to verify your identity and authorization before any claim details can be shared. I have recorded a request to connect you with a human claims representative. This demo simulates the handoff; no live transfer takes place. Verification is still required before protected details can be shared.",
-          "latency_ms": 1.454
+          "latency_ms": 8.01
         }
       ]
     },
@@ -1400,7 +1400,7 @@
           "turn": 1,
           "phase": "VERIFY_ID",
           "reply": "To protect privacy, I cannot disclose claim information to unauthorized third parties. We must verify a representative\u2019s own identity and the policyholder\u2019s authorization. Please ask the policyholder to contact support, or request a human representative.",
-          "latency_ms": 1.318
+          "latency_ms": 17.94
         }
       ]
     },
@@ -1487,7 +1487,7 @@
           "turn": 1,
           "phase": "VERIFY_ID",
           "reply": "To protect privacy, I cannot disclose claim information to unauthorized third parties. We must verify a representative\u2019s own identity and the policyholder\u2019s authorization. Please ask the policyholder to contact support, or request a human representative.",
-          "latency_ms": 1.234
+          "latency_ms": 7.006
         }
       ]
     },
@@ -1634,13 +1634,13 @@
           "turn": 1,
           "phase": "ESCALATED",
           "reply": "A human representative needs to verify your identity and authorization before any claim details can be shared. I have recorded a request to connect you with a human claims representative. This demo simulates the handoff; no live transfer takes place. Verification is still required before protected details can be shared.",
-          "latency_ms": 1.371
+          "latency_ms": 19.712
         },
         {
           "turn": 2,
           "phase": "ESCALATED",
           "reply": "A human representative needs to verify your identity and authorization before any claim details can be shared. I have recorded a request to connect you with a human claims representative. This demo simulates the handoff; no live transfer takes place. Verification is still required before protected details can be shared.",
-          "latency_ms": 0.079
+          "latency_ms": 0.376
         }
       ]
     },
@@ -1722,7 +1722,7 @@
           "turn": 1,
           "phase": "VERIFY_ID",
           "reply": "I can help with insurance claims, policy questions, and verification, but I am unable to answer that unrelated request. We can continue with your claim, or you can ask for a human representative.",
-          "latency_ms": 0.678
+          "latency_ms": 3.916
         }
       ]
     },
@@ -1804,7 +1804,7 @@
           "turn": 1,
           "phase": "VERIFY_ID",
           "reply": "I can help with insurance claims, policy questions, and verification, but I am unable to answer that unrelated request. We can continue with your claim, or you can ask for a human representative.",
-          "latency_ms": 0.839
+          "latency_ms": 17.527
         }
       ]
     },
@@ -1896,7 +1896,7 @@
           "turn": 1,
           "phase": "VERIFY_ID",
           "reply": "I can help with insurance claims, policy questions, and verification, but I am unable to answer that unrelated request. We can continue with your claim, or you can ask for a human representative.",
-          "latency_ms": 0.891
+          "latency_ms": 20.283
         }
       ]
     },
@@ -2028,13 +2028,13 @@
           "turn": 1,
           "phase": "VERIFY_ID",
           "reply": "I can help with insurance claims, policy questions, and verification, but I am unable to answer that unrelated request. We can continue with your claim, or you can ask for a human representative.",
-          "latency_ms": 0.71
+          "latency_ms": 5.484
         },
         {
           "turn": 2,
           "phase": "ESCALATED",
           "reply": "I have recorded a request to connect you with a human claims representative. This demo simulates the handoff; no live transfer takes place. Verification is still required before protected details can be shared.",
-          "latency_ms": 0.713
+          "latency_ms": 4.159
         }
       ]
     },
@@ -2221,13 +2221,13 @@
           "turn": 1,
           "phase": "VERIFY_ID",
           "reply": "I have noted the identity details you shared. I have also saved your claim question for after verification. To protect your private claim information, I need to verify 3 matching items before opening a claim. Please share 1 more item, choosing from phone number, email address, last four digits of your SSN. You can use phone or email instead of SSN, or ask for a human representative.",
-          "latency_ms": 1.253
+          "latency_ms": 17.085
         },
         {
           "turn": 2,
           "phase": "PROCESS_CASE",
           "reply": "Your identity is verified. I used the claim details you shared earlier to find your case.\n\nClaim CL-2048 is denied. It is a healthcare claim created on 2026-01-12. Healthcare claim denied due to missing pathology report and office note.\n\nThe recorded denial reason is that the review file did not include the pathology report and the treating provider office note.\n\nThe requested documents are: pathology report, office note.\n\nThe recorded appeal deadline is 2026-03-18. That date has passed. A human claims representative must review whether any options remain; I cannot promise an extension.\n\nWhat else would help with this claim? When you're ready, say 'That's all' and I can offer an email summary.",
-          "latency_ms": 1.692
+          "latency_ms": 9.464
         }
       ]
     },
@@ -2314,7 +2314,7 @@
           "turn": 1,
           "phase": "VERIFY_ID",
           "reply": "I have noted the identity details you shared. I have also saved your claim question for after verification. To protect your private claim information, I need to verify 3 matching items before opening a claim. I could not verify those details together. Please double-check what you supplied, or use another of the five allowed identity fields. You can use phone or email instead of SSN, or ask for a human representative.",
-          "latency_ms": 1.125
+          "latency_ms": 7.832
         }
       ]
     },
@@ -2441,13 +2441,13 @@
           "turn": 1,
           "phase": "VERIFY_ID",
           "reply": "I have noted the identity details you shared. To protect your private claim information, I need to verify 3 matching items before opening a claim. Please share 2 more items, choosing from date of birth, phone number, email address, last four digits of your SSN. You can use phone or email instead of SSN, or ask for a human representative.",
-          "latency_ms": 0.947
+          "latency_ms": 14.103
         },
         {
           "turn": 2,
           "phase": "VERIFY_ID",
           "reply": "I have noted the identity details you shared. To protect your private claim information, I need to verify 3 matching items before opening a claim. Please share 2 more items, choosing from date of birth, phone number, email address, last four digits of your SSN. You can use phone or email instead of SSN, or ask for a human representative.",
-          "latency_ms": 0.828
+          "latency_ms": 6.448
         }
       ]
     },
@@ -2534,7 +2534,7 @@
           "turn": 1,
           "phase": "VERIFY_ID",
           "reply": "I have noted the identity details you shared. To protect your private claim information, I need to verify 3 matching items before opening a claim. I could not verify those details together. Please double-check what you supplied, or use another of the five allowed identity fields. You can use phone or email instead of SSN, or ask for a human representative.",
-          "latency_ms": 1.385
+          "latency_ms": 22.62
         }
       ]
     },
@@ -2736,19 +2736,19 @@
           "turn": 1,
           "phase": "PROCESS_CASE",
           "reply": "Your identity is verified. I used the claim details you shared earlier to find your case.\n\nClaim CL-2048 is denied. It is a healthcare claim created on 2026-01-12. Healthcare claim denied due to missing pathology report and office note.\n\nThe recorded denial reason is that the review file did not include the pathology report and the treating provider office note.\n\nThe requested documents are: pathology report, office note.\n\nThe recorded appeal deadline is 2026-03-18. That date has passed. A human claims representative must review whether any options remain; I cannot promise an extension.\n\nWhat else would help with this claim? When you're ready, say 'That's all' and I can offer an email summary.",
-          "latency_ms": 1.94
+          "latency_ms": 21.43
         },
         {
           "turn": 2,
           "phase": "POST_PROCESS",
           "reply": "Would you like an email summary of our conversation for claim CL-2048, or would you prefer to skip it? It includes what we discussed, the claim status and outcome, and the major follow-up items. Email delivery is simulated in this demo.",
-          "latency_ms": 1.672
+          "latency_ms": 26.583
         },
         {
           "turn": 3,
           "phase": "CONCLUDED",
           "reply": "The email summary was added to the demo outbox for margaret@email.com. Delivery is simulated; no real email was sent. Thank you for contacting claims support.",
-          "latency_ms": 1.716
+          "latency_ms": 6.931
         }
       ]
     },
@@ -2990,25 +2990,25 @@
           "turn": 1,
           "phase": "PROCESS_CASE",
           "reply": "Your identity is verified. I used the claim details you shared earlier to find your case.\n\nClaim CL-2048 is denied. It is a healthcare claim created on 2026-01-12. Healthcare claim denied due to missing pathology report and office note.\n\nThe recorded denial reason is that the review file did not include the pathology report and the treating provider office note.\n\nThe requested documents are: pathology report, office note.\n\nThe recorded appeal deadline is 2026-03-18. That date has passed. A human claims representative must review whether any options remain; I cannot promise an extension.\n\nWhat else would help with this claim? When you're ready, say 'That's all' and I can offer an email summary.",
-          "latency_ms": 1.931
+          "latency_ms": 10.778
         },
         {
           "turn": 2,
           "phase": "POST_PROCESS",
           "reply": "Would you like an email summary of our conversation for claim CL-2048, or would you prefer to skip it? It includes what we discussed, the claim status and outcome, and the major follow-up items. Email delivery is simulated in this demo.",
-          "latency_ms": 1.118
+          "latency_ms": 21.784
         },
         {
           "turn": 3,
           "phase": "CONCLUDED",
           "reply": "I will skip the email summary as requested. Thank you for contacting claims support.",
-          "latency_ms": 0.768
+          "latency_ms": 23.931
         },
         {
           "turn": 4,
           "phase": "CONCLUDED",
           "reply": "I will skip the email summary as requested. Thank you for contacting claims support.",
-          "latency_ms": 0.319
+          "latency_ms": 3.665
         }
       ]
     },
@@ -3180,19 +3180,19 @@
           "turn": 1,
           "phase": "PROCESS_CASE",
           "reply": "Your identity is verified. I used the claim details you shared earlier to find your case.\n\nClaim CL-2048 is denied. It is a healthcare claim created on 2026-01-12. Healthcare claim denied due to missing pathology report and office note.\n\nThe recorded denial reason is that the review file did not include the pathology report and the treating provider office note.\n\nThe requested documents are: pathology report, office note.\n\nThe recorded appeal deadline is 2026-03-18. That date has passed. A human claims representative must review whether any options remain; I cannot promise an extension.\n\nWhat else would help with this claim? When you're ready, say 'That's all' and I can offer an email summary.",
-          "latency_ms": 2.001
+          "latency_ms": 27.369
         },
         {
           "turn": 2,
           "phase": "POST_PROCESS",
           "reply": "Would you like an email summary of our conversation for claim CL-2048, or would you prefer to skip it? It includes what we discussed, the claim status and outcome, and the major follow-up items. Email delivery is simulated in this demo.",
-          "latency_ms": 1.11
+          "latency_ms": 19.903
         },
         {
           "turn": 3,
           "phase": "CONCLUDED",
           "reply": "I will skip the email summary as requested. Thank you for contacting claims support.",
-          "latency_ms": 0.801
+          "latency_ms": 19.118
         }
       ]
     },
@@ -3364,19 +3364,19 @@
           "turn": 1,
           "phase": "PROCESS_CASE",
           "reply": "Your identity is verified. I used the claim details you shared earlier to find your case.\n\nClaim CL-2048 is denied. It is a healthcare claim created on 2026-01-12. Healthcare claim denied due to missing pathology report and office note.\n\nThe recorded denial reason is that the review file did not include the pathology report and the treating provider office note.\n\nThe requested documents are: pathology report, office note.\n\nThe recorded appeal deadline is 2026-03-18. That date has passed. A human claims representative must review whether any options remain; I cannot promise an extension.\n\nWhat else would help with this claim? When you're ready, say 'That's all' and I can offer an email summary.",
-          "latency_ms": 1.786
+          "latency_ms": 25.976
         },
         {
           "turn": 2,
           "phase": "POST_PROCESS",
           "reply": "Would you like an email summary of our conversation for claim CL-2048, or would you prefer to skip it? It includes what we discussed, the claim status and outcome, and the major follow-up items. Email delivery is simulated in this demo.",
-          "latency_ms": 1.081
+          "latency_ms": 22.001
         },
         {
           "turn": 3,
           "phase": "POST_PROCESS",
           "reply": "Once the missing files for claim CL-2048 are received, the review usually restarts rather than finishing instantly. The average processing time is usually less than a week, although intake and another review cycle can still be needed before the status is updated. If pathology report, office note are incomplete or unclear, the team may ask for more information before reconsidering the denial.\n\nThe requested documents are: pathology report, office note.\n\nWould you like an email summary of our conversation for claim CL-2048, or would you prefer to skip it? It includes what we discussed, the claim status and outcome, and the major follow-up items. Email delivery is simulated in this demo.",
-          "latency_ms": 0.883
+          "latency_ms": 6.844
         }
       ]
     },
@@ -3473,7 +3473,7 @@
           "turn": 1,
           "phase": "RESOLVE_INTENT",
           "reply": "Your identity is verified. I kept your earlier claim details, but I could not find a matching claim on this account. Please confirm the claim reference, type, or year, or ask for a human representative.",
-          "latency_ms": 1.337
+          "latency_ms": 6.461
         }
       ]
     },
@@ -3560,7 +3560,7 @@
           "turn": 1,
           "phase": "RESOLVE_INTENT",
           "reply": "Your identity is verified. I kept the details you mentioned, but more than one claim matches: CL-2048: healthcare, 2026-01-12, denied; CL-2011: healthcare, 2025-01-28, closed. Which claim reference or year did you mean?",
-          "latency_ms": 1.79
+          "latency_ms": 23.564
         }
       ]
     },
@@ -3662,7 +3662,7 @@
           "turn": 1,
           "phase": "PROCESS_CASE",
           "reply": "Your identity is verified. I used the claim details you shared earlier to find your case.\n\nClaim CL-2011 is closed. It is a healthcare claim created on 2025-01-28. Healthcare claim settled.\n\nThe record does not list any outstanding documents.\n\nWhat else would help with this claim? When you're ready, say 'That's all' and I can offer an email summary.",
-          "latency_ms": 2.685
+          "latency_ms": 27.689
         }
       ]
     },
@@ -3754,7 +3754,7 @@
           "turn": 1,
           "phase": "VERIFY_ID",
           "reply": "I can help with insurance claims, policy questions, and verification, but I am unable to answer that unrelated request. We can continue with your claim, or you can ask for a human representative.",
-          "latency_ms": 0.746
+          "latency_ms": 4.233
         }
       ]
     },
@@ -3931,19 +3931,19 @@
           "turn": 1,
           "phase": "VERIFY_ID",
           "reply": "You can choose which identity details you feel comfortable sharing. To protect your private claim information, I need to verify 3 matching items before opening a claim. Please share 3 more items, choosing from full name, date of birth, phone number, email address, last four digits of your SSN. You can use phone or email instead of SSN, or ask for a human representative.",
-          "latency_ms": 0.745
+          "latency_ms": 18.299
         },
         {
           "turn": 2,
           "phase": "VERIFY_ID",
           "reply": "You can choose which identity details you feel comfortable sharing. I have also saved your claim question for after verification. To protect your private claim information, I need to verify 3 matching items before opening a claim. Please share 3 more items, choosing from full name, date of birth, phone number, email address, last four digits of your SSN. You can use phone or email instead of SSN, or ask for a human representative.",
-          "latency_ms": 0.781
+          "latency_ms": 4.808
         },
         {
           "turn": 3,
           "phase": "ESCALATED",
           "reply": "You can choose which identity details you feel comfortable sharing. I have recorded a request to connect you with a human claims representative. This demo simulates the handoff; no live transfer takes place. Verification is still required before protected details can be shared.",
-          "latency_ms": 0.734
+          "latency_ms": 18.724
         }
       ]
     }

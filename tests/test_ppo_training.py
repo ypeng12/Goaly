@@ -11,6 +11,7 @@ from backend.rl.featurizer import StateFeaturizer
 from backend.rl.models import ActorCriticPolicy
 from backend.rl.ppo_trainer import PPOTrainer, PPOConfig, RolloutBuffer
 from eval.generate_dpo_pairs import generate_dpo_pairs
+from eval.policy_comparison import build_report, summarize_policy
 
 
 def test_featurizer_dimensions():
@@ -163,3 +164,34 @@ def test_dpo_pairs_generation():
         assert "reward_delta" in first
         assert "action" in first["chosen"]
         assert "action" in first["rejected"]
+
+
+def test_policy_report_distinguishes_outcomes_from_action_agreement():
+    def result(action, reward, final_phase="CONCLUDED"):
+        return {
+            "cumulative_reward": reward,
+            "turns": 1,
+            "terminated": True,
+            "truncated": False,
+            "task_success": final_phase == "CONCLUDED",
+            "appropriate_escalation": final_phase == "ESCALATED",
+            "premature_termination": False,
+            "violations": [],
+            "trajectory": [{"agent_action": action}],
+            "final_phase": final_phase,
+            "verified_fields": ["name", "dob", "phone"],
+        }
+
+    rows = {
+        "RuleBased": [result("ASK_IDENTITY_FIELD", 10.0)],
+        "Random": [result("ESCALATE_HUMAN", 1.0, "ESCALATED")],
+        "PPO (Learned)": [result("EXPLAIN_VERIFICATION_GATE", 9.0)],
+    }
+    report = build_report(
+        rows, split="test", n_episodes=1, max_turns=15, seed=42, profile_count=1
+    )
+
+    assert report["ppo_vs_rule"]["terminal_outcome_agreement_rate"] == 100.0
+    assert report["ppo_vs_rule"]["exact_action_sequence_agreement_rate"] == 0.0
+    assert report["acceptance"]["passed"] is True
+    assert summarize_policy(rows["PPO (Learned)"])["constraint_violation_rate"] == 0.0

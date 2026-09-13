@@ -9,6 +9,8 @@ task completion within the legal action space.
 Run:
     python3 eval/policy_comparison.py
 """
+import argparse
+import json
 import sys
 import random
 import statistics
@@ -31,6 +33,119 @@ from backend.harness.caller_sim import (
 )
 from backend.rl.featurizer import StateFeaturizer
 from backend.rl.models import ActorCriticPolicy
+
+
+TERMINAL_PHASES = {"CONCLUDED", "ESCALATED"}
+PROFILE_FACTORIES = {
+    "all": make_all_profiles,
+    "train": make_train_profiles,
+    "val": make_val_profiles,
+    "test": make_test_profiles,
+}
+
+
+def get_profile_factory(split: str):
+    try:
+        return PROFILE_FACTORIES[split]
+    except KeyError as exc:
+        raise ValueError(f"Unknown split {split!r}; choose from {sorted(PROFILE_FACTORIES)}") from exc
+
+
+def summarize_policy(results: List[Dict[str, Any]]) -> Dict[str, Any]:
+    """Return stable, JSON-serializable policy metrics."""
+    count = len(results)
+    if count == 0:
+        raise ValueError("Cannot summarize an empty policy result set")
+
+    def pct(predicate):
+        return round(100.0 * sum(1 for row in results if predicate(row)) / count, 2)
+
+    final_phases = Counter(row["final_phase"] for row in results)
+    return {
+        "episodes": count,
+        "goal_success_rate": pct(lambda row: row["task_success"]),
+        "appropriate_escalation_rate": pct(lambda row: row["appropriate_escalation"]),
+        "premature_termination_rate": pct(lambda row: row["premature_termination"]),
+        "clean_termination_rate": pct(lambda row: row["terminated"]),
+        "truncation_rate": pct(lambda row: row["truncated"]),
+        "terminal_consistency_rate": pct(
+            lambda row: row["terminated"] and row["final_phase"] in TERMINAL_PHASES
+        ),
+        "constraint_violation_rate": pct(lambda row: bool(row["violations"])),
+        "mean_verified_fields": round(
+            sum(len(row["verified_fields"]) for row in results) / count, 3
+        ),
+        "mean_episode_turns": round(sum(row["turns"] for row in results) / count, 3),
+        "mean_cumulative_reward": round(
+            sum(row["cumulative_reward"] for row in results) / count, 3
+        ),
+        "final_phase_distribution": dict(sorted(final_phases.items())),
+    }
+
+
+def _action_sequence(result: Dict[str, Any]) -> List[str]:
+    return [turn["agent_action"] for turn in result["trajectory"]]
+
+
+def build_report(
+    results_dict: Dict[str, List[Dict[str, Any]]],
+    *,
+    split: str,
+    n_episodes: int,
+    max_turns: int,
+    seed: int,
+    profile_count: int,
+) -> Dict[str, Any]:
+    """Build an auditable report and acceptance decision from arena results."""
+    policies = {name: summarize_policy(rows) for name, rows in results_dict.items()}
+    report: Dict[str, Any] = {
+        "schema_version": 1,
+        "config": {
+            "split": split,
+            "episodes_per_policy": n_episodes,
+            "profile_templates": profile_count,
+            "max_turns": max_turns,
+            "seed": seed,
+        },
+        "policies": policies,
+    }
+
+    if "PPO (Learned)" in results_dict:
+        rule_rows = results_dict["RuleBased"]
+        ppo_rows = results_dict["PPO (Learned)"]
+        paired = min(len(rule_rows), len(ppo_rows))
+        outcome_matches = sum(
+            rule_rows[i]["final_phase"] == ppo_rows[i]["final_phase"]
+            for i in range(paired)
+        )
+        action_matches = sum(
+            _action_sequence(rule_rows[i]) == _action_sequence(ppo_rows[i])
+            for i in range(paired)
+        )
+        report["ppo_vs_rule"] = {
+            "terminal_outcome_agreement_rate": round(100.0 * outcome_matches / paired, 2),
+            "exact_action_sequence_agreement_rate": round(100.0 * action_matches / paired, 2),
+        }
+
+        ppo = policies["PPO (Learned)"]
+        random_policy = policies["Random"]
+        checks = {
+            "terminal_consistency_is_100": ppo["terminal_consistency_rate"] == 100.0,
+            "constraint_violation_is_0": ppo["constraint_violation_rate"] == 0.0,
+            "premature_termination_is_0": ppo["premature_termination_rate"] == 0.0,
+            "truncation_is_0": ppo["truncation_rate"] == 0.0,
+            "reward_beats_random": (
+                ppo["mean_cumulative_reward"] > random_policy["mean_cumulative_reward"]
+            ),
+        }
+        report["acceptance"] = {"passed": all(checks.values()), "checks": checks}
+    else:
+        report["acceptance"] = {
+            "passed": False,
+            "checks": {"learned_checkpoint_loaded": False},
+        }
+
+    return report
 
 
 class RandomPolicy:
@@ -149,14 +264,7 @@ def run_agent_comparison(
     split: str = "all",
 ):
     """Compare RuleBasedPolicy vs RandomPolicy vs LearnedPPOPolicy."""
-    if split == "train":
-        profile_fn = make_train_profiles
-    elif split == "val":
-        profile_fn = make_val_profiles
-    elif split == "test":
-        profile_fn = make_test_profiles
-    else:
-        profile_fn = make_all_profiles
+    profile_fn = get_profile_factory(split)
 
     profiles = profile_fn()
     rule_policy = RuleBasedPolicy()
@@ -193,19 +301,18 @@ def run_agent_comparison(
     line_len = 38 + 16 * len(policies)
     print(f"\n{'=' * line_len}")
     print(f"AgentPolicyEnv: Multi-Policy Benchmark Arena ({split} split)")
-    print(f"({n_episodes} episodes each, {len(profiles)} caller profiles, max_turns={max_turns})")
+    print(f"({n_episodes} episodes each, {len(profiles)} profile templates, max_turns={max_turns})")
     print(f"{'=' * line_len}")
     print(f"{'Metric':<38}{header_cols}")
     print("-" * line_len)
 
-    terminal_phases = {"CONCLUDED", "ESCALATED"}
     metric_defs = [
         ("Goal success rate (%)", lambda res: f"{pct(res, lambda r: r['task_success']):>16.2f}"),
         ("Appropriate escalation rate (%)", lambda res: f"{pct(res, lambda r: r['appropriate_escalation']):>16.2f}"),
         ("Premature termination rate (%)", lambda res: f"{pct(res, lambda r: r['premature_termination']):>16.2f}"),
         ("Termination rate — clean end (%)", lambda res: f"{pct(res, lambda r: r['terminated']):>16.2f}"),
         ("Truncation rate — hit max_turns (%)", lambda res: f"{pct(res, lambda r: r['truncated']):>16.2f}"),
-        ("Terminal consistency (%)", lambda res: f"{pct(res, lambda r: r['terminated'] and r['final_phase'] in terminal_phases):>16.2f}"),
+        ("Terminal consistency (%)", lambda res: f"{pct(res, lambda r: r['terminated'] and r['final_phase'] in TERMINAL_PHASES):>16.2f}"),
         ("Constraint violation rate (%)", lambda res: f"{pct(res, lambda r: bool(r['violations'])):>16.2f}"),
         ("Mean verified fields collected", lambda res: f"{(sum(len(r['verified_fields']) for r in res) / len(res)):>16.2f}"),
         ("Mean episode length (turns)", lambda res: f"{avg(res, 'turns'):>16.2f}"),
@@ -239,5 +346,80 @@ def run_agent_comparison(
     return results_dict
 
 
+def parse_args():
+    parser = argparse.ArgumentParser(description="Compare constrained agent policies")
+    parser.add_argument("--episodes", type=int, default=50, help="Episodes per policy")
+    parser.add_argument("--max-turns", type=int, default=15, help="Maximum turns per episode")
+    parser.add_argument("--seed", type=int, default=42, help="Random-policy seed")
+    parser.add_argument(
+        "--split", choices=sorted(PROFILE_FACTORIES), default="all",
+        help="Caller profile split to evaluate",
+    )
+    parser.add_argument(
+        "--model-path", default="artifacts/ppo_policy.pt",
+        help="Learned PPO checkpoint path",
+    )
+    parser.add_argument(
+        "--json-output", default=None,
+        help="Optional machine-readable report path",
+    )
+    parser.add_argument(
+        "--assert-thresholds", action="store_true",
+        help="Exit non-zero when PPO acceptance checks fail",
+    )
+    args = parser.parse_args()
+    if args.episodes < 1 or args.max_turns < 1:
+        parser.error("--episodes and --max-turns must be positive")
+    return args
+
+
+def main():
+    args = parse_args()
+    results = run_agent_comparison(
+        n_episodes=args.episodes,
+        max_turns=args.max_turns,
+        seed=args.seed,
+        ppo_model_path=args.model_path,
+        split=args.split,
+    )
+    profile_count = len(get_profile_factory(args.split)())
+    report = build_report(
+        results,
+        split=args.split,
+        n_episodes=args.episodes,
+        max_turns=args.max_turns,
+        seed=args.seed,
+        profile_count=profile_count,
+    )
+
+    comparison = report.get("ppo_vs_rule")
+    if comparison:
+        print("\nPPO vs RuleBased agreement:")
+        print(
+            "  Terminal outcome: "
+            f"{comparison['terminal_outcome_agreement_rate']:.2f}%"
+        )
+        print(
+            "  Exact action sequence: "
+            f"{comparison['exact_action_sequence_agreement_rate']:.2f}%"
+        )
+
+    print(
+        "Acceptance: "
+        + ("PASS" if report["acceptance"]["passed"] else "FAIL")
+    )
+    for name, passed in report["acceptance"]["checks"].items():
+        print(f"  {'PASS' if passed else 'FAIL'}  {name}")
+
+    if args.json_output:
+        destination = Path(args.json_output)
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        destination.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
+        print(f"Machine-readable report: {destination}")
+
+    if args.assert_thresholds and not report["acceptance"]["passed"]:
+        raise SystemExit(1)
+
+
 if __name__ == "__main__":
-    run_agent_comparison(n_episodes=50, max_turns=15)
+    main()
