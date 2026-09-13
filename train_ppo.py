@@ -19,6 +19,7 @@ def parse_args():
     parser.add_argument("--rollout-steps", type=int, default=128, help="Rollout buffer size per update")
     parser.add_argument("--device", type=str, default="auto", help="Device: 'auto', 'mps', or 'cpu'")
     parser.add_argument("--seed", type=int, default=42, help="Random seed")
+    parser.add_argument("--warm-start", help="Load policy/optimizer/history; --timesteps adds a new segment with reset RNG and episode")
     parser.add_argument("--save-path", type=str, default="artifacts/ppo_policy.pt", help="Checkpoint save path")
     parser.add_argument("--metrics-path", type=str, default="artifacts/ppo_training_metrics.json", help="Metrics JSON output path")
     return parser.parse_args()
@@ -39,6 +40,8 @@ def main():
     )
 
     trainer = PPOTrainer(config=cfg)
+    if args.warm_start:
+        trainer.load_checkpoint(args.warm_start)
     history = trainer.train(total_timesteps=args.timesteps)
 
     # Save model checkpoint

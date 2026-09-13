@@ -4,6 +4,7 @@ import torch
 import numpy as np
 
 from ..harness.types import Phase, AGENT_ACTIONS
+from ..harness.dialogue import EMOTIONS, dialogue_signals
 
 PHASE_ORDER = [
     Phase.VERIFY_ID.value,
@@ -21,7 +22,7 @@ MEMORY_KEYS = ["case_type_hint", "status_hint", "date_hint", "topic_hint"]
 class StateFeaturizer:
     """Extracts a fixed-size numerical feature vector from AgentPolicyEnv observations.
     
-    Feature Layout (total 20 dimensions):
+    Feature Layout (total 30 dimensions, schema version 2):
       [0..5]   (6) Phase one-hot
       [6..10]  (5) Verified PII fields multi-hot (name, dob, phone, email, id_last4)
       [11]     (1) Verified PII count / 5.0
@@ -30,15 +31,20 @@ class StateFeaturizer:
       [17]     (1) Data shield active (1.0 or 0.0)
       [18]     (1) Active case ID present (1.0 or 0.0)
       [19]     (1) Turn ratio (turn / max_turns)
+      [20..24] (5) Observable emotion one-hot
+      [25..27] (3) Privacy concern, refusal, human request
+      [28..29] (2) Resolution attempts / 2, grounded answer delivered
     """
 
-    FEATURE_DIM = 20
+    FEATURE_DIM = 30
+    VERSION = 2
 
-    def __init__(self, max_turns: int = 20):
+    def __init__(self, max_turns: int = 15, use_emotion_features: bool = True):
         self.max_turns = max_turns
+        self.use_emotion_features = use_emotion_features
 
     def featurize(self, obs: Dict[str, Any], turn: int = 0) -> np.ndarray:
-        """Convert a single observation dict into a 1D float32 numpy array of length 20."""
+        """Convert a single observation dict into a versioned float32 vector."""
         vec = np.zeros(self.FEATURE_DIM, dtype=np.float32)
 
         # 1. Phase one-hot (dim 6)
@@ -64,10 +70,19 @@ class StateFeaturizer:
         vec[17] = 1.0 if obs.get("data_shield_active", True) else 0.0
 
         # 5. Active case ID present (dim 1)
-        vec[18] = 1.0 if obs.get("active_case_id") is not None else 0.0
+        vec[18] = float(bool(obs.get("active_case_id")))
 
         # 6. Turn progress (dim 1)
         vec[19] = min(1.0, float(turn) / max(1.0, float(self.max_turns)))
+        signals = dialogue_signals(obs.get('caller_utterance', ''))
+        emotion = obs.get('emotion', signals['emotion'])
+        if self.use_emotion_features:
+            vec[20 + EMOTIONS.index(emotion if emotion in EMOTIONS else 'neutral')] = 1.0
+        vec[25] = float(obs.get('privacy_concern', signals['privacy_concern']))
+        vec[26] = float(obs.get('refusal', signals['is_refusal']))
+        vec[27] = float(obs.get('demands_human', signals['demands_human']))
+        vec[28] = min(1.0, obs.get('resolution_attempts', 0) / 2.0)
+        vec[29] = float(obs.get('grounded_answered', False))
 
         return vec
 

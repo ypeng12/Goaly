@@ -82,7 +82,12 @@ class UtteranceExtractor:
     @staticmethod
     def extract_topics(text: str):
         text = normalize(text).lower()
-        return [topic for topic, pattern in TOPIC_PATTERNS.items() if re.search(pattern, text)]
+        topics = [topic for topic, pattern in TOPIC_PATTERNS.items() if re.search(pattern, text)]
+        document_context = re.search(r'\b(?:report|note|copy|photocopy|scan|lab|laboratory|clinic|hospital)\b', text)
+        unavailable_or_alternative = re.search(r'\b(?:other (?:way|options?)|shut down|closed permanently)\b', text)
+        if document_context and unavailable_or_alternative and 'document_alternatives' not in topics:
+            topics.insert(0, 'document_alternatives')
+        return topics
 
     @staticmethod
     def extract_cross_phase_hints(text: str) -> CrossPhaseMemory:

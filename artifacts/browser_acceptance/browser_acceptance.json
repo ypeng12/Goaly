@@ -1,0 +1,23 @@
+{
+  "passed": true,
+  "checks": [
+    {
+      "viewport": 1440,
+      "customer_finish": "passed",
+      "consent_skip": "passed",
+      "rl_comparison": "passed",
+      "replay": "passed",
+      "download": "passed",
+      "page_errors": []
+    },
+    {
+      "viewport": 390,
+      "customer_finish": "passed",
+      "consent_skip": "passed",
+      "rl_comparison": "passed",
+      "replay": "passed",
+      "download": "passed",
+      "page_errors": []
+    }
+  ]
+}

@@ -1,69 +1,302 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "config": {
     "split": "all",
-    "episodes_per_policy": 50,
+    "episodes_per_policy": 28,
     "profile_templates": 4,
     "max_turns": 15,
     "seed": 42
   },
   "policies": {
     "RuleBased": {
-      "episodes": 50,
-      "goal_success_rate": 76.0,
-      "appropriate_escalation_rate": 24.0,
+      "episodes": 28,
+      "support_outcome_rate": 100.0,
+      "unverified_success_rate": 0.0,
+      "goal_success_rate": 75.0,
+      "appropriate_escalation_rate": 25.0,
       "premature_termination_rate": 0.0,
       "clean_termination_rate": 100.0,
       "truncation_rate": 0.0,
       "terminal_consistency_rate": 100.0,
       "constraint_violation_rate": 0.0,
-      "mean_verified_fields": 2.28,
-      "mean_episode_turns": 3.52,
-      "mean_cumulative_reward": 13.528,
+      "mean_verified_fields": 3.0,
+      "mean_episode_turns": 4.25,
+      "mean_cumulative_reward": 14.325,
       "final_phase_distribution": {
-        "CONCLUDED": 38,
-        "ESCALATED": 12
+        "CONCLUDED": 21,
+        "ESCALATED": 7
       }
     },
     "Random": {
-      "episodes": 50,
-      "goal_success_rate": 10.0,
-      "appropriate_escalation_rate": 48.0,
-      "premature_termination_rate": 40.0,
-      "clean_termination_rate": 98.0,
-      "truncation_rate": 2.0,
-      "terminal_consistency_rate": 98.0,
+      "episodes": 28,
+      "support_outcome_rate": 28.57,
+      "unverified_success_rate": 0.0,
+      "goal_success_rate": 25.0,
+      "appropriate_escalation_rate": 3.57,
+      "premature_termination_rate": 71.43,
+      "clean_termination_rate": 100.0,
+      "truncation_rate": 0.0,
+      "terminal_consistency_rate": 100.0,
       "constraint_violation_rate": 0.0,
-      "mean_verified_fields": 1.78,
-      "mean_episode_turns": 4.0,
-      "mean_cumulative_reward": 2.44,
+      "mean_verified_fields": 2.143,
+      "mean_episode_turns": 4.679,
+      "mean_cumulative_reward": 2.818,
       "final_phase_distribution": {
-        "CONCLUDED": 5,
-        "ESCALATED": 44,
-        "POST_PROCESS": 1
+        "CONCLUDED": 7,
+        "ESCALATED": 21
       }
     },
     "PPO (Learned)": {
-      "episodes": 50,
-      "goal_success_rate": 76.0,
-      "appropriate_escalation_rate": 24.0,
+      "episodes": 28,
+      "support_outcome_rate": 100.0,
+      "unverified_success_rate": 0.0,
+      "goal_success_rate": 75.0,
+      "appropriate_escalation_rate": 25.0,
       "premature_termination_rate": 0.0,
       "clean_termination_rate": 100.0,
       "truncation_rate": 0.0,
       "terminal_consistency_rate": 100.0,
       "constraint_violation_rate": 0.0,
-      "mean_verified_fields": 2.28,
-      "mean_episode_turns": 3.28,
-      "mean_cumulative_reward": 13.082,
+      "mean_verified_fields": 3.0,
+      "mean_episode_turns": 4.25,
+      "mean_cumulative_reward": 14.325,
       "final_phase_distribution": {
-        "CONCLUDED": 38,
-        "ESCALATED": 12
+        "CONCLUDED": 21,
+        "ESCALATED": 7
+      }
+    }
+  },
+  "limitations": "Finite synthetic profile templates are repeated; episodes are not independent human calls. Test holds out identity/style/scenario combinations, not identities or all styles.",
+  "by_profile": {
+    "RuleBased": {
+      "P12:cooperative:denied healthcare claim": {
+        "episodes": 7,
+        "support_outcome_rate": 100.0,
+        "unverified_success_rate": 0.0,
+        "goal_success_rate": 100.0,
+        "appropriate_escalation_rate": 0.0,
+        "premature_termination_rate": 0.0,
+        "clean_termination_rate": 100.0,
+        "truncation_rate": 0.0,
+        "terminal_consistency_rate": 100.0,
+        "constraint_violation_rate": 0.0,
+        "mean_verified_fields": 3.0,
+        "mean_episode_turns": 4.0,
+        "mean_cumulative_reward": 16.6,
+        "final_phase_distribution": {
+          "CONCLUDED": 7
+        }
+      },
+      "P13:escalating:auto collision claim": {
+        "episodes": 7,
+        "support_outcome_rate": 100.0,
+        "unverified_success_rate": 0.0,
+        "goal_success_rate": 0.0,
+        "appropriate_escalation_rate": 100.0,
+        "premature_termination_rate": 0.0,
+        "clean_termination_rate": 100.0,
+        "truncation_rate": 0.0,
+        "terminal_consistency_rate": 100.0,
+        "constraint_violation_rate": 0.0,
+        "mean_verified_fields": 3.0,
+        "mean_episode_turns": 4.0,
+        "mean_cumulative_reward": 7.6,
+        "final_phase_distribution": {
+          "ESCALATED": 7
+        }
+      },
+      "P7:confused:pending healthcare claim": {
+        "episodes": 7,
+        "support_outcome_rate": 100.0,
+        "unverified_success_rate": 0.0,
+        "goal_success_rate": 100.0,
+        "appropriate_escalation_rate": 0.0,
+        "premature_termination_rate": 0.0,
+        "clean_termination_rate": 100.0,
+        "truncation_rate": 0.0,
+        "terminal_consistency_rate": 100.0,
+        "constraint_violation_rate": 0.0,
+        "mean_verified_fields": 3.0,
+        "mean_episode_turns": 4.0,
+        "mean_cumulative_reward": 16.6,
+        "final_phase_distribution": {
+          "CONCLUDED": 7
+        }
+      },
+      "P9:frustrated:denied healthcare claim": {
+        "episodes": 7,
+        "support_outcome_rate": 100.0,
+        "unverified_success_rate": 0.0,
+        "goal_success_rate": 100.0,
+        "appropriate_escalation_rate": 0.0,
+        "premature_termination_rate": 0.0,
+        "clean_termination_rate": 100.0,
+        "truncation_rate": 0.0,
+        "terminal_consistency_rate": 100.0,
+        "constraint_violation_rate": 0.0,
+        "mean_verified_fields": 3.0,
+        "mean_episode_turns": 5.0,
+        "mean_cumulative_reward": 16.5,
+        "final_phase_distribution": {
+          "CONCLUDED": 7
+        }
+      }
+    },
+    "Random": {
+      "P12:cooperative:denied healthcare claim": {
+        "episodes": 7,
+        "support_outcome_rate": 42.86,
+        "unverified_success_rate": 0.0,
+        "goal_success_rate": 42.86,
+        "appropriate_escalation_rate": 0.0,
+        "premature_termination_rate": 57.14,
+        "clean_termination_rate": 100.0,
+        "truncation_rate": 0.0,
+        "terminal_consistency_rate": 100.0,
+        "constraint_violation_rate": 0.0,
+        "mean_verified_fields": 2.714,
+        "mean_episode_turns": 6.143,
+        "mean_cumulative_reward": 6.671,
+        "final_phase_distribution": {
+          "CONCLUDED": 3,
+          "ESCALATED": 4
+        }
+      },
+      "P13:escalating:auto collision claim": {
+        "episodes": 7,
+        "support_outcome_rate": 14.29,
+        "unverified_success_rate": 0.0,
+        "goal_success_rate": 0.0,
+        "appropriate_escalation_rate": 14.29,
+        "premature_termination_rate": 85.71,
+        "clean_termination_rate": 100.0,
+        "truncation_rate": 0.0,
+        "terminal_consistency_rate": 100.0,
+        "constraint_violation_rate": 0.0,
+        "mean_verified_fields": 1.571,
+        "mean_episode_turns": 2.0,
+        "mean_cumulative_reward": -1.629,
+        "final_phase_distribution": {
+          "ESCALATED": 7
+        }
+      },
+      "P7:confused:pending healthcare claim": {
+        "episodes": 7,
+        "support_outcome_rate": 28.57,
+        "unverified_success_rate": 0.0,
+        "goal_success_rate": 28.57,
+        "appropriate_escalation_rate": 0.0,
+        "premature_termination_rate": 71.43,
+        "clean_termination_rate": 100.0,
+        "truncation_rate": 0.0,
+        "terminal_consistency_rate": 100.0,
+        "constraint_violation_rate": 0.0,
+        "mean_verified_fields": 2.143,
+        "mean_episode_turns": 3.857,
+        "mean_cumulative_reward": 3.543,
+        "final_phase_distribution": {
+          "CONCLUDED": 2,
+          "ESCALATED": 5
+        }
+      },
+      "P9:frustrated:denied healthcare claim": {
+        "episodes": 7,
+        "support_outcome_rate": 28.57,
+        "unverified_success_rate": 0.0,
+        "goal_success_rate": 28.57,
+        "appropriate_escalation_rate": 0.0,
+        "premature_termination_rate": 71.43,
+        "clean_termination_rate": 100.0,
+        "truncation_rate": 0.0,
+        "terminal_consistency_rate": 100.0,
+        "constraint_violation_rate": 0.0,
+        "mean_verified_fields": 2.143,
+        "mean_episode_turns": 6.714,
+        "mean_cumulative_reward": 2.686,
+        "final_phase_distribution": {
+          "CONCLUDED": 2,
+          "ESCALATED": 5
+        }
+      }
+    },
+    "PPO (Learned)": {
+      "P12:cooperative:denied healthcare claim": {
+        "episodes": 7,
+        "support_outcome_rate": 100.0,
+        "unverified_success_rate": 0.0,
+        "goal_success_rate": 100.0,
+        "appropriate_escalation_rate": 0.0,
+        "premature_termination_rate": 0.0,
+        "clean_termination_rate": 100.0,
+        "truncation_rate": 0.0,
+        "terminal_consistency_rate": 100.0,
+        "constraint_violation_rate": 0.0,
+        "mean_verified_fields": 3.0,
+        "mean_episode_turns": 4.0,
+        "mean_cumulative_reward": 16.6,
+        "final_phase_distribution": {
+          "CONCLUDED": 7
+        }
+      },
+      "P13:escalating:auto collision claim": {
+        "episodes": 7,
+        "support_outcome_rate": 100.0,
+        "unverified_success_rate": 0.0,
+        "goal_success_rate": 0.0,
+        "appropriate_escalation_rate": 100.0,
+        "premature_termination_rate": 0.0,
+        "clean_termination_rate": 100.0,
+        "truncation_rate": 0.0,
+        "terminal_consistency_rate": 100.0,
+        "constraint_violation_rate": 0.0,
+        "mean_verified_fields": 3.0,
+        "mean_episode_turns": 4.0,
+        "mean_cumulative_reward": 7.6,
+        "final_phase_distribution": {
+          "ESCALATED": 7
+        }
+      },
+      "P7:confused:pending healthcare claim": {
+        "episodes": 7,
+        "support_outcome_rate": 100.0,
+        "unverified_success_rate": 0.0,
+        "goal_success_rate": 100.0,
+        "appropriate_escalation_rate": 0.0,
+        "premature_termination_rate": 0.0,
+        "clean_termination_rate": 100.0,
+        "truncation_rate": 0.0,
+        "terminal_consistency_rate": 100.0,
+        "constraint_violation_rate": 0.0,
+        "mean_verified_fields": 3.0,
+        "mean_episode_turns": 4.0,
+        "mean_cumulative_reward": 16.6,
+        "final_phase_distribution": {
+          "CONCLUDED": 7
+        }
+      },
+      "P9:frustrated:denied healthcare claim": {
+        "episodes": 7,
+        "support_outcome_rate": 100.0,
+        "unverified_success_rate": 0.0,
+        "goal_success_rate": 100.0,
+        "appropriate_escalation_rate": 0.0,
+        "premature_termination_rate": 0.0,
+        "clean_termination_rate": 100.0,
+        "truncation_rate": 0.0,
+        "terminal_consistency_rate": 100.0,
+        "constraint_violation_rate": 0.0,
+        "mean_verified_fields": 3.0,
+        "mean_episode_turns": 5.0,
+        "mean_cumulative_reward": 16.5,
+        "final_phase_distribution": {
+          "CONCLUDED": 7
+        }
       }
     }
   },
   "ppo_vs_rule": {
     "terminal_outcome_agreement_rate": 100.0,
-    "exact_action_sequence_agreement_rate": 24.0
+    "exact_action_sequence_agreement_rate": 50.0
   },
   "acceptance": {
     "passed": true,
@@ -72,7 +305,17 @@
       "constraint_violation_is_0": true,
       "premature_termination_is_0": true,
       "truncation_is_0": true,
+      "completed_cases_verified": true,
+      "support_outcomes_match_rule": true,
+      "case_success_matches_rule": true,
       "reward_beats_random": true
     }
+  },
+  "checkpoint": {
+    "sha256": "ffdc1f016dc45d6710aed4625312cf75df8cbb11f4fad7603e92c7455af62f35",
+    "feature_version": 2,
+    "environment_version": 3,
+    "training_seed": 42,
+    "actual_steps": 75136
   }
 }

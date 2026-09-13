@@ -2,7 +2,7 @@
 
 CallerProfile represents a synthetic caller with a specific identity and
 conversational style.  It produces the next caller utterance in response
-to the agent's chosen action and the current SOP state.
+to the agent's spoken response, without reading private SOP state or action labels.
 
 Supported styles:
 - cooperative: provides PII promptly, follows SOP flow smoothly.
@@ -13,13 +13,14 @@ Supported styles:
 """
 import copy
 import re
+import random
 from typing import Optional, List, Dict, Any
 
 from .types import AgentAction, Phase, PolicyHolder, ClaimRecord
 
 
 class CallerProfile:
-    """A synthetic caller that reacts to agent actions to drive SOP state."""
+    """A synthetic caller that reacts to the bounded dialogue text protocol."""
 
     def __init__(
         self,
@@ -27,11 +28,17 @@ class CallerProfile:
         claim_hint: str = "denied healthcare claim",
         style: str = "cooperative",
         escalate_after: int = 6,
+        email_accepted: bool = True,
     ):
         self.ph = policyholder
         self.claim_hint = claim_hint
         self.style = style
         self.escalate_after = escalate_after
+        self.email_accepted = email_accepted
+        self.reset()
+
+    def reset(self, seed=None):
+        self.rng = random.Random(seed)
 
         # Conversation state
         self._turn = 0
@@ -39,7 +46,9 @@ class CallerProfile:
         self._intent_expressed = False
         self._claim_details_given = False
         self._email_decided = False
-        self._email_accepted = style not in {"escalating"}
+        self._email_accepted = self.email_accepted
+        self._reassured = False
+        self._gate_explained = False
 
     def get_state(self) -> Dict[str, Any]:
         """Snapshot internal caller state for exact counterfactual branching."""
@@ -51,6 +60,9 @@ class CallerProfile:
             "email_decided": self._email_decided,
             "email_accepted": self._email_accepted,
             "style": self.style,
+            "reassured": self._reassured,
+            "gate_explained": self._gate_explained,
+            "rng_state": self.rng.getstate(),
         }
 
     def set_state(self, state_dict: Dict[str, Any]) -> None:
@@ -62,6 +74,9 @@ class CallerProfile:
         self._email_decided = state_dict["email_decided"]
         self._email_accepted = state_dict["email_accepted"]
         self.style = state_dict.get("style", self.style)
+        self._reassured = state_dict['reassured']
+        self._gate_explained = state_dict['gate_explained']
+        self.rng.setstate(state_dict['rng_state'])
 
     # ------------------------------------------------------------------
     # Public API
@@ -69,6 +84,7 @@ class CallerProfile:
 
     def get_opening_utterance(self) -> str:
         """First message the caller sends before any agent action."""
+        self._pii_fields_given.add('name')
         if self.style == "frustrated":
             return (
                 f"This is absolutely ridiculous — I've been waiting for weeks! "
@@ -86,100 +102,59 @@ class CallerProfile:
                 f"Please note that I prefer not to share sensitive government IDs over the phone."
             )
         elif self.style == "escalating":
-            return f"Hello, I need urgent supervisor assistance regarding my {self.claim_hint}."
+            return f"Hi, my name is {self.ph.name}. I need help urgently with my {self.claim_hint}."
         else:
             return (
                 f"Hi, my name is {self.ph.name}. "
                 f"I'm calling about my {self.claim_hint}."
             )
 
-    def respond_to(self, agent_action: AgentAction, agent_reply: str, state) -> Optional[str]:
-        """Generate the caller's next utterance in response to agent action + state."""
+    def respond_to(self, agent_action: AgentAction, agent_reply: str, state=None) -> Optional[str]:
+        """React to spoken text only; action label and SOP state are not oracles.
+
+        This deterministic simulator understands the bounded renderer protocol.
+        Supplying a different action label with identical speech has no effect.
+        """
         self._turn += 1
-
-        # Escalating style: demand human after N turns regardless
         if self.style == "escalating" and self._turn >= self.escalate_after:
-            return "I have had enough waiting. I want to speak with a human agent right now."
+            return "I want to speak with a human agent now."
+        low = agent_reply.lower()
+        if "i hear how" in low and "your concern" in low:
+            self._reassured = True
+            return "Thank you for understanding. Let's continue."
+        if "three matching identity" in low and "phone or email instead" in low:
+            self._gate_explained = True
+        if "please share your" in low:
+            if self.style == "frustrated" and not self._reassured:
+                return "I'm frustrated. Please acknowledge my concern before asking for more details."
+            if self.style == "confused" and not self._gate_explained:
+                return "I'm confused. Why do you need this? Please explain one thing at a time."
+            if self.style == "privacy_sensitive" and not self._gate_explained:
+                return "I prefer not to share sensitive government IDs. Can I use phone or email?"
+            labels = {"full name": "name", "date of birth": "dob", "phone number": "phone",
+                      "email address": "email", "government id last four": "id_last4"}
+            requested = next((field for label, field in labels.items()
+                              if f"please share your {label}" in low), None)
+            return self._provide_next_pii(set(self._pii_fields_given), requested=requested)
+        if "what would you like to understand" in low:
+            self._intent_expressed = True
+            return f"I need the status and next steps for my {self.claim_hint}."
+        if "which claim reference or year" in low:
+            self._claim_details_given = True
+            return f"My letter only says {self.claim_hint}. I have no claim reference or year to add."
+        if re.search(r"claim cl-\d+ is ", low):
+            return "Thank you for explaining the claim details. That is all the questions I have."
+        if "would you like an email summary" in low:
+            if self._email_decided:
+                return "I already answered that."
+            self._email_decided = True
+            return ("Yes, please send the summary to my email." if self._email_accepted
+                    else "No thanks, please skip the summary.")
+        if "connect you with a human" in low:
+            return "Thank you for arranging the handoff."
+        return "I did not understand that. Could you clarify?"
 
-        return self._respond_by_action(agent_action, state)
-
-    # ------------------------------------------------------------------
-    # Internal response logic
-    # ------------------------------------------------------------------
-
-    def _respond_by_action(self, action: AgentAction, state) -> Optional[str]:
-        verified_fields = set(getattr(state, "verified_fields", []) or [])
-
-        if action == AgentAction.ACK_EMOTION:
-            if self.style in {"frustrated", "escalating"}:
-                return (
-                    f"Thank you for understanding. I really need to resolve this. "
-                    f"My name is {self.ph.name}."
-                )
-            elif self.style == "confused":
-                return "Thank you for being patient with me. What information do you need first?"
-            # Cooperative
-            if not self._intent_expressed:
-                self._intent_expressed = True
-                return (
-                    f"I appreciate that. I'm calling about my {self.claim_hint}. "
-                    f"Can you help me understand the status?"
-                )
-            return "I appreciate that. Let's continue with my claim question."
-
-        elif action == AgentAction.ASK_IDENTITY_FIELD:
-            return self._provide_next_pii(verified_fields)
-
-        elif action == AgentAction.EXPLAIN_VERIFICATION_GATE:
-            if self.style == "privacy_sensitive":
-                return (
-                    "Thank you for clarifying. Since you offer alternatives to SSN, "
-                    + self._provide_next_pii(verified_fields)
-                )
-            return (
-                "I understand why security is needed. Let me give you my information. "
-                + self._provide_next_pii(verified_fields)
-            )
-
-        elif action == AgentAction.RESOLVE_INTENT:
-            if not self._intent_expressed:
-                self._intent_expressed = True
-                return (
-                    f"I need to understand the status of my {self.claim_hint}. "
-                    f"Can you tell me why it was denied and what I should do next?"
-                )
-            return "Yes, that's exactly what I need help with."
-
-        elif action == AgentAction.ASK_CLAIM_CLARIFICATION:
-            if not self._claim_details_given:
-                self._claim_details_given = True
-                return (
-                    f"It was a {self.claim_hint}. The claim was submitted about a month ago "
-                    f"and I received a notice of denial last week."
-                )
-            return "I don't have any other details to add right now."
-
-        elif action == AgentAction.ANSWER_GROUNDED:
-            return "Thank you for explaining the claim details clearly. That is all the questions I have."
-
-        elif action == AgentAction.OFFER_EMAIL_SUMMARY:
-            if not self._email_decided:
-                self._email_decided = True
-                if self._email_accepted:
-                    return "Yes, please send the summary to my email."
-                else:
-                    return "No thanks, please skip the summary."
-            return "I already answered that."
-
-        elif action == AgentAction.SEND_EMAIL:
-            return "Thank you. That covers everything I needed today."
-
-        elif action == AgentAction.ESCALATE_HUMAN:
-            return "Understood. Please connect me with the supervisor."
-
-        return "I see. Please continue."
-
-    def _provide_next_pii(self, verified_fields: set[str]) -> str:
+    def _provide_next_pii(self, verified_fields: set[str], requested=None) -> str:
         """Return a caller utterance with the next missing PII field."""
         if self.style == "privacy_sensitive":
             # Avoid SSN/id_last4; prioritize phone and email
@@ -194,7 +169,7 @@ class CallerProfile:
         if not remaining:
             return f"I've already provided all my details. My policy is {self.ph.policy_number}."
 
-        field = remaining[0]
+        field = requested if requested in remaining else remaining[0]
         self._pii_fields_given.add(field)
 
         if field == "name":
@@ -237,20 +212,23 @@ def make_all_profiles() -> List["CallerProfile"]:
     return [
         CallerProfile(ph_map["Margaret Chen"], claim_hint="denied healthcare claim", style="frustrated"),
         CallerProfile(ph_map["Ava Lopez"], claim_hint="pending healthcare claim", style="confused"),
-        CallerProfile(ph_map["Ma Tian"], claim_hint="property damage claim", style="cooperative"),
+        CallerProfile(ph_map["Ma Tian"], claim_hint="denied healthcare claim", style="cooperative"),
         CallerProfile(ph_map["Ya Wen Li"], claim_hint="auto collision claim", style="escalating", escalate_after=4),
     ]
 
 
 def make_train_profiles() -> List["CallerProfile"]:
-    """Training split: cooperative + frustrated styles."""
+    """Training combinations include empathy, gate explanations and no-match recovery."""
     from .grounded_data import grounded_data
     ph_map = {ph.name: ph for ph in grounded_data.policyholders}
     return [
         CallerProfile(ph_map["Margaret Chen"], claim_hint="denied healthcare claim", style="frustrated"),
-        CallerProfile(ph_map["Ma Tian"], claim_hint="property damage claim", style="cooperative"),
+        CallerProfile(ph_map["Ma Tian"], claim_hint="denied healthcare claim", style="cooperative"),
         CallerProfile(ph_map["Ava Lopez"], claim_hint="pending healthcare claim", style="cooperative"),
         CallerProfile(ph_map["Ya Wen Li"], claim_hint="auto collision claim", style="frustrated"),
+        CallerProfile(ph_map["Ma Tian"], claim_hint="denied healthcare claim", style="confused"),
+        CallerProfile(ph_map["Margaret Chen"], claim_hint="denied healthcare claim", style="privacy_sensitive", email_accepted=False),
+        CallerProfile(ph_map["Margaret Chen"], claim_hint="denied dental claim", style="cooperative"),
     ]
 
 
@@ -265,12 +243,12 @@ def make_val_profiles() -> List["CallerProfile"]:
 
 
 def make_test_profiles() -> List["CallerProfile"]:
-    """Test split: escalating + privacy_sensitive styles."""
+    """Held-out identity/style/scenario combinations; identities themselves are reused."""
     from .grounded_data import grounded_data
     ph_map = {ph.name: ph for ph in grounded_data.policyholders}
     return [
         CallerProfile(ph_map["Ya Wen Li"], claim_hint="auto collision claim", style="escalating", escalate_after=4),
-        CallerProfile(ph_map["Margaret Chen"], claim_hint="denied healthcare claim", style="privacy_sensitive"),
+        CallerProfile(ph_map["Ya Wen Li"], claim_hint="auto collision claim", style="privacy_sensitive", email_accepted=False),
         CallerProfile(ph_map["Ava Lopez"], claim_hint="pending healthcare claim", style="privacy_sensitive"),
-        CallerProfile(ph_map["Ma Tian"], claim_hint="property damage claim", style="escalating", escalate_after=5),
+        CallerProfile(ph_map["Ma Tian"], claim_hint="denied dental claim", style="escalating", escalate_after=5),
     ]

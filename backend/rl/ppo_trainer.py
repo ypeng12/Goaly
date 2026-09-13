@@ -6,6 +6,7 @@ import math
 import random
 import time
 import json
+import hashlib
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -40,6 +41,7 @@ class PPOConfig:
     max_turns: int = 15
     device: str = "auto"
     seed: int = 42
+    use_emotion_features: bool = True
 
 
 class RolloutBuffer:
@@ -115,7 +117,7 @@ class PPOTrainer:
         else:
             self.device = torch.device(self.cfg.device)
 
-        self.featurizer = StateFeaturizer(max_turns=self.cfg.max_turns)
+        self.featurizer = StateFeaturizer(max_turns=self.cfg.max_turns, use_emotion_features=self.cfg.use_emotion_features)
         self.policy = ActorCriticPolicy(
             state_dim=self.featurizer.FEATURE_DIM,
             action_dim=ACTION_SPACE_SIZE,
@@ -131,6 +133,9 @@ class PPOTrainer:
         )
 
         self.history: List[Dict[str, Any]] = []
+        self.training_segments = []
+        self._prior_requested_steps = 0
+        self._warm_start_sha256 = None
 
     def _set_seed(self, seed: int):
         random.seed(seed)
@@ -155,9 +160,19 @@ class PPOTrainer:
         target_timesteps = total_timesteps or self.cfg.total_timesteps
         num_updates = math.ceil(target_timesteps / self.cfg.rollout_steps)
         actual_timesteps = num_updates * self.cfg.rollout_steps
+        initial_step = self.history[-1]['global_step'] if self.history else 0
+        initial_update = self.history[-1]['update'] if self.history else 0
+        self.cfg.total_timesteps = self._prior_requested_steps + target_timesteps
+        self.training_segments.append({
+            'seed': self.cfg.seed, 'requested_steps': target_timesteps,
+            'actual_steps': actual_timesteps, 'initial_step': initial_step,
+            'warm_start_sha256': self._warm_start_sha256,
+            'reset_rng_and_episode': True,
+        })
 
         env = self._create_env(split="train")
-        obs, info = env.reset()
+        episode_number = 0
+        obs, info = env.reset(seed=self.cfg.seed + episode_number)
         current_state = self.featurizer.featurize_tensor(obs, turn=0, device=self.device)
         current_mask = self.featurizer.extract_mask_tensor(obs, device=self.device)
         last_done = False
@@ -172,7 +187,7 @@ class PPOTrainer:
         current_ep_len = 0
         current_ep_violations = 0
 
-        global_step = 0
+        global_step = initial_step
         start_time = time.time()
 
         print(f"Starting PPO Training on device: {self.device}")
@@ -224,7 +239,8 @@ class PPOTrainer:
 
                         # Reset with a new randomized training caller profile
                         env = self._create_env(split="train")
-                        next_obs, info = env.reset()
+                        episode_number += 1
+                        next_obs, info = env.reset(seed=self.cfg.seed + episode_number)
                         current_state = self.featurizer.featurize_tensor(next_obs, turn=0, device=self.device)
                         current_mask = self.featurizer.extract_mask_tensor(next_obs, device=self.device)
                     else:
@@ -325,7 +341,7 @@ class PPOTrainer:
             recent_premature = np.mean(episode_premature[-20:]) * 100.0 if episode_premature else 0.0
 
             metrics = {
-                "update": update,
+                "update": initial_update + update,
                 "global_step": global_step,
                 "mean_reward": float(recent_reward),
                 "mean_ep_length": float(recent_len),
@@ -338,7 +354,7 @@ class PPOTrainer:
                 "clip_fraction": float(np.mean(clip_fracs)),
                 "approx_kl": float(np.mean(approx_kls)),
                 "explained_variance": float(np.mean(explained_vars)),
-                "fps": int(global_step / max(0.01, time.time() - start_time)),
+                "fps": int((global_step - initial_step) / max(0.01, time.time() - start_time)),
             }
             self.history.append(metrics)
 
@@ -356,6 +372,7 @@ class PPOTrainer:
                     f"FPS: {metrics['fps']}"
                 )
 
+        self._prior_requested_steps = self.cfg.total_timesteps
         return self.history
 
     def evaluate(
@@ -385,7 +402,7 @@ class PPOTrainer:
                 ep_profiles = profile_fn()
                 profile = ep_profiles[i % len(ep_profiles)]
                 env = AgentPolicyEnv(caller_profile=profile, max_turns=turns_limit)
-                obs, info = env.reset()
+                obs, info = env.reset(seed=self.cfg.seed + i)
 
                 done = False
                 cum_reward = 0.0
@@ -419,9 +436,10 @@ class PPOTrainer:
                 })
 
         terminal_phases = {"CONCLUDED", "ESCALATED"}
-        consistency = sum(1 for e in episode_summaries if e["terminated"] and e["final_phase"] in terminal_phases)
-        total_term = sum(1 for e in episode_summaries if e["terminated"])
-        consistency_rate = (consistency / total_term * 100.0) if total_term > 0 else 100.0
+        consistency = sum(1 for e in episode_summaries
+                          if bool(e['terminated']) == (e['final_phase'] in terminal_phases)
+                          and not (e['terminated'] and e['truncated']))
+        consistency_rate = consistency / len(episode_summaries) * 100.0
 
         return {
             "mean_reward": float(np.mean([e["cumulative_reward"] for e in episode_summaries])),
@@ -446,6 +464,10 @@ class PPOTrainer:
                 "optimizer_state_dict": self.optimizer.state_dict(),
                 "config": asdict(self.cfg),
                 "history": self.history,
+                "training_segments": self.training_segments,
+                "feature_version": StateFeaturizer.VERSION,
+                "state_dim": StateFeaturizer.FEATURE_DIM,
+                "environment_version": AgentPolicyEnv.ENV_VERSION,
             },
             str(destination),
         )
@@ -453,7 +475,20 @@ class PPOTrainer:
 
     def load_checkpoint(self, path: str):
         checkpoint = torch.load(path, map_location=self.device)
+        if (checkpoint.get('feature_version') != StateFeaturizer.VERSION
+                or checkpoint.get('environment_version') != AgentPolicyEnv.ENV_VERSION):
+            raise ValueError('Checkpoint feature schema is incompatible; retrain for the current environment.')
+        if checkpoint['config'].get('use_emotion_features', True) != self.cfg.use_emotion_features:
+            raise ValueError('Warm start must use the same emotion-feature setting.')
         self.policy.load_state_dict(checkpoint["policy_state_dict"])
         self.optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
         self.history = checkpoint.get("history", [])
+        self._prior_requested_steps = checkpoint['config']['total_timesteps']
+        self._warm_start_sha256 = hashlib.sha256(Path(path).read_bytes()).hexdigest()
+        self.training_segments = checkpoint.get('training_segments') or [{
+            'seed': checkpoint['config']['seed'],
+            'requested_steps': self._prior_requested_steps,
+            'actual_steps': self.history[-1]['global_step'] if self.history else 0,
+            'initial_step': 0, 'warm_start_sha256': None, 'reset_rng_and_episode': True,
+        }]
         print(f"PPO checkpoint loaded from {path}")

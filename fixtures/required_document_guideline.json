@@ -41,6 +41,18 @@
       "en": "If you cannot get the full office note immediately, ask the clinic for a complete visit summary, discharge paperwork, or a re-sent copy of the chart. If the provider can fax or upload the note directly, that is often the cleanest option. If none of those are available, a human representative should review what other clinical records may be acceptable."
     }
   },
+  "concise_documents": {
+    "original pathology report": "A scan must be complete and fully readable, with patient and specimen details, testing date and any signature. If an original is required, confirm mailing instructions with support.",
+    "treating provider office note": "Include patient name, visit date, assessment and follow-up recommendations. Upload all pages together in one PDF when possible.",
+    "supplemental accident scene photos": "Include clear damage photos and a wider vehicle/scene view. Add multiple angles and a vehicle identifier when available.",
+    "repair estimate": "Include the vehicle or claim reference, damaged parts, labor and quoted amount; add the shop contact information when available."
+  },
+  "concise_alternatives": {
+    "original pathology report": "Ask the hospital or lab for a replacement copy. A complete readable scan or certified copy may help while original-mailing requirements are confirmed. If no copy is available, request human review.",
+    "treating provider office note": "Ask the clinic for a visit summary, discharge paperwork or a re-sent office note. If none is available, request human review of alternatives.",
+    "supplemental accident scene photos": "Provide later damage photos, an estimate and any incident report, plus a note tying them to the same event. If unavailable, request human review.",
+    "repair estimate": "Request a written estimate from the repair shop. Another licensed shop or adjuster estimate may help; if no estimate is available, request human review."
+  },
   "claim_followup_settings": {
     "average_processing_time_after_submission": {
       "en": "usually less than a week"

@@ -213,6 +213,7 @@ class GroundedDataManager:
         """
         doc_guidances = {}
         alt_guidances = {}
+        concise_docs, concise_alts = {}, {}
 
         all_doc_g = self.document_guideline.get("document_guidance", {})
         all_alt_g = self.document_guideline.get("document_alternative_guidance", {})
@@ -230,12 +231,16 @@ class GroundedDataManager:
             else:
                 doc_guidances[doc] = self.document_guideline.get("default_guidance", {}).get("en", "")
                 alt_guidances[doc] = all_alt_g.get("default", {}).get("en", "")
+            concise_docs[doc] = self.document_guideline.get('concise_documents', {}).get(matched_key, doc_guidances[doc])
+            concise_alts[doc] = self.document_guideline.get('concise_alternatives', {}).get(matched_key, alt_guidances[doc])
 
         return {
             "default_guidance": self.document_guideline.get("default_guidance", {}).get("en", ""),
             "case_type_guidance": self.document_guideline.get("case_type_guidance", {}).get(claim.case_type, {}).get("en", ""),
             "document_guidance": doc_guidances,
             "document_alternative_guidance": alt_guidances,
+            "concise_documents": concise_docs,
+            "concise_alternatives": concise_alts,
             "claim_followup_settings": self.document_guideline.get("claim_followup_settings", {}),
             "followup_qa": self.document_guideline.get("claim_followup_guidance", [])
         }

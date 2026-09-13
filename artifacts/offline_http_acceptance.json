@@ -1,0 +1,240 @@
+{
+  "suite": "Offline HTTP scenario contract; not live-model acceptance",
+  "passed": true,
+  "cases": [
+    {
+      "case": "sample_send",
+      "passed": true,
+      "turns": [
+        {
+          "phase_ok": true,
+          "response_ok": true,
+          "actual_phase": "PROCESS_CASE",
+          "reply": "Your identity is verified. I used the claim details you shared earlier to find your case.\n\nClaim CL-2048 is denied. It is a healthcare claim created on 2026-01-12.\n\nThe recorded denial reason is that the review file did not include the pathology report and the treating provider office note.\n\nThe requested documents are: pathology report, office note.\n\nThe recorded appeal deadline is 2026-03-18. That date has passed. A human claims representative must review whether any options remain; I cannot promise an extension.\n\nWhat else would help? You can ask for more detail, or say 'That's all' for an optional email summary."
+        },
+        {
+          "phase_ok": true,
+          "response_ok": true,
+          "actual_phase": "POST_PROCESS",
+          "reply": "Would you like an email summary of our conversation for claim CL-2048, or would you prefer to skip it? It includes what we discussed, the claim status and outcome, and the major follow-up items. Email delivery is simulated in this demo."
+        },
+        {
+          "phase_ok": true,
+          "response_ok": true,
+          "actual_phase": "CONCLUDED",
+          "reply": "The email summary was added to the demo outbox for margaret@email.com. Delivery is simulated; no real email was sent. Thank you for contacting claims support."
+        }
+      ]
+    },
+    {
+      "case": "partial_memory_skip",
+      "passed": true,
+      "turns": [
+        {
+          "phase_ok": true,
+          "response_ok": true,
+          "actual_phase": "VERIFY_ID",
+          "reply": "I have noted the identity details you shared. I have also saved your claim question for after verification. To protect your private claim information, I need to verify 3 matching items before opening a claim. Please share 2 more items, choosing from date of birth, phone number, email address, last four digits of your SSN. You can use phone or email instead of SSN, or ask for a human representative."
+        },
+        {
+          "phase_ok": true,
+          "response_ok": true,
+          "actual_phase": "VERIFY_ID",
+          "reply": "I have noted the identity details you shared. I have also saved your claim question for after verification. To protect your private claim information, I need to verify 3 matching items before opening a claim. Please share 1 more item, choosing from phone number, email address, last four digits of your SSN. You can use phone or email instead of SSN, or ask for a human representative."
+        },
+        {
+          "phase_ok": true,
+          "response_ok": true,
+          "actual_phase": "PROCESS_CASE",
+          "reply": "Your identity is verified. I used the claim details you shared earlier to find your case.\n\nClaim CL-2048 is denied. It is a healthcare claim created on 2026-01-12.\n\nThe recorded denial reason is that the review file did not include the pathology report and the treating provider office note.\n\nThe requested documents are: pathology report, office note.\n\nThe recorded appeal deadline is 2026-03-18. That date has passed. A human claims representative must review whether any options remain; I cannot promise an extension.\n\nWhat else would help? You can ask for more detail, or say 'That's all' for an optional email summary."
+        },
+        {
+          "phase_ok": true,
+          "response_ok": true,
+          "actual_phase": "POST_PROCESS",
+          "reply": "Would you like an email summary of our conversation for claim CL-2048, or would you prefer to skip it? It includes what we discussed, the claim status and outcome, and the major follow-up items. Email delivery is simulated in this demo."
+        },
+        {
+          "phase_ok": true,
+          "response_ok": true,
+          "actual_phase": "CONCLUDED",
+          "reply": "I will skip the email summary as requested. Thank you for contacting claims support."
+        }
+      ]
+    },
+    {
+      "case": "alternate_identity",
+      "passed": true,
+      "turns": [
+        {
+          "phase_ok": true,
+          "response_ok": true,
+          "actual_phase": "VERIFY_ID",
+          "reply": "I have noted the identity details you shared. To protect your private claim information, I need to verify 3 matching items before opening a claim. Please share 2 more items, choosing from date of birth, phone number, email address, last four digits of your SSN. You can use phone or email instead of SSN, or ask for a human representative."
+        },
+        {
+          "phase_ok": true,
+          "response_ok": true,
+          "actual_phase": "PROCESS_CASE",
+          "reply": "Your identity is verified. I used the claim details you shared earlier to find your case.\n\nClaim CL-1044 is open. It is a healthcare claim created on 2026-02-15.\n\nThe record does not list any outstanding documents.\n\nWhat else would help? You can ask for more detail, or say 'That's all' for an optional email summary."
+        }
+      ]
+    },
+    {
+      "case": "emotional_recovery",
+      "passed": true,
+      "turns": [
+        {
+          "phase_ok": true,
+          "response_ok": true,
+          "actual_phase": "VERIFY_ID",
+          "reply": "I understand this is frustrating, especially when you need an answer. I have also saved your claim question for after verification. To protect your private claim information, I need to verify 3 matching items before opening a claim. Please share 3 more items, choosing from full name, date of birth, phone number, email address, last four digits of your SSN. You can use phone or email instead of SSN, or ask for a human representative."
+        },
+        {
+          "phase_ok": true,
+          "response_ok": true,
+          "actual_phase": "PROCESS_CASE",
+          "reply": "Your identity is verified. I used the claim details you shared earlier to find your case.\n\nClaim CL-2048 is denied. It is a healthcare claim created on 2026-01-12.\n\nThe recorded denial reason is that the review file did not include the pathology report and the treating provider office note.\n\nThe requested documents are: pathology report, office note.\n\nThe recorded appeal deadline is 2026-03-18. That date has passed. A human claims representative must review whether any options remain; I cannot promise an extension.\n\nWhat else would help? You can ask for more detail, or say 'That's all' for an optional email summary."
+        }
+      ]
+    },
+    {
+      "case": "identity_correction",
+      "passed": true,
+      "turns": [
+        {
+          "phase_ok": true,
+          "response_ok": true,
+          "actual_phase": "VERIFY_ID",
+          "reply": "I have noted the identity details you shared. To protect your private claim information, I need to verify 3 matching items before opening a claim. Please share 2 more items, choosing from date of birth, phone number, email address, last four digits of your SSN. You can use phone or email instead of SSN, or ask for a human representative."
+        },
+        {
+          "phase_ok": true,
+          "response_ok": true,
+          "actual_phase": "VERIFY_ID",
+          "reply": "I have noted the identity details you shared. To protect your private claim information, I need to verify 3 matching items before opening a claim. Please share 2 more items, choosing from date of birth, phone number, email address, last four digits of your SSN. You can use phone or email instead of SSN, or ask for a human representative."
+        },
+        {
+          "phase_ok": true,
+          "response_ok": true,
+          "actual_phase": "PROCESS_CASE",
+          "reply": "Your identity is verified. I used the claim details you shared earlier to find your case.\n\nClaim CL-1044 is open. It is a healthcare claim created on 2026-02-15.\n\nThe record does not list any outstanding documents.\n\nWhat else would help? You can ask for more detail, or say 'That's all' for an optional email summary."
+        }
+      ]
+    },
+    {
+      "case": "repeated_scope",
+      "passed": true,
+      "turns": [
+        {
+          "phase_ok": true,
+          "response_ok": true,
+          "actual_phase": "VERIFY_ID",
+          "reply": "I can help with insurance claims, policy questions, and verification, but I am unable to answer that unrelated request. We can continue with your claim, or you can ask for a human representative."
+        },
+        {
+          "phase_ok": true,
+          "response_ok": true,
+          "actual_phase": "ESCALATED",
+          "reply": "I have recorded a request to connect you with a human claims representative. This demo simulates the handoff; no live transfer takes place. Verification is still required before protected details can be shared."
+        }
+      ]
+    },
+    {
+      "case": "injection",
+      "passed": true,
+      "turns": [
+        {
+          "phase_ok": true,
+          "response_ok": true,
+          "actual_phase": "VERIFY_ID",
+          "reply": "I can help with insurance claims, policy questions, and verification, but I am unable to answer that unrelated request. We can continue with your claim, or you can ask for a human representative."
+        },
+        {
+          "phase_ok": true,
+          "response_ok": true,
+          "actual_phase": "ESCALATED",
+          "reply": "I have recorded a request to connect you with a human claims representative. This demo simulates the handoff; no live transfer takes place. Verification is still required before protected details can be shared."
+        }
+      ]
+    },
+    {
+      "case": "pending_consent_followup",
+      "passed": true,
+      "turns": [
+        {
+          "phase_ok": true,
+          "response_ok": true,
+          "actual_phase": "PROCESS_CASE",
+          "reply": "Your identity is verified. I used the claim details you shared earlier to find your case.\n\nClaim CL-2048 is denied. It is a healthcare claim created on 2026-01-12.\n\nThe recorded denial reason is that the review file did not include the pathology report and the treating provider office note.\n\nThe requested documents are: pathology report, office note.\n\nThe recorded appeal deadline is 2026-03-18. That date has passed. A human claims representative must review whether any options remain; I cannot promise an extension.\n\nWhat else would help? You can ask for more detail, or say 'That's all' for an optional email summary."
+        },
+        {
+          "phase_ok": true,
+          "response_ok": true,
+          "actual_phase": "POST_PROCESS",
+          "reply": "Would you like an email summary of our conversation for claim CL-2048, or would you prefer to skip it? It includes what we discussed, the claim status and outcome, and the major follow-up items. Email delivery is simulated in this demo."
+        },
+        {
+          "phase_ok": true,
+          "response_ok": true,
+          "actual_phase": "POST_PROCESS",
+          "reply": "Would you like an email summary of our conversation for claim CL-2048, or would you prefer to skip it? It includes what we discussed, the claim status and outcome, and the major follow-up items. Email delivery is simulated in this demo."
+        },
+        {
+          "phase_ok": true,
+          "response_ok": true,
+          "actual_phase": "POST_PROCESS",
+          "reply": "A scan must be complete and fully readable, with patient and specimen details, testing date and any signature. If an original is required, confirm mailing instructions with support.\nInclude patient name, visit date, assessment and follow-up recommendations. Upload all pages together in one PDF when possible.\n\nWould you like an email summary of our conversation for claim CL-2048, or would you prefer to skip it? It includes what we discussed, the claim status and outcome, and the major follow-up items. Email delivery is simulated in this demo."
+        },
+        {
+          "phase_ok": true,
+          "response_ok": true,
+          "actual_phase": "CONCLUDED",
+          "reply": "I will skip the email summary as requested. Thank you for contacting claims support."
+        }
+      ]
+    },
+    {
+      "case": "messy_document_followup",
+      "passed": true,
+      "turns": [
+        {
+          "phase_ok": true,
+          "response_ok": true,
+          "actual_phase": "PROCESS_CASE",
+          "reply": "Your identity is verified. I used the claim details you shared earlier to find your case.\n\nClaim CL-2048 is denied. It is a healthcare claim created on 2026-01-12.\n\nThe recorded denial reason is that the review file did not include the pathology report and the treating provider office note.\n\nThe requested documents are: pathology report, office note.\n\nThe recorded appeal deadline is 2026-03-18. That date has passed. A human claims representative must review whether any options remain; I cannot promise an extension.\n\nWhat else would help? You can ask for more detail, or say 'That's all' for an optional email summary."
+        },
+        {
+          "phase_ok": true,
+          "response_ok": true,
+          "actual_phase": "PROCESS_CASE",
+          "reply": "Ask the hospital or lab for a replacement copy. A complete readable scan or certified copy may help while original-mailing requirements are confirmed. If no copy is available, request human review.\nAsk the clinic for a visit summary, discharge paperwork or a re-sent office note. If none is available, request human review of alternatives.\n\nA scan must be complete and fully readable, with patient and specimen details, testing date and any signature. If an original is required, confirm mailing instructions with support.\nInclude patient name, visit date, assessment and follow-up recommendations. Upload all pages together in one PDF when possible.\n\nWhat else would help? You can ask for more detail, or say 'That's all' for an optional email summary."
+        },
+        {
+          "phase_ok": true,
+          "response_ok": true,
+          "actual_phase": "PROCESS_CASE",
+          "reply": "The recorded appeal deadline is 2026-03-18. That date has passed. A human claims representative must review whether any options remain; I cannot promise an extension.\n\nWhat else would help? You can ask for more detail, or say 'That's all' for an optional email summary."
+        }
+      ]
+    },
+    {
+      "case": "claim_ambiguity",
+      "passed": true,
+      "turns": [
+        {
+          "phase_ok": true,
+          "response_ok": true,
+          "actual_phase": "RESOLVE_INTENT",
+          "reply": "Your identity is verified. I kept the details you mentioned, but more than one claim matches: CL-2048: healthcare, 2026-01-12, denied; CL-2011: healthcare, 2025-01-28, closed. Which claim reference or year did you mean?"
+        },
+        {
+          "phase_ok": true,
+          "response_ok": true,
+          "actual_phase": "PROCESS_CASE",
+          "reply": "Your identity is verified. I used the claim details you shared earlier to find your case.\n\nClaim CL-2048 is denied. It is a healthcare claim created on 2026-01-12.\n\nThe recorded denial reason is that the review file did not include the pathology report and the treating provider office note.\n\nThe requested documents are: pathology report, office note.\n\nThe recorded appeal deadline is 2026-03-18. That date has passed. A human claims representative must review whether any options remain; I cannot promise an extension.\n\nWhat else would help? You can ask for more detail, or say 'That's all' for an optional email summary."
+        }
+      ]
+    }
+  ]
+}

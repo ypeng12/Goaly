@@ -1,0 +1,64 @@
+{
+  "recorded_at_utc": "2026-09-13T23:29:48.278568+00:00",
+  "python_environment": "Fresh Python 3.11 virtual environment installed from requirements.txt",
+  "pytest": {
+    "passed": 167,
+    "failed": 0
+  },
+  "sop_benchmark": {
+    "scenarios_passed": 33,
+    "scenarios_total": 33,
+    "assertions_passed": 650,
+    "assertions_total": 650
+  },
+  "offline_http": {
+    "scenarios_passed": 10,
+    "scenarios_total": 10
+  },
+  "browser": {
+    "passed": true,
+    "checks": [
+      {
+        "viewport": 1440,
+        "customer_finish": "passed",
+        "consent_skip": "passed",
+        "rl_comparison": "passed",
+        "replay": "passed",
+        "download": "passed",
+        "page_errors": []
+      },
+      {
+        "viewport": 390,
+        "customer_finish": "passed",
+        "consent_skip": "passed",
+        "rl_comparison": "passed",
+        "replay": "passed",
+        "download": "passed",
+        "page_errors": []
+      }
+    ]
+  },
+  "rl_audit_passed": true,
+  "training_runs": [
+    {
+      "seed": 42,
+      "actual_steps": 75136,
+      "checkpoint_sha256": "ffdc1f016dc45d6710aed4625312cf75df8cbb11f4fad7603e92c7455af62f35"
+    },
+    {
+      "seed": 7,
+      "actual_steps": 75136,
+      "checkpoint_sha256": "402a582a31db6d1db3f028aadf693ee0c385efda213912ef689f0bfb6e0f3f0b"
+    }
+  ],
+  "dpo_pairs": 50,
+  "emotion_ablation_runs": 4,
+  "live_provider": {
+    "status": "not_run",
+    "reason": "No API token configured; not counted as a pass."
+  },
+  "docker_ci": {
+    "status": "configured_not_yet_run",
+    "note": "Local Docker daemon unavailable. Inspect the GitHub Actions run for the delivered commit."
+  }
+}

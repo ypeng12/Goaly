@@ -10,6 +10,8 @@ COPY --chown=appuser:appuser frontend/ frontend/
 COPY --chown=appuser:appuser fixtures/ fixtures/
 COPY --chown=appuser:appuser tests/ tests/
 COPY --chown=appuser:appuser eval/ eval/
+COPY --chown=appuser:appuser train_ppo.py ./
+COPY --chown=appuser:appuser artifacts/ artifacts/
 USER appuser
 EXPOSE 8080
 CMD ["python", "-m", "uvicorn", "backend.app:app", "--host", "0.0.0.0", "--port", "8080"]

@@ -27,7 +27,7 @@ def test_featurizer_dimensions():
 
     vec = featurizer.featurize(obs, turn=3)
     assert isinstance(vec, np.ndarray)
-    assert vec.shape == (20,)
+    assert vec.shape == (30,)
     assert vec.dtype == np.float32
 
     # Phase VERIFY_ID is first
@@ -162,8 +162,12 @@ def test_dpo_pairs_generation():
         assert "chosen" in first
         assert "rejected" in first
         assert "reward_delta" in first
-        assert "action" in first["chosen"]
-        assert "action" in first["rejected"]
+        assert isinstance(first['chosen'], str) and isinstance(first['rejected'], str)
+        for pair in pairs:
+            assert pair['chosen'] != pair['rejected']
+            assert pair['reward_delta'] >= 0.1
+            assert pair['same_state_verified'] and len(pair['state_hash']) == 64
+            assert not pair['chosen_violations']
 
 
 def test_policy_report_distinguishes_outcomes_from_action_agreement():

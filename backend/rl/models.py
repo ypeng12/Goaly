@@ -18,7 +18,7 @@ class ActorCriticPolicy(nn.Module):
 
     def __init__(
         self,
-        state_dim: int = 20,
+        state_dim: int = 30,
         action_dim: int = ACTION_SPACE_SIZE,
         hidden_dim: int = 64,
     ):

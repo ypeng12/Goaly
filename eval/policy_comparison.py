@@ -11,6 +11,7 @@ Run:
 """
 import argparse
 import json
+import hashlib
 import sys
 import random
 import statistics
@@ -63,13 +64,16 @@ def summarize_policy(results: List[Dict[str, Any]]) -> Dict[str, Any]:
     final_phases = Counter(row["final_phase"] for row in results)
     return {
         "episodes": count,
+        "support_outcome_rate": pct(lambda row: row['task_success'] or row['appropriate_escalation']),
+        "unverified_success_rate": pct(lambda row: row['task_success'] and len(set(row['verified_fields'])) < 3),
         "goal_success_rate": pct(lambda row: row["task_success"]),
         "appropriate_escalation_rate": pct(lambda row: row["appropriate_escalation"]),
         "premature_termination_rate": pct(lambda row: row["premature_termination"]),
         "clean_termination_rate": pct(lambda row: row["terminated"]),
         "truncation_rate": pct(lambda row: row["truncated"]),
         "terminal_consistency_rate": pct(
-            lambda row: row["terminated"] and row["final_phase"] in TERMINAL_PHASES
+            lambda row: bool(row["terminated"]) == (row["final_phase"] in TERMINAL_PHASES)
+            and not (row["terminated"] and row["truncated"])
         ),
         "constraint_violation_rate": pct(lambda row: bool(row["violations"])),
         "mean_verified_fields": round(
@@ -99,7 +103,7 @@ def build_report(
     """Build an auditable report and acceptance decision from arena results."""
     policies = {name: summarize_policy(rows) for name, rows in results_dict.items()}
     report: Dict[str, Any] = {
-        "schema_version": 1,
+        "schema_version": 2,
         "config": {
             "split": split,
             "episodes_per_policy": n_episodes,
@@ -108,7 +112,14 @@ def build_report(
             "seed": seed,
         },
         "policies": policies,
+        "limitations": "Finite synthetic profile templates are repeated; episodes are not independent human calls. Test holds out identity/style/scenario combinations, not identities or all styles.",
     }
+    report['by_profile'] = {}
+    for name, rows in results_dict.items():
+        report['by_profile'][name] = {
+            key: summarize_policy([r for r in rows if r.get('profile_id') == key])
+            for key in sorted({r['profile_id'] for r in rows if 'profile_id' in r})
+        }
 
     if "PPO (Learned)" in results_dict:
         rule_rows = results_dict["RuleBased"]
@@ -134,6 +145,9 @@ def build_report(
             "constraint_violation_is_0": ppo["constraint_violation_rate"] == 0.0,
             "premature_termination_is_0": ppo["premature_termination_rate"] == 0.0,
             "truncation_is_0": ppo["truncation_rate"] == 0.0,
+            "completed_cases_verified": ppo['unverified_success_rate'] == 0.0,
+            "support_outcomes_match_rule": ppo['support_outcome_rate'] >= policies['RuleBased']['support_outcome_rate'],
+            "case_success_matches_rule": ppo['goal_success_rate'] >= policies['RuleBased']['goal_success_rate'],
             "reward_beats_random": (
                 ppo["mean_cumulative_reward"] > random_policy["mean_cumulative_reward"]
             ),
@@ -161,8 +175,8 @@ class RandomPolicy:
             raise RuntimeError("No legal actions available")
         return self.rng.choice(legal)
 
-    def run_episode(self, env: AgentPolicyEnv, verbose: bool = False) -> dict:
-        obs, info = env.reset()
+    def run_episode(self, env: AgentPolicyEnv, verbose: bool = False, seed=None) -> dict:
+        obs, info = env.reset(seed=seed)
         done = False
         cumulative_reward = 0.0
         all_violations = []
@@ -201,14 +215,17 @@ class LearnedPPOPolicy:
 
     def __init__(self, model_path: str = "artifacts/ppo_policy.pt", device: str = "cpu"):
         self.device = torch.device(device)
-        self.featurizer = StateFeaturizer()
+        checkpoint = torch.load(model_path, map_location=self.device)
+        if checkpoint.get('feature_version') != StateFeaturizer.VERSION or checkpoint.get('environment_version') != AgentPolicyEnv.ENV_VERSION:
+            raise ValueError('Checkpoint schema/environment is incompatible. Run train_ppo.py to retrain.')
+        self.featurizer = StateFeaturizer(max_turns=checkpoint['config']['max_turns'],
+                                         use_emotion_features=checkpoint['config'].get('use_emotion_features', True))
         self.policy = ActorCriticPolicy(
             state_dim=self.featurizer.FEATURE_DIM,
             action_dim=len(AGENT_ACTIONS),
             hidden_dim=64,
         ).to(self.device)
 
-        checkpoint = torch.load(model_path, map_location=self.device)
         self.policy.load_state_dict(checkpoint["policy_state_dict"])
         self.policy.eval()
 
@@ -221,8 +238,8 @@ class LearnedPPOPolicy:
             )
         return AGENT_ACTIONS[action_idx.item()]
 
-    def run_episode(self, env: AgentPolicyEnv, verbose: bool = False) -> dict:
-        obs, info = env.reset()
+    def run_episode(self, env: AgentPolicyEnv, verbose: bool = False, seed=None) -> dict:
+        obs, info = env.reset(seed=seed)
         done = False
         cumulative_reward = 0.0
         all_violations = []
@@ -289,7 +306,10 @@ def run_agent_comparison(
             ep_profiles = profile_fn()
             profile = ep_profiles[profile_idx]
             env = AgentPolicyEnv(caller_profile=profile, max_turns=max_turns)
-            results_dict[name].append(pol.run_episode(env))
+            result = pol.run_episode(env, seed=seed + i)
+            result['profile_id'] = f'{profile.ph.party_id}:{profile.style}:{profile.claim_hint}'
+            result['episode_seed'] = seed + i
+            results_dict[name].append(result)
 
     def pct(results, pred):
         return 100.0 * sum(1 for r in results if pred(r)) / len(results)
@@ -312,7 +332,7 @@ def run_agent_comparison(
         ("Premature termination rate (%)", lambda res: f"{pct(res, lambda r: r['premature_termination']):>16.2f}"),
         ("Termination rate — clean end (%)", lambda res: f"{pct(res, lambda r: r['terminated']):>16.2f}"),
         ("Truncation rate — hit max_turns (%)", lambda res: f"{pct(res, lambda r: r['truncated']):>16.2f}"),
-        ("Terminal consistency (%)", lambda res: f"{pct(res, lambda r: r['terminated'] and r['final_phase'] in TERMINAL_PHASES):>16.2f}"),
+        ("Terminal consistency (%)", lambda res: f"{summarize_policy(res)['terminal_consistency_rate']:>16.2f}"),
         ("Constraint violation rate (%)", lambda res: f"{pct(res, lambda r: bool(r['violations'])):>16.2f}"),
         ("Mean verified fields collected", lambda res: f"{(sum(len(r['verified_fields']) for r in res) / len(res)):>16.2f}"),
         ("Mean episode length (turns)", lambda res: f"{avg(res, 'turns'):>16.2f}"),
@@ -391,6 +411,15 @@ def main():
         seed=args.seed,
         profile_count=profile_count,
     )
+    if Path(args.model_path).is_file():
+        checkpoint = torch.load(args.model_path, map_location='cpu')
+        report['checkpoint'] = {
+            'sha256': hashlib.sha256(Path(args.model_path).read_bytes()).hexdigest(),
+            'feature_version': checkpoint['feature_version'],
+            'environment_version': checkpoint['environment_version'],
+            'training_seed': checkpoint['config']['seed'],
+            'actual_steps': checkpoint['history'][-1]['global_step'],
+        }
 
     comparison = report.get("ppo_vs_rule")
     if comparison:

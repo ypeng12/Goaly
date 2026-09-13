@@ -1,0 +1,19 @@
+{
+  "initial_segment_source_sha256": "09c6d4738f568b47f2cd68809cdd94e912212da0849db2bd8b140a1213488f25",
+  "warm_start_source_sha256": "70e1b14605fcf955978942298eee8e836515a17cd203144e8af79f5d5d70f36a",
+  "difference": "Customer document-alternative extraction recognizes closed providers and requests for another way. Synthetic caller training messages and the action protocol are unchanged.",
+  "seeds": [
+    42,
+    7
+  ],
+  "segments_requested": [
+    50000,
+    25000
+  ],
+  "segments_actual": [
+    50048,
+    25088
+  ],
+  "initial_environment_version": 3,
+  "feature_version": 2
+}

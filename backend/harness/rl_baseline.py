@@ -1,17 +1,10 @@
 """Rule-based policy baseline for AgentPolicyEnv.
 
 RuleBasedPolicy implements the deterministic SOP as a policy that can be
-compared against random sampling or a learned LLM policy.  It always chooses
-the most conservative legal action given the current observation:
-
-    1. If identity is not verified → ASK_IDENTITY_FIELD (or EXPLAIN_GATE if
-       all PII fields already captured but not matched).
-    2. If in RESOLVE_INTENT and no intent confirmed → RESOLVE_INTENT.
-    3. If in PROCESS_CASE and email not yet offered → OFFER_EMAIL_SUMMARY.
-    4. If in POST_PROCESS → SEND_EMAIL.
-    5. Otherwise → ACK_EMOTION (safe filler).
-    6. ESCALATE_HUMAN is never chosen proactively by this baseline (only on
-       explicit signal).
+compared against random sampling or a learned dialogue-act policy. It prioritizes
+human requests, empathy and gate explanations, then verification, clarification,
+a grounded answer and the optional email choice. Unresolved case matching after
+two attempts permits a reasoned handoff.
 
 Usage:
     from backend.harness.rl_env import AgentPolicyEnv
@@ -42,19 +35,15 @@ class RuleBasedPolicy:
     follows the SOP rules exactly.  It never violates action_mask constraints.
 
     This policy is useful as:
-    - A lower-bound performance target (a learned policy should beat it)
+    - A hand-designed performance reference for the learned policy
     - A sanity check that the environment rewards SOP-compliant behaviour
     - A reference for mask-compliance in tests
     """
 
     def __init__(self):
-        self._resolve_intent_attempts = 0   # reset at episode start
-        self._claim_clarification_done = False
         self._grounded_answered = False
 
     def _reset_episode_state(self) -> None:
-        self._resolve_intent_attempts = 0
-        self._claim_clarification_done = False
         self._grounded_answered = False
 
     def select_action(self, observation: dict) -> AgentAction:
@@ -74,14 +63,18 @@ class RuleBasedPolicy:
         mask: list[bool] = observation.get("action_mask", [True] * len(AGENT_ACTIONS))
         data_shield: bool = observation.get("data_shield_active", True)
         memory_slots: dict = observation.get("memory_slots", {})
-        caller_utterance: str = observation.get("caller_utterance", "")
-
-
         phase = Phase(phase_str)
 
         def legal(action: AgentAction) -> bool:
             idx = AGENT_ACTIONS.index(action)
             return mask[idx]
+
+        if observation.get('demands_human') and legal(AgentAction.ESCALATE_HUMAN):
+            return AgentAction.ESCALATE_HUMAN
+        if observation.get('emotion') in {'frustration', 'anger', 'anxiety'} and legal(AgentAction.ACK_EMOTION):
+            return AgentAction.ACK_EMOTION
+        if (observation.get('privacy_concern') or observation.get('emotion') == 'confusion') and legal(AgentAction.EXPLAIN_VERIFICATION_GATE):
+            return AgentAction.EXPLAIN_VERIFICATION_GATE
 
         # --- Phase-specific rule cascade ---
 
@@ -97,17 +90,13 @@ class RuleBasedPolicy:
                 return AgentAction.ACK_EMOTION
 
         elif phase == Phase.RESOLVE_INTENT:
-            # Track how many times we've tried to resolve intent
-            self._resolve_intent_attempts += 1
             # After 2 attempts without phase change, escalate (no matching claim)
-            if self._resolve_intent_attempts > 2 and legal(AgentAction.ESCALATE_HUMAN):
+            if observation.get('resolution_attempts', 0) >= 2 and legal(AgentAction.ESCALATE_HUMAN):
                 return AgentAction.ESCALATE_HUMAN
-            # Try RESOLVE_INTENT — caller will express intent in response
-            if legal(AgentAction.RESOLVE_INTENT):
+            if not memory_slots.get('case_type_hint') and legal(AgentAction.RESOLVE_INTENT):
                 return AgentAction.RESOLVE_INTENT
-            # Ask for clarification once if no case type known
-            if not self._claim_clarification_done and legal(AgentAction.ASK_CLAIM_CLARIFICATION):
-                self._claim_clarification_done = True
+            # The remembered intent exists; ask for case-disambiguating details.
+            if legal(AgentAction.ASK_CLAIM_CLARIFICATION):
                 return AgentAction.ASK_CLAIM_CLARIFICATION
             # Fall through to escalation if stuck
             if legal(AgentAction.ESCALATE_HUMAN):
@@ -143,7 +132,7 @@ class RuleBasedPolicy:
             "This should not happen unless the episode is already done."
         )
 
-    def run_episode(self, env, verbose: bool = False) -> dict:
+    def run_episode(self, env, verbose: bool = False, seed=None) -> dict:
         """Run a full episode and return a summary dict.
 
         Args:
@@ -161,7 +150,7 @@ class RuleBasedPolicy:
               "final_phase": str,
             }
         """
-        obs, info = env.reset()
+        obs, info = env.reset(seed=seed)
         self._reset_episode_state()
         done = False
         cumulative_reward = 0.0

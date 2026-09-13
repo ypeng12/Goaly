@@ -1,0 +1,36 @@
+name: Verify demo and policies
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  container-acceptance:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Build a fresh image
+        run: docker build -t aegis-acceptance .
+      - name: Unit and integration checks
+        run: docker run --rm -e OMP_NUM_THREADS=1 aegis-acceptance python -m pytest -q
+      - name: SOP benchmark
+        run: docker run --rm aegis-acceptance python -m eval.eval_benchmark
+      - name: Two-seed checkpoint audit
+        run: docker run --rm -e OMP_NUM_THREADS=1 aegis-acceptance python -m eval.audit_rl --output-dir /tmp/audit
+      - name: Start demo
+        run: docker run -d --rm --name aegis-demo -p 127.0.0.1:8080:8080 -e OMP_NUM_THREADS=1 aegis-acceptance
+      - name: Check HTTP readiness
+        run: curl --fail --retry 15 --retry-connrefused --retry-delay 2 http://127.0.0.1:8080/api/health
+      - name: Install browser checks
+        run: |
+          python3 -m venv /tmp/aegis-browser
+          /tmp/aegis-browser/bin/pip install playwright==1.58.0
+          /tmp/aegis-browser/bin/playwright install --with-deps chromium
+      - name: Desktop and mobile customer and RL Lab flows
+        run: /tmp/aegis-browser/bin/python -m eval.browser_acceptance --output-dir /tmp/browser-evidence
+      - name: Stop demo
+        if: always()
+        run: docker stop aegis-demo || true

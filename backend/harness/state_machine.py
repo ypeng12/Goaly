@@ -109,9 +109,11 @@ class SOPStateMachine:
             }
             topics = ", ".join(labels[t] for t in self.state.discussion_topics if t in labels) or "the claim inquiry"
             discussed = f"Claim {claim.case_id} ({claim.case_type}, created {claim.created_at}): {topics}."
-            outcome = f"Recorded status: {claim.status.upper()}. {claim.summary}."
+            outcome = f"Recorded status: {claim.status.upper()}."
             if claim.denial_reason:
                 outcome += f" Recorded reason: {claim.denial_reason}."
+            elif claim.summary:
+                outcome += f" {claim.summary}."
             if "payment" in self.state.discussion_topics:
                 amounts = [("Net pay", claim.net_pay), ("Allowed maximum", claim.allowed_max_amount), ("Expected reimbursement", claim.expected_reimbursement_amount)]
                 outcome += " " + " ".join(f"{label}: ${value}." for label, value in amounts if value is not None)
@@ -122,9 +124,9 @@ class SOPStateMachine:
                 if "submission_method" in self.state.discussion_topics:
                     followups.append(guidance.get("default_guidance", ""))
                 if "document_alternatives" in self.state.discussion_topics:
-                    followups.extend(guidance.get("document_alternative_guidance", {}).values())
+                    followups.extend(guidance.get("concise_alternatives", {}).values())
                 if "file_format" in self.state.discussion_topics:
-                    followups.extend(guidance.get("document_guidance", {}).values())
+                    followups.extend(guidance.get("concise_documents", {}).values())
                 if "processing_time" in self.state.discussion_topics:
                     timing = guidance.get("claim_followup_settings", {}).get("average_processing_time_after_submission", {}).get("en")
                     if timing:
@@ -139,7 +141,7 @@ class SOPStateMachine:
                             followups.append(item["en"].format(case_id=claim.case_id, documents=", ".join(claim.documents_needed)))
             if claim.appeal_deadline:
                 followups.append(f"Recorded appeal deadline: {claim.appeal_deadline}. Support must confirm available options if that date has passed.")
-            steps = " ".join(s for s in followups if s) or "No additional document requirement is recorded in this claim fixture."
+            steps = "\n   ".join('- ' + s for s in dict.fromkeys(followups) if s) or "No additional document requirement is recorded in this claim fixture."
         return (f"Dear {trusted_ph.name},\n\nHere is a summary of our discussion today:\n\n"
                 f"1. What Was Discussed:\n   {discussed}\n\n"
                 f"2. Claim Status & Outcome:\n   {outcome}\n\n"
@@ -328,11 +330,16 @@ class SOPStateMachine:
         return None
 
     @staticmethod
+    def _has_pending_question(text: str) -> bool:
+        clean = " ".join(text.casefold().replace("’", "'").split())
+        return bool("?" in clean or re.search(r"\b(?:but|not done|don't|do not|doesn't|does not|didn't|did not|another question|next question|one more|still need|still have|also need|how|why|where|when|what|which|can you|could you|tell me|explain)\b", clean))
+
+    @staticmethod
     def _wrap_up(text: str) -> bool:
         clean = " ".join(text.casefold().replace("’", "'").split())
-        if "?" in clean or re.search(r"\b(?:but|not done|don't|do not|another question|one more)\b", clean):
+        if SOPStateMachine._has_pending_question(text):
             return False
-        return bool(re.search(r"\b(?:no more questions?|that's all|that is all|i'm good|im good|nothing else|no (?:that's|that is) it|nope that's it|wrap up|thanks that helps|no thanks)\b", clean))
+        return bool(re.search(r"\b(?:no more questions?|that's all|that is all|i'm good|im good|nothing else|no (?:that's|that is) it|nope that's it|wrap up|thanks[, ]+that helps|no thanks|(?:that|this|you(?:'ve| have)?) (?:answers?|answered) (?:all )?my questions?|all my questions? (?:are|have been) answered|i have (?:everything|all (?:the information|the answers)) i need)\b", clean))
 
     def verify_card_data(self, form_data: Dict[str, str]) -> Dict[str, Any]:
         """Direct deterministic card form verification bypassing LLM extraction."""
@@ -459,7 +466,7 @@ class SOPStateMachine:
             if self.get_active_claim() is None:
                 self.state.phase = Phase.ESCALATED
                 self._add_trace("CASE_OWNERSHIP_GATE", False, "New claim hints conflict with the selected owned case. Human clarification required before further disclosure.", phase_before)
-            elif self._wrap_up(user_text) or (semantic.get("wrap_up") is True and "?" not in user_text and not set(semantic.get("response_topics", [])) - {"unknown"}) or bool(re.fullmatch(r"(?:please )?(?:send|email)(?: me)? (?:an? |the )?(?:email )?summary[.!]?", user_text.strip(), re.I)):
+            elif self._wrap_up(user_text) or (semantic.get("wrap_up") is True and not self._has_pending_question(user_text) and not set(semantic.get("response_topics", [])) - {"unknown"}) or bool(re.fullmatch(r"(?:please )?(?:send|email)(?: me)? (?:an? |the )?(?:email )?summary[.!]?", user_text.strip(), re.I)):
                 self.state.phase = Phase.POST_PROCESS
                 self.state.post_process.email_offered = True
                 self.state.post_process.user_decision = "pending"

@@ -1,0 +1,26 @@
+{
+  "combined_sha256": "09c6d4738f568b47f2cd68809cdd94e912212da0849db2bd8b140a1213488f25",
+  "files": {
+    "backend/engine/mock_engine.py": "d2f7e74a822e002f7706320359068507b452152fca7387f61f47f7ba34f5e217",
+    "backend/harness/caller_sim.py": "9aef5fee1192ac11fbd45943028de3de1563a2f80fb5569c23234a79103f13cf",
+    "backend/harness/context_builder.py": "890098dfcc842dfeb617a96a0b1db873e3e0263ccec054f8d1d911469695857f",
+    "backend/harness/dialogue.py": "00355ad9637ea44853f7e4339e81cdd63ae4c9d6d8f32a44ff5a294969efd4ff",
+    "backend/harness/extractor.py": "61c2a36c1ed4a9041cd5b03f6a05c3568594aa57cbe90af6b4c5c13b9c26dce8",
+    "backend/harness/grounded_data.py": "7508554e4b9a3390e3ee251ceb1a7d96e93c71893b6c0b5392600f04267c9107",
+    "backend/harness/rl_baseline.py": "57752835c726874dcef4a3b77784fa8739dbac9cf69b3141c23aefedf55ed9e4",
+    "backend/harness/rl_env.py": "4acb5020b1f148d49493064c1dc63fd0f6ecf211c389c02814aa68b8242139d9",
+    "backend/harness/state_machine.py": "38414860b1f97999dcfb1d89dc59fd41cb1b13294e6be136af690d84c40a35da",
+    "backend/harness/types.py": "438738481249f312819ddee0ef366cdab59055c429b34185b13245b4bfacb96c",
+    "backend/rl/__init__.py": "7f5d71826a7620ecfebe1f00944493a66b95e3da788a8ebb4ca66a2d2a1eec2d",
+    "backend/rl/featurizer.py": "d7033979e0201970fb367deeae24220534e3b29646fbcf80928bb26fb3d960c2",
+    "backend/rl/models.py": "bdd3cf8cc1206e31655f7d05592e544209495e761ee575ba70df6b7a51de6d4a",
+    "backend/rl/ppo_trainer.py": "2080f544a41d38a487e9d3855f2bd6d1619983987588d0d7e0548c3102fd717e",
+    "fixtures/claim_schema.json": "f95f0b49b4522e56b4b65dbdf4d74204b348bf43a333920a07d8d6589969ec4a",
+    "fixtures/claims.json": "67cd68333853ac24d9dda791fdd24a9515c8c25671331661735bd34bba7189e0",
+    "fixtures/consent_scenarios.json": "e1c49b14f21d7f956042f0737a4f5b9c2b09f63e5b4abfbe203df089cd678304",
+    "fixtures/policyholders.json": "7eb92602a256cabe628ddbe31d739609ebf00d9672e327f73ff31ae9bee1189c",
+    "fixtures/representatives.json": "ebc55c04c068a762e3596048fef0ebfeef21b19f595b64e0bdd64cc2c26c8b34",
+    "fixtures/required_document_guideline.json": "f17077ab365cfeb7cf7c6b81ec1602a5e327c0da4c55c4b37192ac1c71d89772"
+  },
+  "note": "Exact hashed source and fixtures used for the emotion runs. Later customer-language extraction improvements are outside this snapshot."
+}

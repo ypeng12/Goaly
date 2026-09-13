@@ -9,6 +9,10 @@ import uuid
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Optional
+from dotenv import load_dotenv
+
+load_dotenv()
+
 from urllib.parse import urlparse
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import FileResponse, JSONResponse
@@ -20,8 +24,10 @@ from .harness.state_machine import SOPStateMachine
 from .harness.grounded_data import grounded_data
 from .engine.llm_engine import LLMEngine
 from .engine.mock_engine import MockEngine
+from .lab import router as lab_router
 
 app = FastAPI(title='Insurance Claims SOP Harness', version='2.0.0')
+app.include_router(lab_router)
 FRONTEND_DIR = Path(__file__).resolve().parent.parent / 'frontend'
 MAX_SESSIONS, MAX_TURNS, SESSION_TTL = 256, 120, 7200
 

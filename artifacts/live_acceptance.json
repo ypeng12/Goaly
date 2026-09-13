@@ -1,0 +1,9 @@
+{
+  "suite": "live HTTP acceptance",
+  "status": "not_run",
+  "passed": false,
+  "provider_model": "gpt-4o-mini",
+  "cases": [],
+  "note": "Synthetic identities; email and handoff remain simulated.",
+  "reason": "No AI_API_KEY or OPENAI_API_KEY configured. No provider calls made."
+}

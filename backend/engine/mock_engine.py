@@ -111,14 +111,14 @@ class MockEngine(BaseEngine):
             body = '\n'.join(f'{i}. {p}' for i, p in enumerate(pieces, 1))
         else:
             body = '\n\n'.join(pieces)
-        ending = "\n\nWhat else would help with this claim? When you're ready, say 'That's all' and I can offer an email summary."
+        ending = "\n\nWhat else would help? You can ask for more detail, or say 'That's all' for an optional email summary."
         return empathy + intro + body + ending
 
     @staticmethod
     def _fact(topic, claim, guidance, user_text):
         docs = ', '.join(claim.documents_needed)
         if topic == 'status':
-            return f'Claim {claim.case_id} is {claim.status}. It is a {claim.case_type} claim created on {claim.created_at}. {claim.summary}.'
+            return f'Claim {claim.case_id} is {claim.status}. It is a {claim.case_type} claim created on {claim.created_at}.'
         if topic == 'denial_reason':
             return f'The recorded denial reason is that {claim.denial_reason}.' if claim.denial_reason else ''
         if topic == 'documents':
@@ -138,7 +138,9 @@ class MockEngine(BaseEngine):
             if re.search(r'none|no (?:readable )?copy|cannot reissue|tried.*(?:hospital|provider)|alternatives.*(?:exhausted|unavailable)', normalize(user_text), re.I):
                 return guidance['claim_followup_settings']['human_review_after_document_alternatives_exhausted']['en']
             specific = [d for d in claim.documents_needed if d.lower() in user_text.lower()]
-            return '\n'.join(guidance['document_alternative_guidance'][d] for d in (specific or claim.documents_needed))
+            detailed = bool(re.search(r'\b(?:detail|details|elaborate|expand|step.by.step)\b', user_text, re.I))
+            source = guidance['document_alternative_guidance'] if detailed else guidance['concise_alternatives']
+            return '\n'.join(source[d] for d in (specific or claim.documents_needed))
         qa_topic = {'file_format': 'file_format_requirements', 'processing_time': 'processing_time_after_submission'}.get(topic, topic)
         if topic == 'submission_method':
             return guidance['default_guidance']
@@ -151,6 +153,8 @@ class MockEngine(BaseEngine):
                 if topic == 'submission_timing' and claim.appeal_deadline and datetime.date.fromisoformat(claim.appeal_deadline) < datetime.datetime.now(datetime.timezone.utc).date():
                     text = 'The general document guidance says to submit within a week, but ' + MockEngine._fact('appeal_deadline', claim, guidance, user_text)
                 if topic == 'file_format':
-                    text += ' ' + ' '.join(guidance['document_guidance'].values())
+                    detailed = bool(re.search(r'\b(?:detail|details|elaborate|expand|step.by.step)\b', user_text, re.I))
+                    source = guidance['document_guidance'] if detailed else guidance['concise_documents']
+                    text = '\n'.join(source.values())
                 return text
         return 'I do not have a grounded rule or claim detail that answers that question. A human claims representative can review it; I cannot change a claim decision or promise coverage.'
