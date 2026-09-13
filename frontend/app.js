@@ -341,22 +341,40 @@ function renderVerificationCard() {
     <div class="security-card-desc">
       Submit any 3 details to unlock claim access. Form submissions bypass LLM text processing directly into deterministic validation.
     </div>
+
+    <div class="experiment-presets-tray">
+      <div class="experiment-presets-title">
+        <span>🧪 Experiment Presets (One-click auto fill):</span>
+        <span>Select test caller case</span>
+      </div>
+      <div class="experiment-preset-chips">
+        <button type="button" class="preset-chip active" id="preset-margaret">🟢 Margaret Chen (Jan Denied)</button>
+        <button type="button" class="preset-chip" id="preset-ava">🔵 Ava Lopez (POL-1044)</button>
+        <button type="button" class="preset-chip" id="preset-matian">🟡 Ma Tian (March Denied)</button>
+        <button type="button" class="preset-chip" id="preset-yawen">🟣 Ya Wen Li (POL-7742)</button>
+      </div>
+    </div>
+
     <div class="security-card-grid">
       <div class="security-card-field">
-        <label for="card-name">Full name <span class="field-tag">Required for match</span></label>
+        <label for="card-name">Full name <span class="field-tag">Match field</span></label>
         <input type="text" id="card-name" placeholder="e.g. Margaret Chen" autocomplete="name">
       </div>
       <div class="security-card-field">
-        <label for="card-dob">Date of birth <span class="field-tag">Date / Paste</span></label>
-        <input type="text" id="card-dob" placeholder="YYYY-MM-DD or 03/15/1985">
+        <label for="card-dob">Date of birth <span class="field-tag">Format: YYYY-MM-DD or MM/DD/YYYY</span></label>
+        <div class="dob-input-wrapper">
+          <input type="text" id="card-dob" placeholder="e.g. 1985-03-15 or 03/15/1985">
+          <button type="button" class="dob-picker-btn" title="Open date picker">📅</button>
+          <input type="date" id="card-dob-picker" class="dob-native-picker" title="Select birth date">
+        </div>
       </div>
       <div class="security-card-field">
         <label for="card-phone">Phone number <span class="field-tag">Auto-formatted</span></label>
-        <input type="tel" id="card-phone" placeholder="e.g. (650) 388-2920">
+        <input type="tel" id="card-phone" placeholder="e.g. (650) 521-2836">
       </div>
       <div class="security-card-field">
         <label for="card-email">Email address <span class="field-tag">Email</span></label>
-        <input type="email" id="card-email" placeholder="e.g. margaret.chen@email.com">
+        <input type="email" id="card-email" placeholder="e.g. margaret@email.com">
       </div>
       <div class="security-card-field">
         <label for="card-id4">SSN last 4 <span class="field-tag">Optional</span></label>
@@ -364,12 +382,55 @@ function renderVerificationCard() {
       </div>
     </div>
     <div class="security-card-actions">
-      <button type="button" class="security-card-quickfill" id="btn-card-quickfill">Fill test caller (Margaret Chen)</button>
+      <button type="button" class="security-card-instant-submit" id="btn-card-instant">⚡ Fill & Submit Instantly</button>
       <button type="button" class="security-card-submit" id="btn-card-submit">Submit Verification Card</button>
     </div>
   `;
 
   $("chat-window").append(card);
+
+  const presets = {
+    margaret: { name: "Margaret Chen", dob: "1985-03-15", phone: "(650) 521-2836", email: "margaret@email.com", id_last4: "4472" },
+    ava: { name: "Ava Lopez", dob: "1990-08-21", phone: "(650) 388-2920", email: "ava.lopez@email.com", id_last4: "9180" },
+    matian: { name: "Ma Tian", dob: "1964-09-10", phone: "(650) 208-8799", email: "matian@example.com", id_last4: "6688" },
+    yawen: { name: "Ya Wen Li", dob: "1989-12-03", phone: "(650) 521-2830", email: "yawen.li@gmail.com", id_last4: "5317" }
+  };
+
+  function fillPreset(key) {
+    const p = presets[key];
+    if (!p) return;
+    card.querySelector("#card-name").value = p.name;
+    card.querySelector("#card-dob").value = p.dob;
+    card.querySelector("#card-phone").value = p.phone;
+    card.querySelector("#card-email").value = p.email;
+    card.querySelector("#card-id4").value = p.id_last4;
+    card.querySelectorAll(".preset-chip").forEach(btn => btn.classList.remove("active"));
+    const activeBtn = card.querySelector(`#preset-${key}`);
+    if (activeBtn) activeBtn.classList.add("active");
+  }
+
+  Object.keys(presets).forEach(key => {
+    const btn = card.querySelector(`#preset-${key}`);
+    if (btn) btn.addEventListener("click", () => fillPreset(key));
+  });
+
+  const dobPicker = card.querySelector("#card-dob-picker");
+  const dobInput = card.querySelector("#card-dob");
+  if (dobPicker && dobInput) {
+    dobPicker.addEventListener("change", (e) => {
+      if (e.target.value) dobInput.value = e.target.value;
+    });
+    dobInput.addEventListener("input", (e) => {
+      const digits = e.target.value.replace(/\D/g, "");
+      if (digits.length === 8) {
+        if (digits.startsWith("19") || digits.startsWith("20")) {
+          e.target.value = `${digits.slice(0, 4)}-${digits.slice(4, 6)}-${digits.slice(6, 8)}`;
+        } else {
+          e.target.value = `${digits.slice(0, 2)}/${digits.slice(2, 4)}/${digits.slice(4, 8)}`;
+        }
+      }
+    });
+  }
 
   const phoneInput = card.querySelector("#card-phone");
   if (phoneInput) {
@@ -381,14 +442,19 @@ function renderVerificationCard() {
     });
   }
 
-  const quickFillBtn = card.querySelector("#btn-card-quickfill");
-  if (quickFillBtn) {
-    quickFillBtn.addEventListener("click", () => {
-      card.querySelector("#card-name").value = "Margaret Chen";
-      card.querySelector("#card-dob").value = "1985-03-15";
-      card.querySelector("#card-phone").value = "(650) 521-2836";
-      card.querySelector("#card-email").value = "margaret@email.com";
-      card.querySelector("#card-id4").value = "4472";
+  fillPreset("margaret");
+
+  const instantBtn = card.querySelector("#btn-card-instant");
+  if (instantBtn) {
+    instantBtn.addEventListener("click", () => {
+      const form = {
+        name: card.querySelector("#card-name").value.trim(),
+        dob: card.querySelector("#card-dob").value.trim(),
+        phone: card.querySelector("#card-phone").value.trim(),
+        email: card.querySelector("#card-email").value.trim(),
+        id_last4: card.querySelector("#card-id4").value.trim(),
+      };
+      submitVerificationCard(form);
     });
   }
 
@@ -406,6 +472,7 @@ function renderVerificationCard() {
     });
   }
 }
+
 
 async function submitVerificationCard(form) {
   if (busy || replaying || !sessionId || isTerminal()) return;

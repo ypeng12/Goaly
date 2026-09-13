@@ -1556,4 +1556,110 @@ dialog::backdrop {
   transform: translateY(-1px);
 }
 
+/* --- Experiment Presets & Date Picker Helper --- */
+.experiment-presets-tray {
+  background: rgba(10, 32, 29, 0.6);
+  border: 1px solid rgba(82, 183, 136, 0.25);
+  border-radius: 8px;
+  padding: 10px 14px;
+  margin-bottom: 14px;
+}
+
+.experiment-presets-title {
+  font-size: 11px;
+  font-weight: 600;
+  color: #52b788;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.experiment-preset-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.preset-chip {
+  background: rgba(20, 61, 57, 0.6);
+  border: 1px solid rgba(82, 183, 136, 0.3);
+  color: #d1e5e0;
+  font-size: 11px;
+  padding: 5px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.preset-chip:hover {
+  background: rgba(82, 183, 136, 0.2);
+  border-color: #52b788;
+  color: #ffffff;
+}
+
+.preset-chip.active {
+  background: rgba(82, 183, 136, 0.25);
+  border-color: #52b788;
+  color: #52b788;
+  font-weight: 600;
+}
+
+.dob-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.dob-input-wrapper input[type="text"] {
+  width: 100%;
+  padding-right: 36px;
+}
+
+.dob-picker-btn {
+  position: absolute;
+  right: 6px;
+  background: transparent;
+  border: none;
+  color: #a8cdbe;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 4px;
+  border-radius: 4px;
+  transition: color 0.2s;
+}
+
+.dob-picker-btn:hover {
+  color: #52b788;
+}
+
+.dob-native-picker {
+  position: absolute;
+  right: 6px;
+  opacity: 0;
+  width: 28px;
+  height: 28px;
+  cursor: pointer;
+}
+
+.security-card-instant-submit {
+  background: linear-gradient(135deg, #2d8a7c 0%, #52b788 100%);
+  color: #0b1f1c;
+  border: none;
+  font-weight: 700;
+  font-size: 12px;
+  padding: 8px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.security-card-instant-submit:hover {
+  filter: brightness(1.1);
+  transform: translateY(-1px);
+}
+
+
 
