@@ -27,8 +27,9 @@ class MockEngine(BaseEngine):
         state = state_result.get('state')
         phase = state.phase if state else Phase(ctx.get('phase', 'VERIFY_ID'))
         emotion = state_result.get('emotion') or UtteranceExtractor.detect_emotion_and_intent(user_text)['emotion']
-        empathy = EMPATHY.get(emotion, '')
-        if not empathy and state_result.get('is_refusal'):
+        allow_empathy = state_result.get('policy_empathy', True)
+        empathy = EMPATHY.get(emotion, '') if allow_empathy else ''
+        if allow_empathy and not empathy and state_result.get('is_refusal'):
             empathy = "You can choose which identity details you feel comfortable sharing. "
         # Terminal behavior is determined by state, never by keywords in the last message.
         if phase == Phase.CONCLUDED:
@@ -74,14 +75,27 @@ class MockEngine(BaseEngine):
         # A second check prevents accidentally rendering a raw ungated record.
         if not claim or 'grounded_claim' not in ctx:
             return empathy + 'I do not have a verified claim record for that question. A human claims representative can help review it.'
+        conversation = state_result.get('conversation_context') or {}
+        if conversation.get('context_claim_id') != claim.case_id:
+            conversation = {}
+        # Re-intersect even server-produced referents with the current record.
+        document_focus = [d for d in conversation.get('document_focus', []) if d in claim.documents_needed]
+        focused_text = user_text + ('\nReferenced requested document: ' + ', '.join(document_focus) if document_focus else '')
+        if conversation.get('needs_clarification'):
+            choices = '; '.join(f'{i}. {d}' for i, d in enumerate(claim.documents_needed, 1))
+            question = ('Which document do you mean? ' + choices + '.' if choices else
+                        'Which part would you like me to explain: the status, payment, or next step?')
+            if phase == Phase.POST_PROCESS:
+                question += ' Your email choice is still pending; nothing has been sent.'
+            return empathy + question
         if phase == Phase.POST_PROCESS:
             pp = state.post_process if state else None
             text = (f'Would you like an email summary of our conversation for claim {claim.case_id}, or would you prefer to skip it? '
                     'It includes what we discussed, the claim status and outcome, and the major follow-up items. Email delivery is simulated in this demo.')
-            if pp and pp.user_decision == 'pending' and '?' in user_text:
-                topics = state_result.get('response_topics') or UtteranceExtractor.extract_topics(user_text)
+            if pp and pp.user_decision == 'pending' and ('?' in user_text or conversation.get('is_contextual_followup')):
+                topics = conversation.get('response_topics') or state_result.get('response_topics') or UtteranceExtractor.extract_topics(user_text)
                 guidance = grounded_data.get_document_guidance_for_claim(claim)
-                pieces = [self._fact(topic, claim, guidance, user_text) for topic in topics]
+                pieces = [self._focused_fact(topic, claim, guidance, focused_text, conversation, document_focus) for topic in topics]
                 if pieces:
                     state_result['grounded_topics'] = topics
                     if state and hasattr(state, 'discussion_topics'):
@@ -90,7 +104,7 @@ class MockEngine(BaseEngine):
                 else:
                     text = 'You can choose freely; nothing is sent without your explicit agreement. ' + text
             return empathy + text
-        topics = state_result.get('response_topics') or UtteranceExtractor.extract_topics(user_text)
+        topics = conversation.get('response_topics') or state_result.get('response_topics') or UtteranceExtractor.extract_topics(user_text)
         # Preserve first-turn follow-up topics provided during verification.
         if not topics and ctx.get('memory', {}).get('topic_hint'):
             topics = [ctx['memory']['topic_hint']]
@@ -103,7 +117,7 @@ class MockEngine(BaseEngine):
         pieces = []
         used = []
         for topic in dict.fromkeys(topics):
-            piece = self._fact(topic, claim, guidance, user_text)
+            piece = self._focused_fact(topic, claim, guidance, focused_text, conversation, document_focus)
             if piece and piece not in pieces:
                 pieces.append(piece)
                 used.append(topic)
@@ -111,13 +125,42 @@ class MockEngine(BaseEngine):
         if state and hasattr(state, 'discussion_topics'):
             state.discussion_topics = list(dict.fromkeys(state.discussion_topics + used))
         intro = 'Identity verified. I found the claim using your earlier details.\n\n' if newly_opened else ''
-        style = state_result.get('response_style', 'concise')
+        style = (conversation['response_style'] if conversation.get('response_style') in {'plain_language', 'step_by_step'}
+                 else state_result.get('response_style', 'concise'))
         if style == 'step_by_step' and len(pieces) > 1:
             body = '\n'.join(f'{i}. {p}' for i, p in enumerate(pieces, 1))
         else:
             body = '\n\n'.join(pieces)
-        ending = "\n\nChoose a next step below, or ask in your own words."
+        # Keep the next step available without repeating the same invitation on
+        # every follow-up. Contextual turns answer the current question directly.
+        ending = "\n\nChoose a next step below, or ask in your own words." if newly_opened else ''
+        state_result['_response_envelope'] = {'prefix': empathy + intro, 'facts': pieces,
+                                               'topics': used, 'ending': ending}
         return empathy + intro + body + ending
+
+    @staticmethod
+    def _focused_fact(topic, claim, guidance, user_text, conversation, focus):
+        if topic == 'documents' and focus and conversation.get('document_explanation'):
+            if conversation.get('response_style') == 'plain_language':
+                # Keep the complete approved guidance, but unpack its sentences
+                # into small steps rather than inventing a policy explanation.
+                return '\n\n'.join(d.capitalize() + ' — in plain language:\n' +
+                                   '\n'.join('• ' + sentence for sentence in re.split(r'(?<=\.)\s+', guidance['concise_documents'][d]))
+                                   for d in focus)
+            return '\n\n'.join(d.capitalize() + ': ' + guidance['document_guidance'][d] for d in focus)
+        if topic == 'file_format' and focus:
+            detailed = bool(re.search(r'\b(?:detail|details|elaborate|expand|step.by.step)\b', user_text, re.I))
+            source = guidance['document_guidance'] if detailed else guidance['concise_documents']
+            answer = '\n\n'.join(d.capitalize() + ': ' + source[d] for d in focus)
+            if (re.search(r'\b(?:photo|photos|picture|pictures)\b', user_text, re.I)
+                    and not any('photo' in document.casefold() for document in focus)):
+                # The fixture gives readability requirements and some scan
+                # guidance, but does not promise that every photo file type
+                # is accepted. Answer that distinction explicitly.
+                answer = ("The record does not confirm that a photo is an accepted file type. Check the portal's format instructions or ask support. "
+                          'Every page must be legible and complete.\n\n' + answer)
+            return answer
+        return MockEngine._fact(topic, claim, guidance, user_text)
 
     @staticmethod
     def _fact(topic, claim, guidance, user_text):

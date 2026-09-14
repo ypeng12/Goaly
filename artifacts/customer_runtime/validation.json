@@ -1,0 +1,122 @@
+{
+  "verified_at_utc": "2026-09-14T04:46:19.104527+00:00",
+  "base_commit": "11a85a89b1a8b8e9da3ff67976c4241dfc8d5db9",
+  "description": "Customer runtime and version-4 policy delivery; all identities and calls synthetic.",
+  "local_checks": {
+    "pytest": {
+      "command": "OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 .venv/bin/python -m pytest tests/ -q",
+      "passed": 292,
+      "failed": 0,
+      "warnings": 2
+    },
+    "sop_benchmark": {
+      "scenarios_passed": 33,
+      "assertions_passed": 650
+    },
+    "original_checkpoint_audit": {
+      "passed": true,
+      "seeds": [
+        42,
+        7
+      ],
+      "splits": [
+        "train",
+        "val",
+        "test",
+        "all"
+      ],
+      "report": "original_checkpoint_audit.json"
+    },
+    "customer_policy": {
+      "command": "python -m eval.customer_policy_comparison --assert-thresholds",
+      "passed": true,
+      "checks_passed": 16,
+      "saved_metrics_equal_fresh": true,
+      "report": "../customer_policy/comparison.json"
+    },
+    "browser": {
+      "command": "python -m eval.browser_acceptance --require-customer-report",
+      "passed": true,
+      "viewports": [
+        1440,
+        390,
+        320
+      ],
+      "actual_checkpoint_hashes_match_report": true,
+      "report": "browser/browser_acceptance.json",
+      "final_layout_only_change": "Collapsed technical limitations; desktop/mobile expansion and layout checked after full suite."
+    },
+    "live_provider": {
+      "status": "not_run",
+      "reason": "No API token configured; no paid provider calls. Mocked HTTP tests are contract tests, not real-provider acceptance.",
+      "report": "live_acceptance.json"
+    }
+  },
+  "source_sha256": {
+    ".github/workflows/verify.yml": "7e351d12f81df54c549e64d23b075c21b53360d17d26b22ea5e513071257d447",
+    "Dockerfile": "ceaacf0dae77f80d5c4a6b1c02b72f90db3e9d36673e9f0ac749a4826af05b4e",
+    "backend/app.py": "de6a7fe3ea703fddb83e4febf9bf4697b0d3a382a368e27a253d2c2942f2398d",
+    "backend/engine/base.py": "b3c02d4020343483bbf8d2e6277849729ba6f075c950c87da1d1b37793a1e04a",
+    "backend/engine/llm_engine.py": "3e057914c9c00ef930005a91e759efe0f30ee8f7c54ae22c2d3a6af25e654071",
+    "backend/engine/mock_engine.py": "6275a37393d38ba9b837e21e311a86bd9bf0c35f47258ffd7d8b09621a2ae8e7",
+    "backend/harness/caller_sim.py": "9aef5fee1192ac11fbd45943028de3de1563a2f80fb5569c23234a79103f13cf",
+    "backend/harness/context_builder.py": "890098dfcc842dfeb617a96a0b1db873e3e0263ccec054f8d1d911469695857f",
+    "backend/harness/conversation_context.py": "a64944a3b0bf24740c088375c5f3111275a3835b33d2458cbc416f04da9baf5f",
+    "backend/harness/customer_policy.py": "046b82cfd130963c9fb2db774f5574b0ad787f5439f14d13218b21c733b41c2b",
+    "backend/harness/customer_service.py": "5d7a4d77a21305de756276250c3ba46ff1e383a27b91f1eea0ede41c1466e881",
+    "backend/harness/customer_training.py": "a08a94470c8b375c6653e158b3e66ae87d3ebcf743d25da122d634233c67de5f",
+    "backend/harness/dialogue.py": "00355ad9637ea44853f7e4339e81cdd63ae4c9d6d8f32a44ff5a294969efd4ff",
+    "backend/harness/extractor.py": "88bb36366ea047043aa94a7e564d5132a9205624bf3746bd58d8b8853f8d5a41",
+    "backend/harness/grounded_data.py": "7508554e4b9a3390e3ee251ceb1a7d96e93c71893b6c0b5392600f04267c9107",
+    "backend/harness/rl_baseline.py": "57752835c726874dcef4a3b77784fa8739dbac9cf69b3141c23aefedf55ed9e4",
+    "backend/harness/rl_env.py": "4acb5020b1f148d49493064c1dc63fd0f6ecf211c389c02814aa68b8242139d9",
+    "backend/harness/state_machine.py": "a48425dcc5f9b6aeb7a04cf588d9e4defa23103654c42841fae24ad0beff6c91",
+    "backend/harness/types.py": "438738481249f312819ddee0ef366cdab59055c429b34185b13245b4bfacb96c",
+    "backend/lab.py": "aaa0295f838101395209e985b673a459ae2a479411a1a424e4914470fa071dbb",
+    "backend/rl/__init__.py": "7f5d71826a7620ecfebe1f00944493a66b95e3da788a8ebb4ca66a2d2a1eec2d",
+    "backend/rl/featurizer.py": "d7033979e0201970fb367deeae24220534e3b29646fbcf80928bb26fb3d960c2",
+    "backend/rl/models.py": "e364494e71f88d1ff5f55cdf138e3d1c25b0599f9a1be12ae19b8a448ee86a2c",
+    "backend/rl/ppo_trainer.py": "2080f544a41d38a487e9d3855f2bd6d1619983987588d0d7e0548c3102fd717e",
+    "eval/audit_rl.py": "33fcb21dd1c7886fcf19b2af9ec87894043cf7c0e179ec269026dd2eccb5c9d5",
+    "eval/browser_acceptance.py": "1ae8a8527a8d05f1c63b5ccd360b0cd9f6848515aabbe500a862e5c9326b4cea",
+    "eval/customer_policy_comparison.py": "5c82ceaf0276b7c5c45055e927ed31695aafb292aef3e580eb275acb7e623eff",
+    "eval/emotion_ablation.py": "e89f804e1e930ca032a871551e694c567242fb0d465d5bb1bb203ed60dd31cd6",
+    "eval/eval_benchmark.py": "43ee2d9db794142cd0f8f264353905801e132da9c1b92833c4bd2596837393a2",
+    "eval/generate_dpo_pairs.py": "c782040063a91cf83c66b85efc52a758de443b99d09c551da85b90a836d350b1",
+    "eval/live_acceptance.py": "077dd1f9dd91c668c88dd25f075abee179cc09ac1e526d687c401b46f578face",
+    "eval/policy_comparison.py": "8e86ff2f8ee35b88fe3096b1627fdb0ff121e8a1ce9cc964138361a62fd5e34e",
+    "frontend/app.js": "64b7aaa5e08efd7b924aa49b4d553c23465266b604963f3d801c281815a2992b",
+    "frontend/index.html": "9d0b8521c088ac2f92d7d65eb8698e17889dbb2369755ff8790cdf58ff167016",
+    "frontend/lab.css": "8bf98496c75b006f8d7e40838152638e02c469df002180f47fa83caf9d5af554",
+    "frontend/lab.html": "db539d98a4464cde0a35eeb0b51a6d213a3a776db6d3c3b0b5964408fab295ec",
+    "frontend/lab.js": "9002f3a005fba8c4edfee0f729c8d7c9c4b588a2a041702fa648bc5ef3a4c025",
+    "frontend/style.css": "e17a47be2b3a59acfe436f7bbfbed69538e3695d11839c09daec57f5fbba4fae",
+    "tests/browser_smoke.py": "d435b1f7de6d9d42e0a7835d6d6eee2c1e5f5fe98c967dba9ef44648d21ecca6",
+    "tests/test_api_and_model.py": "68dd5341a384d28e113bd22d93bb85ff0b27fc1e913589f8a2b0bbac0b453465",
+    "tests/test_contextual_dialogue.py": "a77312b9dddbd80c369f96d48d2ac53f49c4e95394931687ccd609076df9aa71",
+    "tests/test_conversation_acceptance.py": "5bf73415fad571aba523ac355610c873102f68ff2ce5e37da32479d686099807",
+    "tests/test_customer_live_runtime.py": "17b5a40ac208af203569d9c1bec91346dac54c1cc3cea65543a807f0e68a945f",
+    "tests/test_customer_policy.py": "158319c070305cb091e61745f4804694525b846f15bda4fb1c32209a6c40cb78",
+    "tests/test_customer_runtime.py": "dbcfed45670e6ede4a679de25afd9144ab855a072357093979ba551a50dcb3ec",
+    "tests/test_customer_training.py": "4e46def0bf6382a4483c585bef2aa2ec21c3d559a12846bb8016c18b85690fdc",
+    "tests/test_customer_usability.py": "449d7f232836c0ed5593490f6cbadb50acd2fc542f64483a9e357cb1455e3e1d",
+    "tests/test_demo_margaret_chen.py": "394b5cfc8cc693bb240bc42318d1908e670066889bee164abe702e4a69c84996",
+    "tests/test_emotional_recovery.py": "51e7dd57cf1ca00db2a236fc4e0a7e97c0155e73037b219c4d17ce570aad1e8d",
+    "tests/test_lab.py": "9e0deeb2e45187b2f684d249bf10f05495daaae6e98f0883b123525880557ab1",
+    "tests/test_live_evidence.py": "d77b0da3a2718f27d6d2288f9147d35735ea145af1719ac131b340283adfe371",
+    "tests/test_partial_pii.py": "f9f72fb52443a4b644ff8716c37cca9249b0274440a1a01242862ecef73be5d0",
+    "tests/test_post_process.py": "9d66056298e76184be2830a0c66d152a37552d394471b08559c4de12afa3811b",
+    "tests/test_ppo_training.py": "1a64c2b80b5ccd94aecb18bbcd367c0eabfd9f340328012378fecb65423ee049",
+    "tests/test_proxy_representative.py": "dc450ae4a8e2f9708d7d4a120a7ef38ef7cc6f73eab4741e16f1386c8403bb89",
+    "tests/test_rl_env.py": "9ee471789fc9db2c4b33d02f8692cfe509399f45f4c6d775e54e38dcd4c50dc4",
+    "tests/test_rl_semantics.py": "49a5fcabd2bf648db99026253591ae4ed855b1ec23f2f5bdc281f002b246807d",
+    "tests/test_scope_guardrail.py": "e79810ef53d73120d81907cef5da96e1d6713758fc9be9803b8a00ff7db22e4b",
+    "tests/test_verification_card.py": "46415bee0425627aa6675f0b666fa4c2b7265417298d63f7d6ff2d76e2e391b1",
+    "tests/test_workflow_security.py": "ed695ecbf90d38ad77f7284f93d46948d7e85634f5b4d3ac073280c444ea438a",
+    "train_customer_policy.py": "46b4c37c6e58deab34a49eb331e8120585be62da5577658f2dc7c99da97244d2"
+  },
+  "ci": {
+    "status": "pending_push",
+    "note": "Docker acceptance runs after push; local checks alone do not establish CI success."
+  }
+}

@@ -1,0 +1,2975 @@
+{
+  "controllers": {
+    "rule": {
+      "selected_action": "ACK_EMOTION",
+      "probabilities": {
+        "ACK_EMOTION": 1.0,
+        "ASK_IDENTITY_FIELD": 0.0,
+        "EXPLAIN_VERIFICATION_GATE": 0.0,
+        "RESOLVE_INTENT": 0.0,
+        "ASK_CLAIM_CLARIFICATION": 0.0,
+        "ANSWER_GROUNDED": 0.0,
+        "OFFER_EMAIL_SUMMARY": 0.0,
+        "SEND_EMAIL": 0.0,
+        "ESCALATE_HUMAN": 0.0
+      },
+      "allowed_actions": [
+        "ACK_EMOTION",
+        "ASK_IDENTITY_FIELD",
+        "EXPLAIN_VERIFICATION_GATE"
+      ],
+      "action_mask": [
+        true,
+        true,
+        true,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "source": "rule",
+      "checkpoint_sha256": null,
+      "checkpoint": null,
+      "fallback_reason": null,
+      "reason": "The rule controller selected a permitted response action; probabilities are a one-hot decision, not a neural prediction.",
+      "forced": false,
+      "grounded_answered": false,
+      "response_generation": "deterministic"
+    },
+    "ppo42": {
+      "selected_action": "ACK_EMOTION",
+      "probabilities": {
+        "ACK_EMOTION": 0.9747332334518433,
+        "ASK_IDENTITY_FIELD": 0.00962082576006651,
+        "EXPLAIN_VERIFICATION_GATE": 0.015645964071154594,
+        "RESOLVE_INTENT": 0.0,
+        "ASK_CLAIM_CLARIFICATION": 0.0,
+        "ANSWER_GROUNDED": 0.0,
+        "OFFER_EMAIL_SUMMARY": 0.0,
+        "SEND_EMAIL": 0.0,
+        "ESCALATE_HUMAN": 0.0
+      },
+      "allowed_actions": [
+        "ACK_EMOTION",
+        "ASK_IDENTITY_FIELD",
+        "EXPLAIN_VERIFICATION_GATE"
+      ],
+      "action_mask": [
+        true,
+        true,
+        true,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "source": "ppo42",
+      "checkpoint_sha256": "5c5511ab723d1a94ab0954d2f338711233fb91e2956bcdff6e2bb7bd60ca83d7",
+      "checkpoint": {
+        "sha256": "5c5511ab723d1a94ab0954d2f338711233fb91e2956bcdff6e2bb7bd60ca83d7",
+        "training_seed": 42,
+        "actual_steps": 60288,
+        "environment_version": 4,
+        "feature_version": 2,
+        "checkpoint_family": "customer_multi_turn_v1",
+        "mask_version": "customer_sop_v1"
+      },
+      "fallback_reason": null,
+      "reason": "The trained policy selected the largest probability among actions permitted for this real customer turn.",
+      "forced": false,
+      "grounded_answered": false,
+      "response_generation": "deterministic"
+    },
+    "ppo7": {
+      "selected_action": "ACK_EMOTION",
+      "probabilities": {
+        "ACK_EMOTION": 0.9720878601074219,
+        "ASK_IDENTITY_FIELD": 0.0025442736223340034,
+        "EXPLAIN_VERIFICATION_GATE": 0.02536781132221222,
+        "RESOLVE_INTENT": 0.0,
+        "ASK_CLAIM_CLARIFICATION": 0.0,
+        "ANSWER_GROUNDED": 0.0,
+        "OFFER_EMAIL_SUMMARY": 0.0,
+        "SEND_EMAIL": 0.0,
+        "ESCALATE_HUMAN": 0.0
+      },
+      "allowed_actions": [
+        "ACK_EMOTION",
+        "ASK_IDENTITY_FIELD",
+        "EXPLAIN_VERIFICATION_GATE"
+      ],
+      "action_mask": [
+        true,
+        true,
+        true,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "source": "ppo7",
+      "checkpoint_sha256": "ab42f54f9a5238784f5977c65b7988c96b9933aa59bdb59672d78160c973b5cf",
+      "checkpoint": {
+        "sha256": "ab42f54f9a5238784f5977c65b7988c96b9933aa59bdb59672d78160c973b5cf",
+        "training_seed": 7,
+        "actual_steps": 60288,
+        "environment_version": 4,
+        "feature_version": 2,
+        "checkpoint_family": "customer_multi_turn_v1",
+        "mask_version": "customer_sop_v1"
+      },
+      "fallback_reason": null,
+      "reason": "The trained policy selected the largest probability among actions permitted for this real customer turn.",
+      "forced": false,
+      "grounded_answered": false,
+      "response_generation": "deterministic"
+    }
+  },
+  "customer_turns": [
+    {
+      "message": "My name is Margaret Chen, policy POL-9921. I'm calling about my denied healthcare claim from January.",
+      "session_id": "8d00224b-f127-46f3-9e2d-1e318627feab",
+      "reply": "I\u2019ve kept your claim question for after verification. Please share your date of birth. You can also use the verification form.",
+      "current_phase": "VERIFY_ID",
+      "controller": "ppo42",
+      "policy_decision": {
+        "selected_action": "ASK_IDENTITY_FIELD",
+        "probabilities": {
+          "ACK_EMOTION": 0.0,
+          "ASK_IDENTITY_FIELD": 0.9834771752357483,
+          "EXPLAIN_VERIFICATION_GATE": 0.016522806137800217,
+          "RESOLVE_INTENT": 0.0,
+          "ASK_CLAIM_CLARIFICATION": 0.0,
+          "ANSWER_GROUNDED": 0.0,
+          "OFFER_EMAIL_SUMMARY": 0.0,
+          "SEND_EMAIL": 0.0,
+          "ESCALATE_HUMAN": 0.0
+        },
+        "allowed_actions": [
+          "ASK_IDENTITY_FIELD",
+          "EXPLAIN_VERIFICATION_GATE"
+        ],
+        "action_mask": [
+          false,
+          true,
+          true,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false
+        ],
+        "source": "ppo42",
+        "checkpoint_sha256": "5c5511ab723d1a94ab0954d2f338711233fb91e2956bcdff6e2bb7bd60ca83d7",
+        "checkpoint": {
+          "sha256": "5c5511ab723d1a94ab0954d2f338711233fb91e2956bcdff6e2bb7bd60ca83d7",
+          "training_seed": 42,
+          "actual_steps": 60288,
+          "environment_version": 4,
+          "feature_version": 2,
+          "checkpoint_family": "customer_multi_turn_v1",
+          "mask_version": "customer_sop_v1"
+        },
+        "fallback_reason": null,
+        "reason": "The trained policy selected the largest probability among actions permitted for this real customer turn.",
+        "forced": false,
+        "grounded_answered": false,
+        "response_generation": "deterministic"
+      },
+      "claim_choices": [],
+      "sop_state": {
+        "session_id": "8d00224b-f127-46f3-9e2d-1e318627feab",
+        "phase": "VERIFY_ID",
+        "verified_party_id": null,
+        "identity_verified": false,
+        "verified_fields": [
+          "name"
+        ],
+        "cross_phase_memory": {
+          "case_id_hint": null,
+          "case_type_hint": "healthcare",
+          "status_hint": "denied",
+          "date_hint": "January",
+          "topic_hint": "denial_reason",
+          "raw_utterance_snippet": "healthcare / denied / January / denial_reason",
+          "notes": [
+            "healthcare / denied / January / denial_reason"
+          ],
+          "hint_history": {
+            "case_type_hint": [
+              "healthcare"
+            ],
+            "status_hint": [
+              "denied"
+            ],
+            "date_hint": [
+              "January"
+            ],
+            "topic_hint": [
+              "denial_reason"
+            ]
+          }
+        },
+        "active_case_id": null,
+        "out_of_scope_count": 0,
+        "refusal_count": 0,
+        "post_process": {
+          "email_offered": false,
+          "user_decision": null,
+          "delivery_status": null
+        },
+        "trace_log": [
+          {
+            "timestamp": "2026-09-14T04:43:48.171689+00:00",
+            "phase_before": "VERIFY_ID",
+            "phase_after": "VERIFY_ID",
+            "gate_evaluated": "VERIFY_ID_GATE",
+            "gate_passed": false,
+            "details": "Three distinct matching allowed PII fields are required with no contradictory values. Explain privacy and offer alternative fields.",
+            "data_shield_active": true
+          }
+        ],
+        "discussion_topics": [],
+        "resolution_status": null,
+        "pii_conflicts": [],
+        "is_proxy_caller": false,
+        "proxy_rep_name": null,
+        "proxy_relationship": null,
+        "proxy_consent_status": null,
+        "proxy_identity_verified": false,
+        "proxy_authorized_party_id": null,
+        "data_shield_active": true,
+        "collected_fields": [
+          "name"
+        ],
+        "history_snapshots": [],
+        "outbox_count": 0
+      },
+      "trace": [
+        {
+          "timestamp": "2026-09-14T04:43:48.171689+00:00",
+          "phase_before": "VERIFY_ID",
+          "phase_after": "VERIFY_ID",
+          "gate_evaluated": "VERIFY_ID_GATE",
+          "gate_passed": false,
+          "details": "Three distinct matching allowed PII fields are required with no contradictory values. Explain privacy and offer alternative fields.",
+          "data_shield_active": true
+        }
+      ],
+      "active_case": null,
+      "verified_policyholder": null,
+      "engine_mode": "mock",
+      "model_activity": {
+        "interpretation_requests": 0,
+        "interpretation_succeeded": 0,
+        "planning_requests": 0,
+        "planning_succeeded": 0
+      },
+      "fallback_reason": null
+    },
+    {
+      "message": "DOB 1985-03-15, SSN last four 4472.",
+      "session_id": "8d00224b-f127-46f3-9e2d-1e318627feab",
+      "reply": "Identity verified. I found the claim using your earlier details.\n\nClaim CL-2048 is denied. It is a healthcare claim created on 2026-01-12.\n\nThe recorded denial reason is that the review file did not include the pathology report and the treating provider office note.\n\nThe requested documents are: pathology report, office note.\n\nThe recorded appeal deadline is 2026-03-18. That date has passed. A human claims representative must review whether any options remain; I cannot promise an extension.\n\nChoose a next step below, or ask in your own words.",
+      "current_phase": "PROCESS_CASE",
+      "controller": "ppo42",
+      "policy_decision": {
+        "selected_action": "ANSWER_GROUNDED",
+        "probabilities": {
+          "ACK_EMOTION": 0.0,
+          "ASK_IDENTITY_FIELD": 0.0,
+          "EXPLAIN_VERIFICATION_GATE": 0.0,
+          "RESOLVE_INTENT": 0.0,
+          "ASK_CLAIM_CLARIFICATION": 0.0,
+          "ANSWER_GROUNDED": 1.0,
+          "OFFER_EMAIL_SUMMARY": 0.0,
+          "SEND_EMAIL": 0.0,
+          "ESCALATE_HUMAN": 0.0
+        },
+        "allowed_actions": [
+          "ANSWER_GROUNDED"
+        ],
+        "action_mask": [
+          false,
+          false,
+          false,
+          false,
+          false,
+          true,
+          false,
+          false,
+          false
+        ],
+        "source": "ppo42",
+        "checkpoint_sha256": "5c5511ab723d1a94ab0954d2f338711233fb91e2956bcdff6e2bb7bd60ca83d7",
+        "checkpoint": {
+          "sha256": "5c5511ab723d1a94ab0954d2f338711233fb91e2956bcdff6e2bb7bd60ca83d7",
+          "training_seed": 42,
+          "actual_steps": 60288,
+          "environment_version": 4,
+          "feature_version": 2,
+          "checkpoint_family": "customer_multi_turn_v1",
+          "mask_version": "customer_sop_v1"
+        },
+        "fallback_reason": null,
+        "reason": "The trained policy selected the largest probability among actions permitted for this real customer turn.",
+        "forced": true,
+        "grounded_answered": true,
+        "response_generation": "deterministic"
+      },
+      "claim_choices": [],
+      "sop_state": {
+        "session_id": "8d00224b-f127-46f3-9e2d-1e318627feab",
+        "phase": "PROCESS_CASE",
+        "verified_party_id": "P9",
+        "identity_verified": true,
+        "verified_fields": [
+          "name",
+          "dob",
+          "id_last4"
+        ],
+        "cross_phase_memory": {
+          "case_id_hint": null,
+          "case_type_hint": "healthcare",
+          "status_hint": "denied",
+          "date_hint": "January",
+          "topic_hint": "denial_reason",
+          "raw_utterance_snippet": "healthcare / denied / January / denial_reason",
+          "notes": [
+            "healthcare / denied / January / denial_reason"
+          ],
+          "hint_history": {
+            "case_type_hint": [
+              "healthcare"
+            ],
+            "status_hint": [
+              "denied"
+            ],
+            "date_hint": [
+              "January"
+            ],
+            "topic_hint": [
+              "denial_reason"
+            ]
+          }
+        },
+        "active_case_id": "CL-2048",
+        "out_of_scope_count": 0,
+        "refusal_count": 0,
+        "post_process": {
+          "email_offered": false,
+          "draft_summary": null,
+          "user_decision": null,
+          "delivery_status": null,
+          "outbox_id": null
+        },
+        "trace_log": [
+          {
+            "timestamp": "2026-09-14T04:43:48.171689+00:00",
+            "phase_before": "VERIFY_ID",
+            "phase_after": "VERIFY_ID",
+            "gate_evaluated": "VERIFY_ID_GATE",
+            "gate_passed": false,
+            "details": "Three distinct matching allowed PII fields are required with no contradictory values. Explain privacy and offer alternative fields.",
+            "data_shield_active": true
+          },
+          {
+            "timestamp": "2026-09-14T04:43:48.518842+00:00",
+            "phase_before": "VERIFY_ID",
+            "phase_after": "RESOLVE_INTENT",
+            "gate_evaluated": "VERIFY_ID_GATE",
+            "gate_passed": true,
+            "details": "Identity matched 3 allowed distinct PII fields: name, dob, id_last4. Policy number is lookup only.",
+            "data_shield_active": false
+          },
+          {
+            "timestamp": "2026-09-14T04:43:48.519079+00:00",
+            "phase_before": "RESOLVE_INTENT",
+            "phase_after": "PROCESS_CASE",
+            "gate_evaluated": "RESOLVE_INTENT_GATE",
+            "gate_passed": true,
+            "details": "Resolved owned claim CL-2048 using the intersection of remembered hints.",
+            "data_shield_active": false
+          }
+        ],
+        "discussion_topics": [
+          "status",
+          "denial_reason",
+          "documents",
+          "appeal_deadline"
+        ],
+        "resolution_status": "resolved",
+        "pii_conflicts": [],
+        "is_proxy_caller": false,
+        "proxy_rep_name": null,
+        "proxy_relationship": null,
+        "proxy_consent_status": null,
+        "proxy_identity_verified": false,
+        "proxy_authorized_party_id": null,
+        "data_shield_active": false,
+        "collected_fields": [
+          "name",
+          "dob",
+          "id_last4"
+        ],
+        "history_snapshots": [],
+        "outbox_count": 0
+      },
+      "trace": [
+        {
+          "timestamp": "2026-09-14T04:43:48.171689+00:00",
+          "phase_before": "VERIFY_ID",
+          "phase_after": "VERIFY_ID",
+          "gate_evaluated": "VERIFY_ID_GATE",
+          "gate_passed": false,
+          "details": "Three distinct matching allowed PII fields are required with no contradictory values. Explain privacy and offer alternative fields.",
+          "data_shield_active": true
+        },
+        {
+          "timestamp": "2026-09-14T04:43:48.518842+00:00",
+          "phase_before": "VERIFY_ID",
+          "phase_after": "RESOLVE_INTENT",
+          "gate_evaluated": "VERIFY_ID_GATE",
+          "gate_passed": true,
+          "details": "Identity matched 3 allowed distinct PII fields: name, dob, id_last4. Policy number is lookup only.",
+          "data_shield_active": false
+        },
+        {
+          "timestamp": "2026-09-14T04:43:48.519079+00:00",
+          "phase_before": "RESOLVE_INTENT",
+          "phase_after": "PROCESS_CASE",
+          "gate_evaluated": "RESOLVE_INTENT_GATE",
+          "gate_passed": true,
+          "details": "Resolved owned claim CL-2048 using the intersection of remembered hints.",
+          "data_shield_active": false
+        }
+      ],
+      "active_case": {
+        "case_id": "CL-2048",
+        "case_type": "healthcare",
+        "created_at": "2026-01-12",
+        "status": "denied",
+        "summary": "Healthcare claim denied due to missing pathology report and office note",
+        "denial_reason": "the review file did not include the pathology report and the treating provider office note",
+        "documents_needed": [
+          "pathology report",
+          "office note"
+        ],
+        "appeal_deadline": "2026-03-18",
+        "expected_reimbursement_amount": "0.00",
+        "allowed_max_amount": "1450.00",
+        "net_pay": "0.00",
+        "net_fee": "1450.00"
+      },
+      "verified_policyholder": null,
+      "engine_mode": "mock",
+      "model_activity": {
+        "interpretation_requests": 0,
+        "interpretation_succeeded": 0,
+        "planning_requests": 0,
+        "planning_succeeded": 0
+      },
+      "fallback_reason": null
+    },
+    {
+      "message": "What documents do I need?",
+      "session_id": "8d00224b-f127-46f3-9e2d-1e318627feab",
+      "reply": "The requested documents are: pathology report, office note.",
+      "current_phase": "PROCESS_CASE",
+      "controller": "ppo42",
+      "policy_decision": {
+        "selected_action": "ANSWER_GROUNDED",
+        "probabilities": {
+          "ACK_EMOTION": 0.0,
+          "ASK_IDENTITY_FIELD": 0.0,
+          "EXPLAIN_VERIFICATION_GATE": 0.0,
+          "RESOLVE_INTENT": 0.0,
+          "ASK_CLAIM_CLARIFICATION": 0.0,
+          "ANSWER_GROUNDED": 1.0,
+          "OFFER_EMAIL_SUMMARY": 0.0,
+          "SEND_EMAIL": 0.0,
+          "ESCALATE_HUMAN": 0.0
+        },
+        "allowed_actions": [
+          "ANSWER_GROUNDED"
+        ],
+        "action_mask": [
+          false,
+          false,
+          false,
+          false,
+          false,
+          true,
+          false,
+          false,
+          false
+        ],
+        "source": "ppo42",
+        "checkpoint_sha256": "5c5511ab723d1a94ab0954d2f338711233fb91e2956bcdff6e2bb7bd60ca83d7",
+        "checkpoint": {
+          "sha256": "5c5511ab723d1a94ab0954d2f338711233fb91e2956bcdff6e2bb7bd60ca83d7",
+          "training_seed": 42,
+          "actual_steps": 60288,
+          "environment_version": 4,
+          "feature_version": 2,
+          "checkpoint_family": "customer_multi_turn_v1",
+          "mask_version": "customer_sop_v1"
+        },
+        "fallback_reason": null,
+        "reason": "The trained policy selected the largest probability among actions permitted for this real customer turn.",
+        "forced": true,
+        "grounded_answered": true,
+        "response_generation": "deterministic"
+      },
+      "claim_choices": [],
+      "sop_state": {
+        "session_id": "8d00224b-f127-46f3-9e2d-1e318627feab",
+        "phase": "PROCESS_CASE",
+        "verified_party_id": "P9",
+        "identity_verified": true,
+        "verified_fields": [
+          "name",
+          "dob",
+          "id_last4"
+        ],
+        "cross_phase_memory": {
+          "case_id_hint": null,
+          "case_type_hint": "healthcare",
+          "status_hint": "denied",
+          "date_hint": "January",
+          "topic_hint": "documents",
+          "raw_utterance_snippet": "documents",
+          "notes": [
+            "healthcare / denied / January / denial_reason",
+            "documents"
+          ],
+          "hint_history": {
+            "case_type_hint": [
+              "healthcare"
+            ],
+            "status_hint": [
+              "denied"
+            ],
+            "date_hint": [
+              "January"
+            ],
+            "topic_hint": [
+              "denial_reason",
+              "documents"
+            ]
+          }
+        },
+        "active_case_id": "CL-2048",
+        "out_of_scope_count": 0,
+        "refusal_count": 0,
+        "post_process": {
+          "email_offered": false,
+          "draft_summary": null,
+          "user_decision": null,
+          "delivery_status": null,
+          "outbox_id": null
+        },
+        "trace_log": [
+          {
+            "timestamp": "2026-09-14T04:43:48.171689+00:00",
+            "phase_before": "VERIFY_ID",
+            "phase_after": "VERIFY_ID",
+            "gate_evaluated": "VERIFY_ID_GATE",
+            "gate_passed": false,
+            "details": "Three distinct matching allowed PII fields are required with no contradictory values. Explain privacy and offer alternative fields.",
+            "data_shield_active": true
+          },
+          {
+            "timestamp": "2026-09-14T04:43:48.518842+00:00",
+            "phase_before": "VERIFY_ID",
+            "phase_after": "RESOLVE_INTENT",
+            "gate_evaluated": "VERIFY_ID_GATE",
+            "gate_passed": true,
+            "details": "Identity matched 3 allowed distinct PII fields: name, dob, id_last4. Policy number is lookup only.",
+            "data_shield_active": false
+          },
+          {
+            "timestamp": "2026-09-14T04:43:48.519079+00:00",
+            "phase_before": "RESOLVE_INTENT",
+            "phase_after": "PROCESS_CASE",
+            "gate_evaluated": "RESOLVE_INTENT_GATE",
+            "gate_passed": true,
+            "details": "Resolved owned claim CL-2048 using the intersection of remembered hints.",
+            "data_shield_active": false
+          },
+          {
+            "timestamp": "2026-09-14T04:43:49.005243+00:00",
+            "phase_before": "PROCESS_CASE",
+            "phase_after": "PROCESS_CASE",
+            "gate_evaluated": "PROCESS_CASE_GATE",
+            "gate_passed": true,
+            "details": "Answer only using the verified caller's selected claim and fixture guidance.",
+            "data_shield_active": false
+          }
+        ],
+        "discussion_topics": [
+          "status",
+          "denial_reason",
+          "documents",
+          "appeal_deadline"
+        ],
+        "resolution_status": "resolved",
+        "pii_conflicts": [],
+        "is_proxy_caller": false,
+        "proxy_rep_name": null,
+        "proxy_relationship": null,
+        "proxy_consent_status": null,
+        "proxy_identity_verified": false,
+        "proxy_authorized_party_id": null,
+        "data_shield_active": false,
+        "collected_fields": [
+          "name",
+          "dob",
+          "id_last4"
+        ],
+        "history_snapshots": [],
+        "outbox_count": 0
+      },
+      "trace": [
+        {
+          "timestamp": "2026-09-14T04:43:48.171689+00:00",
+          "phase_before": "VERIFY_ID",
+          "phase_after": "VERIFY_ID",
+          "gate_evaluated": "VERIFY_ID_GATE",
+          "gate_passed": false,
+          "details": "Three distinct matching allowed PII fields are required with no contradictory values. Explain privacy and offer alternative fields.",
+          "data_shield_active": true
+        },
+        {
+          "timestamp": "2026-09-14T04:43:48.518842+00:00",
+          "phase_before": "VERIFY_ID",
+          "phase_after": "RESOLVE_INTENT",
+          "gate_evaluated": "VERIFY_ID_GATE",
+          "gate_passed": true,
+          "details": "Identity matched 3 allowed distinct PII fields: name, dob, id_last4. Policy number is lookup only.",
+          "data_shield_active": false
+        },
+        {
+          "timestamp": "2026-09-14T04:43:48.519079+00:00",
+          "phase_before": "RESOLVE_INTENT",
+          "phase_after": "PROCESS_CASE",
+          "gate_evaluated": "RESOLVE_INTENT_GATE",
+          "gate_passed": true,
+          "details": "Resolved owned claim CL-2048 using the intersection of remembered hints.",
+          "data_shield_active": false
+        },
+        {
+          "timestamp": "2026-09-14T04:43:49.005243+00:00",
+          "phase_before": "PROCESS_CASE",
+          "phase_after": "PROCESS_CASE",
+          "gate_evaluated": "PROCESS_CASE_GATE",
+          "gate_passed": true,
+          "details": "Answer only using the verified caller's selected claim and fixture guidance.",
+          "data_shield_active": false
+        }
+      ],
+      "active_case": {
+        "case_id": "CL-2048",
+        "case_type": "healthcare",
+        "created_at": "2026-01-12",
+        "status": "denied",
+        "summary": "Healthcare claim denied due to missing pathology report and office note",
+        "denial_reason": "the review file did not include the pathology report and the treating provider office note",
+        "documents_needed": [
+          "pathology report",
+          "office note"
+        ],
+        "appeal_deadline": "2026-03-18",
+        "expected_reimbursement_amount": "0.00",
+        "allowed_max_amount": "1450.00",
+        "net_pay": "0.00",
+        "net_fee": "1450.00"
+      },
+      "verified_policyholder": null,
+      "engine_mode": "mock",
+      "model_activity": {
+        "interpretation_requests": 0,
+        "interpretation_succeeded": 0,
+        "planning_requests": 0,
+        "planning_succeeded": 0
+      },
+      "fallback_reason": null
+    },
+    {
+      "message": "What is the second one?",
+      "session_id": "8d00224b-f127-46f3-9e2d-1e318627feab",
+      "reply": "Office note: The office note should show the patient name, visit date, assessment, and treatment or follow-up recommendation. Upload all pages together in one PDF when possible.",
+      "current_phase": "PROCESS_CASE",
+      "controller": "ppo42",
+      "policy_decision": {
+        "selected_action": "ANSWER_GROUNDED",
+        "probabilities": {
+          "ACK_EMOTION": 0.0,
+          "ASK_IDENTITY_FIELD": 0.0,
+          "EXPLAIN_VERIFICATION_GATE": 0.0,
+          "RESOLVE_INTENT": 0.0,
+          "ASK_CLAIM_CLARIFICATION": 0.0,
+          "ANSWER_GROUNDED": 1.0,
+          "OFFER_EMAIL_SUMMARY": 0.0,
+          "SEND_EMAIL": 0.0,
+          "ESCALATE_HUMAN": 0.0
+        },
+        "allowed_actions": [
+          "ANSWER_GROUNDED"
+        ],
+        "action_mask": [
+          false,
+          false,
+          false,
+          false,
+          false,
+          true,
+          false,
+          false,
+          false
+        ],
+        "source": "ppo42",
+        "checkpoint_sha256": "5c5511ab723d1a94ab0954d2f338711233fb91e2956bcdff6e2bb7bd60ca83d7",
+        "checkpoint": {
+          "sha256": "5c5511ab723d1a94ab0954d2f338711233fb91e2956bcdff6e2bb7bd60ca83d7",
+          "training_seed": 42,
+          "actual_steps": 60288,
+          "environment_version": 4,
+          "feature_version": 2,
+          "checkpoint_family": "customer_multi_turn_v1",
+          "mask_version": "customer_sop_v1"
+        },
+        "fallback_reason": null,
+        "reason": "The trained policy selected the largest probability among actions permitted for this real customer turn.",
+        "forced": true,
+        "grounded_answered": true,
+        "response_generation": "deterministic"
+      },
+      "claim_choices": [],
+      "sop_state": {
+        "session_id": "8d00224b-f127-46f3-9e2d-1e318627feab",
+        "phase": "PROCESS_CASE",
+        "verified_party_id": "P9",
+        "identity_verified": true,
+        "verified_fields": [
+          "name",
+          "dob",
+          "id_last4"
+        ],
+        "cross_phase_memory": {
+          "case_id_hint": null,
+          "case_type_hint": "healthcare",
+          "status_hint": "denied",
+          "date_hint": "January",
+          "topic_hint": "documents",
+          "raw_utterance_snippet": "documents",
+          "notes": [
+            "healthcare / denied / January / denial_reason",
+            "documents"
+          ],
+          "hint_history": {
+            "case_type_hint": [
+              "healthcare"
+            ],
+            "status_hint": [
+              "denied"
+            ],
+            "date_hint": [
+              "January"
+            ],
+            "topic_hint": [
+              "denial_reason",
+              "documents"
+            ]
+          }
+        },
+        "active_case_id": "CL-2048",
+        "out_of_scope_count": 0,
+        "refusal_count": 0,
+        "post_process": {
+          "email_offered": false,
+          "draft_summary": null,
+          "user_decision": null,
+          "delivery_status": null,
+          "outbox_id": null
+        },
+        "trace_log": [
+          {
+            "timestamp": "2026-09-14T04:43:48.171689+00:00",
+            "phase_before": "VERIFY_ID",
+            "phase_after": "VERIFY_ID",
+            "gate_evaluated": "VERIFY_ID_GATE",
+            "gate_passed": false,
+            "details": "Three distinct matching allowed PII fields are required with no contradictory values. Explain privacy and offer alternative fields.",
+            "data_shield_active": true
+          },
+          {
+            "timestamp": "2026-09-14T04:43:48.518842+00:00",
+            "phase_before": "VERIFY_ID",
+            "phase_after": "RESOLVE_INTENT",
+            "gate_evaluated": "VERIFY_ID_GATE",
+            "gate_passed": true,
+            "details": "Identity matched 3 allowed distinct PII fields: name, dob, id_last4. Policy number is lookup only.",
+            "data_shield_active": false
+          },
+          {
+            "timestamp": "2026-09-14T04:43:48.519079+00:00",
+            "phase_before": "RESOLVE_INTENT",
+            "phase_after": "PROCESS_CASE",
+            "gate_evaluated": "RESOLVE_INTENT_GATE",
+            "gate_passed": true,
+            "details": "Resolved owned claim CL-2048 using the intersection of remembered hints.",
+            "data_shield_active": false
+          },
+          {
+            "timestamp": "2026-09-14T04:43:49.005243+00:00",
+            "phase_before": "PROCESS_CASE",
+            "phase_after": "PROCESS_CASE",
+            "gate_evaluated": "PROCESS_CASE_GATE",
+            "gate_passed": true,
+            "details": "Answer only using the verified caller's selected claim and fixture guidance.",
+            "data_shield_active": false
+          },
+          {
+            "timestamp": "2026-09-14T04:43:49.286376+00:00",
+            "phase_before": "PROCESS_CASE",
+            "phase_after": "PROCESS_CASE",
+            "gate_evaluated": "PROCESS_CASE_GATE",
+            "gate_passed": true,
+            "details": "Answer only using the verified caller's selected claim and fixture guidance.",
+            "data_shield_active": false
+          }
+        ],
+        "discussion_topics": [
+          "status",
+          "denial_reason",
+          "documents",
+          "appeal_deadline"
+        ],
+        "resolution_status": "resolved",
+        "pii_conflicts": [],
+        "is_proxy_caller": false,
+        "proxy_rep_name": null,
+        "proxy_relationship": null,
+        "proxy_consent_status": null,
+        "proxy_identity_verified": false,
+        "proxy_authorized_party_id": null,
+        "data_shield_active": false,
+        "collected_fields": [
+          "name",
+          "dob",
+          "id_last4"
+        ],
+        "history_snapshots": [],
+        "outbox_count": 0
+      },
+      "trace": [
+        {
+          "timestamp": "2026-09-14T04:43:48.171689+00:00",
+          "phase_before": "VERIFY_ID",
+          "phase_after": "VERIFY_ID",
+          "gate_evaluated": "VERIFY_ID_GATE",
+          "gate_passed": false,
+          "details": "Three distinct matching allowed PII fields are required with no contradictory values. Explain privacy and offer alternative fields.",
+          "data_shield_active": true
+        },
+        {
+          "timestamp": "2026-09-14T04:43:48.518842+00:00",
+          "phase_before": "VERIFY_ID",
+          "phase_after": "RESOLVE_INTENT",
+          "gate_evaluated": "VERIFY_ID_GATE",
+          "gate_passed": true,
+          "details": "Identity matched 3 allowed distinct PII fields: name, dob, id_last4. Policy number is lookup only.",
+          "data_shield_active": false
+        },
+        {
+          "timestamp": "2026-09-14T04:43:48.519079+00:00",
+          "phase_before": "RESOLVE_INTENT",
+          "phase_after": "PROCESS_CASE",
+          "gate_evaluated": "RESOLVE_INTENT_GATE",
+          "gate_passed": true,
+          "details": "Resolved owned claim CL-2048 using the intersection of remembered hints.",
+          "data_shield_active": false
+        },
+        {
+          "timestamp": "2026-09-14T04:43:49.005243+00:00",
+          "phase_before": "PROCESS_CASE",
+          "phase_after": "PROCESS_CASE",
+          "gate_evaluated": "PROCESS_CASE_GATE",
+          "gate_passed": true,
+          "details": "Answer only using the verified caller's selected claim and fixture guidance.",
+          "data_shield_active": false
+        },
+        {
+          "timestamp": "2026-09-14T04:43:49.286376+00:00",
+          "phase_before": "PROCESS_CASE",
+          "phase_after": "PROCESS_CASE",
+          "gate_evaluated": "PROCESS_CASE_GATE",
+          "gate_passed": true,
+          "details": "Answer only using the verified caller's selected claim and fixture guidance.",
+          "data_shield_active": false
+        }
+      ],
+      "active_case": {
+        "case_id": "CL-2048",
+        "case_type": "healthcare",
+        "created_at": "2026-01-12",
+        "status": "denied",
+        "summary": "Healthcare claim denied due to missing pathology report and office note",
+        "denial_reason": "the review file did not include the pathology report and the treating provider office note",
+        "documents_needed": [
+          "pathology report",
+          "office note"
+        ],
+        "appeal_deadline": "2026-03-18",
+        "expected_reimbursement_amount": "0.00",
+        "allowed_max_amount": "1450.00",
+        "net_pay": "0.00",
+        "net_fee": "1450.00"
+      },
+      "verified_policyholder": null,
+      "engine_mode": "mock",
+      "model_activity": {
+        "interpretation_requests": 0,
+        "interpretation_succeeded": 0,
+        "planning_requests": 0,
+        "planning_succeeded": 0
+      },
+      "fallback_reason": null
+    },
+    {
+      "message": "I can't get it.",
+      "session_id": "8d00224b-f127-46f3-9e2d-1e318627feab",
+      "reply": "Ask the clinic for a visit summary, discharge paperwork or a re-sent office note. If none is available, request human review of alternatives.",
+      "current_phase": "PROCESS_CASE",
+      "controller": "ppo42",
+      "policy_decision": {
+        "selected_action": "ANSWER_GROUNDED",
+        "probabilities": {
+          "ACK_EMOTION": 0.0,
+          "ASK_IDENTITY_FIELD": 0.0,
+          "EXPLAIN_VERIFICATION_GATE": 0.0,
+          "RESOLVE_INTENT": 0.0,
+          "ASK_CLAIM_CLARIFICATION": 0.0,
+          "ANSWER_GROUNDED": 1.0,
+          "OFFER_EMAIL_SUMMARY": 0.0,
+          "SEND_EMAIL": 0.0,
+          "ESCALATE_HUMAN": 0.0
+        },
+        "allowed_actions": [
+          "ANSWER_GROUNDED"
+        ],
+        "action_mask": [
+          false,
+          false,
+          false,
+          false,
+          false,
+          true,
+          false,
+          false,
+          false
+        ],
+        "source": "ppo42",
+        "checkpoint_sha256": "5c5511ab723d1a94ab0954d2f338711233fb91e2956bcdff6e2bb7bd60ca83d7",
+        "checkpoint": {
+          "sha256": "5c5511ab723d1a94ab0954d2f338711233fb91e2956bcdff6e2bb7bd60ca83d7",
+          "training_seed": 42,
+          "actual_steps": 60288,
+          "environment_version": 4,
+          "feature_version": 2,
+          "checkpoint_family": "customer_multi_turn_v1",
+          "mask_version": "customer_sop_v1"
+        },
+        "fallback_reason": null,
+        "reason": "The trained policy selected the largest probability among actions permitted for this real customer turn.",
+        "forced": true,
+        "grounded_answered": true,
+        "response_generation": "deterministic"
+      },
+      "claim_choices": [],
+      "sop_state": {
+        "session_id": "8d00224b-f127-46f3-9e2d-1e318627feab",
+        "phase": "PROCESS_CASE",
+        "verified_party_id": "P9",
+        "identity_verified": true,
+        "verified_fields": [
+          "name",
+          "dob",
+          "id_last4"
+        ],
+        "cross_phase_memory": {
+          "case_id_hint": null,
+          "case_type_hint": "healthcare",
+          "status_hint": "denied",
+          "date_hint": "January",
+          "topic_hint": "document_alternatives",
+          "raw_utterance_snippet": "document_alternatives",
+          "notes": [
+            "healthcare / denied / January / denial_reason",
+            "documents",
+            "document_alternatives"
+          ],
+          "hint_history": {
+            "case_type_hint": [
+              "healthcare"
+            ],
+            "status_hint": [
+              "denied"
+            ],
+            "date_hint": [
+              "January"
+            ],
+            "topic_hint": [
+              "denial_reason",
+              "documents",
+              "document_alternatives"
+            ]
+          }
+        },
+        "active_case_id": "CL-2048",
+        "out_of_scope_count": 0,
+        "refusal_count": 0,
+        "post_process": {
+          "email_offered": false,
+          "draft_summary": null,
+          "user_decision": null,
+          "delivery_status": null,
+          "outbox_id": null
+        },
+        "trace_log": [
+          {
+            "timestamp": "2026-09-14T04:43:48.171689+00:00",
+            "phase_before": "VERIFY_ID",
+            "phase_after": "VERIFY_ID",
+            "gate_evaluated": "VERIFY_ID_GATE",
+            "gate_passed": false,
+            "details": "Three distinct matching allowed PII fields are required with no contradictory values. Explain privacy and offer alternative fields.",
+            "data_shield_active": true
+          },
+          {
+            "timestamp": "2026-09-14T04:43:48.518842+00:00",
+            "phase_before": "VERIFY_ID",
+            "phase_after": "RESOLVE_INTENT",
+            "gate_evaluated": "VERIFY_ID_GATE",
+            "gate_passed": true,
+            "details": "Identity matched 3 allowed distinct PII fields: name, dob, id_last4. Policy number is lookup only.",
+            "data_shield_active": false
+          },
+          {
+            "timestamp": "2026-09-14T04:43:48.519079+00:00",
+            "phase_before": "RESOLVE_INTENT",
+            "phase_after": "PROCESS_CASE",
+            "gate_evaluated": "RESOLVE_INTENT_GATE",
+            "gate_passed": true,
+            "details": "Resolved owned claim CL-2048 using the intersection of remembered hints.",
+            "data_shield_active": false
+          },
+          {
+            "timestamp": "2026-09-14T04:43:49.005243+00:00",
+            "phase_before": "PROCESS_CASE",
+            "phase_after": "PROCESS_CASE",
+            "gate_evaluated": "PROCESS_CASE_GATE",
+            "gate_passed": true,
+            "details": "Answer only using the verified caller's selected claim and fixture guidance.",
+            "data_shield_active": false
+          },
+          {
+            "timestamp": "2026-09-14T04:43:49.286376+00:00",
+            "phase_before": "PROCESS_CASE",
+            "phase_after": "PROCESS_CASE",
+            "gate_evaluated": "PROCESS_CASE_GATE",
+            "gate_passed": true,
+            "details": "Answer only using the verified caller's selected claim and fixture guidance.",
+            "data_shield_active": false
+          },
+          {
+            "timestamp": "2026-09-14T04:43:49.621120+00:00",
+            "phase_before": "PROCESS_CASE",
+            "phase_after": "PROCESS_CASE",
+            "gate_evaluated": "PROCESS_CASE_GATE",
+            "gate_passed": true,
+            "details": "Answer only using the verified caller's selected claim and fixture guidance.",
+            "data_shield_active": false
+          }
+        ],
+        "discussion_topics": [
+          "status",
+          "denial_reason",
+          "documents",
+          "appeal_deadline",
+          "document_alternatives"
+        ],
+        "resolution_status": "resolved",
+        "pii_conflicts": [],
+        "is_proxy_caller": false,
+        "proxy_rep_name": null,
+        "proxy_relationship": null,
+        "proxy_consent_status": null,
+        "proxy_identity_verified": false,
+        "proxy_authorized_party_id": null,
+        "data_shield_active": false,
+        "collected_fields": [
+          "name",
+          "dob",
+          "id_last4"
+        ],
+        "history_snapshots": [],
+        "outbox_count": 0
+      },
+      "trace": [
+        {
+          "timestamp": "2026-09-14T04:43:48.171689+00:00",
+          "phase_before": "VERIFY_ID",
+          "phase_after": "VERIFY_ID",
+          "gate_evaluated": "VERIFY_ID_GATE",
+          "gate_passed": false,
+          "details": "Three distinct matching allowed PII fields are required with no contradictory values. Explain privacy and offer alternative fields.",
+          "data_shield_active": true
+        },
+        {
+          "timestamp": "2026-09-14T04:43:48.518842+00:00",
+          "phase_before": "VERIFY_ID",
+          "phase_after": "RESOLVE_INTENT",
+          "gate_evaluated": "VERIFY_ID_GATE",
+          "gate_passed": true,
+          "details": "Identity matched 3 allowed distinct PII fields: name, dob, id_last4. Policy number is lookup only.",
+          "data_shield_active": false
+        },
+        {
+          "timestamp": "2026-09-14T04:43:48.519079+00:00",
+          "phase_before": "RESOLVE_INTENT",
+          "phase_after": "PROCESS_CASE",
+          "gate_evaluated": "RESOLVE_INTENT_GATE",
+          "gate_passed": true,
+          "details": "Resolved owned claim CL-2048 using the intersection of remembered hints.",
+          "data_shield_active": false
+        },
+        {
+          "timestamp": "2026-09-14T04:43:49.005243+00:00",
+          "phase_before": "PROCESS_CASE",
+          "phase_after": "PROCESS_CASE",
+          "gate_evaluated": "PROCESS_CASE_GATE",
+          "gate_passed": true,
+          "details": "Answer only using the verified caller's selected claim and fixture guidance.",
+          "data_shield_active": false
+        },
+        {
+          "timestamp": "2026-09-14T04:43:49.286376+00:00",
+          "phase_before": "PROCESS_CASE",
+          "phase_after": "PROCESS_CASE",
+          "gate_evaluated": "PROCESS_CASE_GATE",
+          "gate_passed": true,
+          "details": "Answer only using the verified caller's selected claim and fixture guidance.",
+          "data_shield_active": false
+        },
+        {
+          "timestamp": "2026-09-14T04:43:49.621120+00:00",
+          "phase_before": "PROCESS_CASE",
+          "phase_after": "PROCESS_CASE",
+          "gate_evaluated": "PROCESS_CASE_GATE",
+          "gate_passed": true,
+          "details": "Answer only using the verified caller's selected claim and fixture guidance.",
+          "data_shield_active": false
+        }
+      ],
+      "active_case": {
+        "case_id": "CL-2048",
+        "case_type": "healthcare",
+        "created_at": "2026-01-12",
+        "status": "denied",
+        "summary": "Healthcare claim denied due to missing pathology report and office note",
+        "denial_reason": "the review file did not include the pathology report and the treating provider office note",
+        "documents_needed": [
+          "pathology report",
+          "office note"
+        ],
+        "appeal_deadline": "2026-03-18",
+        "expected_reimbursement_amount": "0.00",
+        "allowed_max_amount": "1450.00",
+        "net_pay": "0.00",
+        "net_fee": "1450.00"
+      },
+      "verified_policyholder": null,
+      "engine_mode": "mock",
+      "model_activity": {
+        "interpretation_requests": 0,
+        "interpretation_succeeded": 0,
+        "planning_requests": 0,
+        "planning_succeeded": 0
+      },
+      "fallback_reason": null
+    },
+    {
+      "message": "Can I send photos?",
+      "session_id": "8d00224b-f127-46f3-9e2d-1e318627feab",
+      "reply": "The record does not confirm that a photo is an accepted file type. Check the portal's format instructions or ask support. Every page must be legible and complete.\n\nOffice note: Include patient name, visit date, assessment and follow-up recommendations. Upload all pages together in one PDF when possible.",
+      "current_phase": "PROCESS_CASE",
+      "controller": "ppo42",
+      "policy_decision": {
+        "selected_action": "ANSWER_GROUNDED",
+        "probabilities": {
+          "ACK_EMOTION": 0.0,
+          "ASK_IDENTITY_FIELD": 0.0,
+          "EXPLAIN_VERIFICATION_GATE": 0.0,
+          "RESOLVE_INTENT": 0.0,
+          "ASK_CLAIM_CLARIFICATION": 0.0,
+          "ANSWER_GROUNDED": 1.0,
+          "OFFER_EMAIL_SUMMARY": 0.0,
+          "SEND_EMAIL": 0.0,
+          "ESCALATE_HUMAN": 0.0
+        },
+        "allowed_actions": [
+          "ANSWER_GROUNDED"
+        ],
+        "action_mask": [
+          false,
+          false,
+          false,
+          false,
+          false,
+          true,
+          false,
+          false,
+          false
+        ],
+        "source": "ppo42",
+        "checkpoint_sha256": "5c5511ab723d1a94ab0954d2f338711233fb91e2956bcdff6e2bb7bd60ca83d7",
+        "checkpoint": {
+          "sha256": "5c5511ab723d1a94ab0954d2f338711233fb91e2956bcdff6e2bb7bd60ca83d7",
+          "training_seed": 42,
+          "actual_steps": 60288,
+          "environment_version": 4,
+          "feature_version": 2,
+          "checkpoint_family": "customer_multi_turn_v1",
+          "mask_version": "customer_sop_v1"
+        },
+        "fallback_reason": null,
+        "reason": "The trained policy selected the largest probability among actions permitted for this real customer turn.",
+        "forced": true,
+        "grounded_answered": true,
+        "response_generation": "deterministic"
+      },
+      "claim_choices": [],
+      "sop_state": {
+        "session_id": "8d00224b-f127-46f3-9e2d-1e318627feab",
+        "phase": "PROCESS_CASE",
+        "verified_party_id": "P9",
+        "identity_verified": true,
+        "verified_fields": [
+          "name",
+          "dob",
+          "id_last4"
+        ],
+        "cross_phase_memory": {
+          "case_id_hint": null,
+          "case_type_hint": "healthcare",
+          "status_hint": "denied",
+          "date_hint": "January",
+          "topic_hint": "file_format",
+          "raw_utterance_snippet": "file_format",
+          "notes": [
+            "healthcare / denied / January / denial_reason",
+            "documents",
+            "document_alternatives",
+            "file_format"
+          ],
+          "hint_history": {
+            "case_type_hint": [
+              "healthcare"
+            ],
+            "status_hint": [
+              "denied"
+            ],
+            "date_hint": [
+              "January"
+            ],
+            "topic_hint": [
+              "denial_reason",
+              "documents",
+              "document_alternatives",
+              "file_format"
+            ]
+          }
+        },
+        "active_case_id": "CL-2048",
+        "out_of_scope_count": 0,
+        "refusal_count": 0,
+        "post_process": {
+          "email_offered": false,
+          "draft_summary": null,
+          "user_decision": null,
+          "delivery_status": null,
+          "outbox_id": null
+        },
+        "trace_log": [
+          {
+            "timestamp": "2026-09-14T04:43:48.171689+00:00",
+            "phase_before": "VERIFY_ID",
+            "phase_after": "VERIFY_ID",
+            "gate_evaluated": "VERIFY_ID_GATE",
+            "gate_passed": false,
+            "details": "Three distinct matching allowed PII fields are required with no contradictory values. Explain privacy and offer alternative fields.",
+            "data_shield_active": true
+          },
+          {
+            "timestamp": "2026-09-14T04:43:48.518842+00:00",
+            "phase_before": "VERIFY_ID",
+            "phase_after": "RESOLVE_INTENT",
+            "gate_evaluated": "VERIFY_ID_GATE",
+            "gate_passed": true,
+            "details": "Identity matched 3 allowed distinct PII fields: name, dob, id_last4. Policy number is lookup only.",
+            "data_shield_active": false
+          },
+          {
+            "timestamp": "2026-09-14T04:43:48.519079+00:00",
+            "phase_before": "RESOLVE_INTENT",
+            "phase_after": "PROCESS_CASE",
+            "gate_evaluated": "RESOLVE_INTENT_GATE",
+            "gate_passed": true,
+            "details": "Resolved owned claim CL-2048 using the intersection of remembered hints.",
+            "data_shield_active": false
+          },
+          {
+            "timestamp": "2026-09-14T04:43:49.005243+00:00",
+            "phase_before": "PROCESS_CASE",
+            "phase_after": "PROCESS_CASE",
+            "gate_evaluated": "PROCESS_CASE_GATE",
+            "gate_passed": true,
+            "details": "Answer only using the verified caller's selected claim and fixture guidance.",
+            "data_shield_active": false
+          },
+          {
+            "timestamp": "2026-09-14T04:43:49.286376+00:00",
+            "phase_before": "PROCESS_CASE",
+            "phase_after": "PROCESS_CASE",
+            "gate_evaluated": "PROCESS_CASE_GATE",
+            "gate_passed": true,
+            "details": "Answer only using the verified caller's selected claim and fixture guidance.",
+            "data_shield_active": false
+          },
+          {
+            "timestamp": "2026-09-14T04:43:49.621120+00:00",
+            "phase_before": "PROCESS_CASE",
+            "phase_after": "PROCESS_CASE",
+            "gate_evaluated": "PROCESS_CASE_GATE",
+            "gate_passed": true,
+            "details": "Answer only using the verified caller's selected claim and fixture guidance.",
+            "data_shield_active": false
+          },
+          {
+            "timestamp": "2026-09-14T04:43:49.935887+00:00",
+            "phase_before": "PROCESS_CASE",
+            "phase_after": "PROCESS_CASE",
+            "gate_evaluated": "PROCESS_CASE_GATE",
+            "gate_passed": true,
+            "details": "Answer only using the verified caller's selected claim and fixture guidance.",
+            "data_shield_active": false
+          }
+        ],
+        "discussion_topics": [
+          "status",
+          "denial_reason",
+          "documents",
+          "appeal_deadline",
+          "document_alternatives",
+          "file_format"
+        ],
+        "resolution_status": "resolved",
+        "pii_conflicts": [],
+        "is_proxy_caller": false,
+        "proxy_rep_name": null,
+        "proxy_relationship": null,
+        "proxy_consent_status": null,
+        "proxy_identity_verified": false,
+        "proxy_authorized_party_id": null,
+        "data_shield_active": false,
+        "collected_fields": [
+          "name",
+          "dob",
+          "id_last4"
+        ],
+        "history_snapshots": [],
+        "outbox_count": 0
+      },
+      "trace": [
+        {
+          "timestamp": "2026-09-14T04:43:48.171689+00:00",
+          "phase_before": "VERIFY_ID",
+          "phase_after": "VERIFY_ID",
+          "gate_evaluated": "VERIFY_ID_GATE",
+          "gate_passed": false,
+          "details": "Three distinct matching allowed PII fields are required with no contradictory values. Explain privacy and offer alternative fields.",
+          "data_shield_active": true
+        },
+        {
+          "timestamp": "2026-09-14T04:43:48.518842+00:00",
+          "phase_before": "VERIFY_ID",
+          "phase_after": "RESOLVE_INTENT",
+          "gate_evaluated": "VERIFY_ID_GATE",
+          "gate_passed": true,
+          "details": "Identity matched 3 allowed distinct PII fields: name, dob, id_last4. Policy number is lookup only.",
+          "data_shield_active": false
+        },
+        {
+          "timestamp": "2026-09-14T04:43:48.519079+00:00",
+          "phase_before": "RESOLVE_INTENT",
+          "phase_after": "PROCESS_CASE",
+          "gate_evaluated": "RESOLVE_INTENT_GATE",
+          "gate_passed": true,
+          "details": "Resolved owned claim CL-2048 using the intersection of remembered hints.",
+          "data_shield_active": false
+        },
+        {
+          "timestamp": "2026-09-14T04:43:49.005243+00:00",
+          "phase_before": "PROCESS_CASE",
+          "phase_after": "PROCESS_CASE",
+          "gate_evaluated": "PROCESS_CASE_GATE",
+          "gate_passed": true,
+          "details": "Answer only using the verified caller's selected claim and fixture guidance.",
+          "data_shield_active": false
+        },
+        {
+          "timestamp": "2026-09-14T04:43:49.286376+00:00",
+          "phase_before": "PROCESS_CASE",
+          "phase_after": "PROCESS_CASE",
+          "gate_evaluated": "PROCESS_CASE_GATE",
+          "gate_passed": true,
+          "details": "Answer only using the verified caller's selected claim and fixture guidance.",
+          "data_shield_active": false
+        },
+        {
+          "timestamp": "2026-09-14T04:43:49.621120+00:00",
+          "phase_before": "PROCESS_CASE",
+          "phase_after": "PROCESS_CASE",
+          "gate_evaluated": "PROCESS_CASE_GATE",
+          "gate_passed": true,
+          "details": "Answer only using the verified caller's selected claim and fixture guidance.",
+          "data_shield_active": false
+        },
+        {
+          "timestamp": "2026-09-14T04:43:49.935887+00:00",
+          "phase_before": "PROCESS_CASE",
+          "phase_after": "PROCESS_CASE",
+          "gate_evaluated": "PROCESS_CASE_GATE",
+          "gate_passed": true,
+          "details": "Answer only using the verified caller's selected claim and fixture guidance.",
+          "data_shield_active": false
+        }
+      ],
+      "active_case": {
+        "case_id": "CL-2048",
+        "case_type": "healthcare",
+        "created_at": "2026-01-12",
+        "status": "denied",
+        "summary": "Healthcare claim denied due to missing pathology report and office note",
+        "denial_reason": "the review file did not include the pathology report and the treating provider office note",
+        "documents_needed": [
+          "pathology report",
+          "office note"
+        ],
+        "appeal_deadline": "2026-03-18",
+        "expected_reimbursement_amount": "0.00",
+        "allowed_max_amount": "1450.00",
+        "net_pay": "0.00",
+        "net_fee": "1450.00"
+      },
+      "verified_policyholder": null,
+      "engine_mode": "mock",
+      "model_activity": {
+        "interpretation_requests": 0,
+        "interpretation_succeeded": 0,
+        "planning_requests": 0,
+        "planning_succeeded": 0
+      },
+      "fallback_reason": null
+    },
+    {
+      "message": "What is the deadline?",
+      "session_id": "8d00224b-f127-46f3-9e2d-1e318627feab",
+      "reply": "The recorded appeal deadline is 2026-03-18. That date has passed. A human claims representative must review whether any options remain; I cannot promise an extension.",
+      "current_phase": "PROCESS_CASE",
+      "controller": "ppo42",
+      "policy_decision": {
+        "selected_action": "ANSWER_GROUNDED",
+        "probabilities": {
+          "ACK_EMOTION": 0.0,
+          "ASK_IDENTITY_FIELD": 0.0,
+          "EXPLAIN_VERIFICATION_GATE": 0.0,
+          "RESOLVE_INTENT": 0.0,
+          "ASK_CLAIM_CLARIFICATION": 0.0,
+          "ANSWER_GROUNDED": 1.0,
+          "OFFER_EMAIL_SUMMARY": 0.0,
+          "SEND_EMAIL": 0.0,
+          "ESCALATE_HUMAN": 0.0
+        },
+        "allowed_actions": [
+          "ANSWER_GROUNDED"
+        ],
+        "action_mask": [
+          false,
+          false,
+          false,
+          false,
+          false,
+          true,
+          false,
+          false,
+          false
+        ],
+        "source": "ppo42",
+        "checkpoint_sha256": "5c5511ab723d1a94ab0954d2f338711233fb91e2956bcdff6e2bb7bd60ca83d7",
+        "checkpoint": {
+          "sha256": "5c5511ab723d1a94ab0954d2f338711233fb91e2956bcdff6e2bb7bd60ca83d7",
+          "training_seed": 42,
+          "actual_steps": 60288,
+          "environment_version": 4,
+          "feature_version": 2,
+          "checkpoint_family": "customer_multi_turn_v1",
+          "mask_version": "customer_sop_v1"
+        },
+        "fallback_reason": null,
+        "reason": "The trained policy selected the largest probability among actions permitted for this real customer turn.",
+        "forced": true,
+        "grounded_answered": true,
+        "response_generation": "deterministic"
+      },
+      "claim_choices": [],
+      "sop_state": {
+        "session_id": "8d00224b-f127-46f3-9e2d-1e318627feab",
+        "phase": "PROCESS_CASE",
+        "verified_party_id": "P9",
+        "identity_verified": true,
+        "verified_fields": [
+          "name",
+          "dob",
+          "id_last4"
+        ],
+        "cross_phase_memory": {
+          "case_id_hint": null,
+          "case_type_hint": "healthcare",
+          "status_hint": "denied",
+          "date_hint": "January",
+          "topic_hint": "appeal_deadline",
+          "raw_utterance_snippet": "appeal_deadline",
+          "notes": [
+            "healthcare / denied / January / denial_reason",
+            "documents",
+            "document_alternatives",
+            "file_format",
+            "appeal_deadline"
+          ],
+          "hint_history": {
+            "case_type_hint": [
+              "healthcare"
+            ],
+            "status_hint": [
+              "denied"
+            ],
+            "date_hint": [
+              "January"
+            ],
+            "topic_hint": [
+              "denial_reason",
+              "documents",
+              "document_alternatives",
+              "file_format",
+              "appeal_deadline"
+            ]
+          }
+        },
+        "active_case_id": "CL-2048",
+        "out_of_scope_count": 0,
+        "refusal_count": 0,
+        "post_process": {
+          "email_offered": false,
+          "draft_summary": null,
+          "user_decision": null,
+          "delivery_status": null,
+          "outbox_id": null
+        },
+        "trace_log": [
+          {
+            "timestamp": "2026-09-14T04:43:48.171689+00:00",
+            "phase_before": "VERIFY_ID",
+            "phase_after": "VERIFY_ID",
+            "gate_evaluated": "VERIFY_ID_GATE",
+            "gate_passed": false,
+            "details": "Three distinct matching allowed PII fields are required with no contradictory values. Explain privacy and offer alternative fields.",
+            "data_shield_active": true
+          },
+          {
+            "timestamp": "2026-09-14T04:43:48.518842+00:00",
+            "phase_before": "VERIFY_ID",
+            "phase_after": "RESOLVE_INTENT",
+            "gate_evaluated": "VERIFY_ID_GATE",
+            "gate_passed": true,
+            "details": "Identity matched 3 allowed distinct PII fields: name, dob, id_last4. Policy number is lookup only.",
+            "data_shield_active": false
+          },
+          {
+            "timestamp": "2026-09-14T04:43:48.519079+00:00",
+            "phase_before": "RESOLVE_INTENT",
+            "phase_after": "PROCESS_CASE",
+            "gate_evaluated": "RESOLVE_INTENT_GATE",
+            "gate_passed": true,
+            "details": "Resolved owned claim CL-2048 using the intersection of remembered hints.",
+            "data_shield_active": false
+          },
+          {
+            "timestamp": "2026-09-14T04:43:49.005243+00:00",
+            "phase_before": "PROCESS_CASE",
+            "phase_after": "PROCESS_CASE",
+            "gate_evaluated": "PROCESS_CASE_GATE",
+            "gate_passed": true,
+            "details": "Answer only using the verified caller's selected claim and fixture guidance.",
+            "data_shield_active": false
+          },
+          {
+            "timestamp": "2026-09-14T04:43:49.286376+00:00",
+            "phase_before": "PROCESS_CASE",
+            "phase_after": "PROCESS_CASE",
+            "gate_evaluated": "PROCESS_CASE_GATE",
+            "gate_passed": true,
+            "details": "Answer only using the verified caller's selected claim and fixture guidance.",
+            "data_shield_active": false
+          },
+          {
+            "timestamp": "2026-09-14T04:43:49.621120+00:00",
+            "phase_before": "PROCESS_CASE",
+            "phase_after": "PROCESS_CASE",
+            "gate_evaluated": "PROCESS_CASE_GATE",
+            "gate_passed": true,
+            "details": "Answer only using the verified caller's selected claim and fixture guidance.",
+            "data_shield_active": false
+          },
+          {
+            "timestamp": "2026-09-14T04:43:49.935887+00:00",
+            "phase_before": "PROCESS_CASE",
+            "phase_after": "PROCESS_CASE",
+            "gate_evaluated": "PROCESS_CASE_GATE",
+            "gate_passed": true,
+            "details": "Answer only using the verified caller's selected claim and fixture guidance.",
+            "data_shield_active": false
+          },
+          {
+            "timestamp": "2026-09-14T04:43:50.303117+00:00",
+            "phase_before": "PROCESS_CASE",
+            "phase_after": "PROCESS_CASE",
+            "gate_evaluated": "PROCESS_CASE_GATE",
+            "gate_passed": true,
+            "details": "Answer only using the verified caller's selected claim and fixture guidance.",
+            "data_shield_active": false
+          }
+        ],
+        "discussion_topics": [
+          "status",
+          "denial_reason",
+          "documents",
+          "appeal_deadline",
+          "document_alternatives",
+          "file_format"
+        ],
+        "resolution_status": "resolved",
+        "pii_conflicts": [],
+        "is_proxy_caller": false,
+        "proxy_rep_name": null,
+        "proxy_relationship": null,
+        "proxy_consent_status": null,
+        "proxy_identity_verified": false,
+        "proxy_authorized_party_id": null,
+        "data_shield_active": false,
+        "collected_fields": [
+          "name",
+          "dob",
+          "id_last4"
+        ],
+        "history_snapshots": [],
+        "outbox_count": 0
+      },
+      "trace": [
+        {
+          "timestamp": "2026-09-14T04:43:48.171689+00:00",
+          "phase_before": "VERIFY_ID",
+          "phase_after": "VERIFY_ID",
+          "gate_evaluated": "VERIFY_ID_GATE",
+          "gate_passed": false,
+          "details": "Three distinct matching allowed PII fields are required with no contradictory values. Explain privacy and offer alternative fields.",
+          "data_shield_active": true
+        },
+        {
+          "timestamp": "2026-09-14T04:43:48.518842+00:00",
+          "phase_before": "VERIFY_ID",
+          "phase_after": "RESOLVE_INTENT",
+          "gate_evaluated": "VERIFY_ID_GATE",
+          "gate_passed": true,
+          "details": "Identity matched 3 allowed distinct PII fields: name, dob, id_last4. Policy number is lookup only.",
+          "data_shield_active": false
+        },
+        {
+          "timestamp": "2026-09-14T04:43:48.519079+00:00",
+          "phase_before": "RESOLVE_INTENT",
+          "phase_after": "PROCESS_CASE",
+          "gate_evaluated": "RESOLVE_INTENT_GATE",
+          "gate_passed": true,
+          "details": "Resolved owned claim CL-2048 using the intersection of remembered hints.",
+          "data_shield_active": false
+        },
+        {
+          "timestamp": "2026-09-14T04:43:49.005243+00:00",
+          "phase_before": "PROCESS_CASE",
+          "phase_after": "PROCESS_CASE",
+          "gate_evaluated": "PROCESS_CASE_GATE",
+          "gate_passed": true,
+          "details": "Answer only using the verified caller's selected claim and fixture guidance.",
+          "data_shield_active": false
+        },
+        {
+          "timestamp": "2026-09-14T04:43:49.286376+00:00",
+          "phase_before": "PROCESS_CASE",
+          "phase_after": "PROCESS_CASE",
+          "gate_evaluated": "PROCESS_CASE_GATE",
+          "gate_passed": true,
+          "details": "Answer only using the verified caller's selected claim and fixture guidance.",
+          "data_shield_active": false
+        },
+        {
+          "timestamp": "2026-09-14T04:43:49.621120+00:00",
+          "phase_before": "PROCESS_CASE",
+          "phase_after": "PROCESS_CASE",
+          "gate_evaluated": "PROCESS_CASE_GATE",
+          "gate_passed": true,
+          "details": "Answer only using the verified caller's selected claim and fixture guidance.",
+          "data_shield_active": false
+        },
+        {
+          "timestamp": "2026-09-14T04:43:49.935887+00:00",
+          "phase_before": "PROCESS_CASE",
+          "phase_after": "PROCESS_CASE",
+          "gate_evaluated": "PROCESS_CASE_GATE",
+          "gate_passed": true,
+          "details": "Answer only using the verified caller's selected claim and fixture guidance.",
+          "data_shield_active": false
+        },
+        {
+          "timestamp": "2026-09-14T04:43:50.303117+00:00",
+          "phase_before": "PROCESS_CASE",
+          "phase_after": "PROCESS_CASE",
+          "gate_evaluated": "PROCESS_CASE_GATE",
+          "gate_passed": true,
+          "details": "Answer only using the verified caller's selected claim and fixture guidance.",
+          "data_shield_active": false
+        }
+      ],
+      "active_case": {
+        "case_id": "CL-2048",
+        "case_type": "healthcare",
+        "created_at": "2026-01-12",
+        "status": "denied",
+        "summary": "Healthcare claim denied due to missing pathology report and office note",
+        "denial_reason": "the review file did not include the pathology report and the treating provider office note",
+        "documents_needed": [
+          "pathology report",
+          "office note"
+        ],
+        "appeal_deadline": "2026-03-18",
+        "expected_reimbursement_amount": "0.00",
+        "allowed_max_amount": "1450.00",
+        "net_pay": "0.00",
+        "net_fee": "1450.00"
+      },
+      "verified_policyholder": null,
+      "engine_mode": "mock",
+      "model_activity": {
+        "interpretation_requests": 0,
+        "interpretation_succeeded": 0,
+        "planning_requests": 0,
+        "planning_succeeded": 0
+      },
+      "fallback_reason": null
+    },
+    {
+      "message": "That answers my question.",
+      "session_id": "8d00224b-f127-46f3-9e2d-1e318627feab",
+      "reply": "Would you like an email summary of our conversation for claim CL-2048, or would you prefer to skip it? It includes what we discussed, the claim status and outcome, and the major follow-up items. Email delivery is simulated in this demo.",
+      "current_phase": "POST_PROCESS",
+      "controller": "ppo42",
+      "policy_decision": {
+        "selected_action": "OFFER_EMAIL_SUMMARY",
+        "probabilities": {
+          "ACK_EMOTION": 0.0,
+          "ASK_IDENTITY_FIELD": 0.0,
+          "EXPLAIN_VERIFICATION_GATE": 0.0,
+          "RESOLVE_INTENT": 0.0,
+          "ASK_CLAIM_CLARIFICATION": 0.0,
+          "ANSWER_GROUNDED": 0.0,
+          "OFFER_EMAIL_SUMMARY": 1.0,
+          "SEND_EMAIL": 0.0,
+          "ESCALATE_HUMAN": 0.0
+        },
+        "allowed_actions": [
+          "OFFER_EMAIL_SUMMARY"
+        ],
+        "action_mask": [
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          true,
+          false,
+          false
+        ],
+        "source": "ppo42",
+        "checkpoint_sha256": "5c5511ab723d1a94ab0954d2f338711233fb91e2956bcdff6e2bb7bd60ca83d7",
+        "checkpoint": {
+          "sha256": "5c5511ab723d1a94ab0954d2f338711233fb91e2956bcdff6e2bb7bd60ca83d7",
+          "training_seed": 42,
+          "actual_steps": 60288,
+          "environment_version": 4,
+          "feature_version": 2,
+          "checkpoint_family": "customer_multi_turn_v1",
+          "mask_version": "customer_sop_v1"
+        },
+        "fallback_reason": null,
+        "reason": "The trained policy selected the largest probability among actions permitted for this real customer turn.",
+        "forced": true,
+        "grounded_answered": false,
+        "response_generation": "deterministic"
+      },
+      "claim_choices": [],
+      "sop_state": {
+        "session_id": "8d00224b-f127-46f3-9e2d-1e318627feab",
+        "phase": "POST_PROCESS",
+        "verified_party_id": "P9",
+        "identity_verified": true,
+        "verified_fields": [
+          "name",
+          "dob",
+          "id_last4"
+        ],
+        "cross_phase_memory": {
+          "case_id_hint": null,
+          "case_type_hint": "healthcare",
+          "status_hint": "denied",
+          "date_hint": "January",
+          "topic_hint": "appeal_deadline",
+          "raw_utterance_snippet": "appeal_deadline",
+          "notes": [
+            "healthcare / denied / January / denial_reason",
+            "documents",
+            "document_alternatives",
+            "file_format",
+            "appeal_deadline"
+          ],
+          "hint_history": {
+            "case_type_hint": [
+              "healthcare"
+            ],
+            "status_hint": [
+              "denied"
+            ],
+            "date_hint": [
+              "January"
+            ],
+            "topic_hint": [
+              "denial_reason",
+              "documents",
+              "document_alternatives",
+              "file_format",
+              "appeal_deadline"
+            ]
+          }
+        },
+        "active_case_id": "CL-2048",
+        "out_of_scope_count": 0,
+        "refusal_count": 0,
+        "post_process": {
+          "email_offered": true,
+          "draft_summary": "Dear [redacted],\n\nHere is a summary of our discussion today:\n\n1. What Was Discussed:\n   Claim CL-2048 (healthcare, created 2026-01-12): claim status, the recorded denial reason, required documents, the recorded appeal deadline, alternatives for unavailable documents, document format and readability.\n\n2. Claim Status & Outcome:\n   Recorded status: DENIED. Recorded reason: the review file did not include the pathology report and the treating provider office note.\n\n3. Major Follow-up Items & Next Steps:\n   - Required documents: pathology report, office note.\n   - Ask the hospital or lab for a replacement copy. A complete readable scan or certified copy may help while original-mailing requirements are confirmed. If no copy is available, request human review.\n   - Ask the clinic for a visit summary, discharge paperwork or a re-sent office note. If none is available, request human review of alternatives.\n   - A scan must be complete and fully readable, with patient and specimen details, testing date and any signature. If an original is required, confirm mailing instructions with support.\n   - Include patient name, visit date, assessment and follow-up recommendations. Upload all pages together in one PDF when possible.\n   - Recorded appeal deadline: 2026-03-18. Support must confirm available options if that date has passed.\n\nInsurance Claims Support Team\n\nDemo summary: delivery is simulated; no real email is sent.",
+          "user_decision": "pending",
+          "delivery_status": null,
+          "outbox_id": null
+        },
+        "trace_log": [
+          {
+            "timestamp": "2026-09-14T04:43:48.171689+00:00",
+            "phase_before": "VERIFY_ID",
+            "phase_after": "VERIFY_ID",
+            "gate_evaluated": "VERIFY_ID_GATE",
+            "gate_passed": false,
+            "details": "Three distinct matching allowed PII fields are required with no contradictory values. Explain privacy and offer alternative fields.",
+            "data_shield_active": true
+          },
+          {
+            "timestamp": "2026-09-14T04:43:48.518842+00:00",
+            "phase_before": "VERIFY_ID",
+            "phase_after": "RESOLVE_INTENT",
+            "gate_evaluated": "VERIFY_ID_GATE",
+            "gate_passed": true,
+            "details": "Identity matched 3 allowed distinct PII fields: name, dob, id_last4. Policy number is lookup only.",
+            "data_shield_active": false
+          },
+          {
+            "timestamp": "2026-09-14T04:43:48.519079+00:00",
+            "phase_before": "RESOLVE_INTENT",
+            "phase_after": "PROCESS_CASE",
+            "gate_evaluated": "RESOLVE_INTENT_GATE",
+            "gate_passed": true,
+            "details": "Resolved owned claim CL-2048 using the intersection of remembered hints.",
+            "data_shield_active": false
+          },
+          {
+            "timestamp": "2026-09-14T04:43:49.005243+00:00",
+            "phase_before": "PROCESS_CASE",
+            "phase_after": "PROCESS_CASE",
+            "gate_evaluated": "PROCESS_CASE_GATE",
+            "gate_passed": true,
+            "details": "Answer only using the verified caller's selected claim and fixture guidance.",
+            "data_shield_active": false
+          },
+          {
+            "timestamp": "2026-09-14T04:43:49.286376+00:00",
+            "phase_before": "PROCESS_CASE",
+            "phase_after": "PROCESS_CASE",
+            "gate_evaluated": "PROCESS_CASE_GATE",
+            "gate_passed": true,
+            "details": "Answer only using the verified caller's selected claim and fixture guidance.",
+            "data_shield_active": false
+          },
+          {
+            "timestamp": "2026-09-14T04:43:49.621120+00:00",
+            "phase_before": "PROCESS_CASE",
+            "phase_after": "PROCESS_CASE",
+            "gate_evaluated": "PROCESS_CASE_GATE",
+            "gate_passed": true,
+            "details": "Answer only using the verified caller's selected claim and fixture guidance.",
+            "data_shield_active": false
+          },
+          {
+            "timestamp": "2026-09-14T04:43:49.935887+00:00",
+            "phase_before": "PROCESS_CASE",
+            "phase_after": "PROCESS_CASE",
+            "gate_evaluated": "PROCESS_CASE_GATE",
+            "gate_passed": true,
+            "details": "Answer only using the verified caller's selected claim and fixture guidance.",
+            "data_shield_active": false
+          },
+          {
+            "timestamp": "2026-09-14T04:43:50.303117+00:00",
+            "phase_before": "PROCESS_CASE",
+            "phase_after": "PROCESS_CASE",
+            "gate_evaluated": "PROCESS_CASE_GATE",
+            "gate_passed": true,
+            "details": "Answer only using the verified caller's selected claim and fixture guidance.",
+            "data_shield_active": false
+          },
+          {
+            "timestamp": "2026-09-14T04:43:50.753815+00:00",
+            "phase_before": "PROCESS_CASE",
+            "phase_after": "POST_PROCESS",
+            "gate_evaluated": "PROCESS_CASE_GATE",
+            "gate_passed": true,
+            "details": "Caller finished claim questions. Offer optional email summary; explicit send or skip decision is required on a subsequent turn.",
+            "data_shield_active": false
+          }
+        ],
+        "discussion_topics": [
+          "status",
+          "denial_reason",
+          "documents",
+          "appeal_deadline",
+          "document_alternatives",
+          "file_format"
+        ],
+        "resolution_status": "resolved",
+        "pii_conflicts": [],
+        "is_proxy_caller": false,
+        "proxy_rep_name": null,
+        "proxy_relationship": null,
+        "proxy_consent_status": null,
+        "proxy_identity_verified": false,
+        "proxy_authorized_party_id": null,
+        "data_shield_active": false,
+        "collected_fields": [
+          "name",
+          "dob",
+          "id_last4"
+        ],
+        "history_snapshots": [],
+        "outbox_count": 0
+      },
+      "trace": [
+        {
+          "timestamp": "2026-09-14T04:43:48.171689+00:00",
+          "phase_before": "VERIFY_ID",
+          "phase_after": "VERIFY_ID",
+          "gate_evaluated": "VERIFY_ID_GATE",
+          "gate_passed": false,
+          "details": "Three distinct matching allowed PII fields are required with no contradictory values. Explain privacy and offer alternative fields.",
+          "data_shield_active": true
+        },
+        {
+          "timestamp": "2026-09-14T04:43:48.518842+00:00",
+          "phase_before": "VERIFY_ID",
+          "phase_after": "RESOLVE_INTENT",
+          "gate_evaluated": "VERIFY_ID_GATE",
+          "gate_passed": true,
+          "details": "Identity matched 3 allowed distinct PII fields: name, dob, id_last4. Policy number is lookup only.",
+          "data_shield_active": false
+        },
+        {
+          "timestamp": "2026-09-14T04:43:48.519079+00:00",
+          "phase_before": "RESOLVE_INTENT",
+          "phase_after": "PROCESS_CASE",
+          "gate_evaluated": "RESOLVE_INTENT_GATE",
+          "gate_passed": true,
+          "details": "Resolved owned claim CL-2048 using the intersection of remembered hints.",
+          "data_shield_active": false
+        },
+        {
+          "timestamp": "2026-09-14T04:43:49.005243+00:00",
+          "phase_before": "PROCESS_CASE",
+          "phase_after": "PROCESS_CASE",
+          "gate_evaluated": "PROCESS_CASE_GATE",
+          "gate_passed": true,
+          "details": "Answer only using the verified caller's selected claim and fixture guidance.",
+          "data_shield_active": false
+        },
+        {
+          "timestamp": "2026-09-14T04:43:49.286376+00:00",
+          "phase_before": "PROCESS_CASE",
+          "phase_after": "PROCESS_CASE",
+          "gate_evaluated": "PROCESS_CASE_GATE",
+          "gate_passed": true,
+          "details": "Answer only using the verified caller's selected claim and fixture guidance.",
+          "data_shield_active": false
+        },
+        {
+          "timestamp": "2026-09-14T04:43:49.621120+00:00",
+          "phase_before": "PROCESS_CASE",
+          "phase_after": "PROCESS_CASE",
+          "gate_evaluated": "PROCESS_CASE_GATE",
+          "gate_passed": true,
+          "details": "Answer only using the verified caller's selected claim and fixture guidance.",
+          "data_shield_active": false
+        },
+        {
+          "timestamp": "2026-09-14T04:43:49.935887+00:00",
+          "phase_before": "PROCESS_CASE",
+          "phase_after": "PROCESS_CASE",
+          "gate_evaluated": "PROCESS_CASE_GATE",
+          "gate_passed": true,
+          "details": "Answer only using the verified caller's selected claim and fixture guidance.",
+          "data_shield_active": false
+        },
+        {
+          "timestamp": "2026-09-14T04:43:50.303117+00:00",
+          "phase_before": "PROCESS_CASE",
+          "phase_after": "PROCESS_CASE",
+          "gate_evaluated": "PROCESS_CASE_GATE",
+          "gate_passed": true,
+          "details": "Answer only using the verified caller's selected claim and fixture guidance.",
+          "data_shield_active": false
+        },
+        {
+          "timestamp": "2026-09-14T04:43:50.753815+00:00",
+          "phase_before": "PROCESS_CASE",
+          "phase_after": "POST_PROCESS",
+          "gate_evaluated": "PROCESS_CASE_GATE",
+          "gate_passed": true,
+          "details": "Caller finished claim questions. Offer optional email summary; explicit send or skip decision is required on a subsequent turn.",
+          "data_shield_active": false
+        }
+      ],
+      "active_case": {
+        "case_id": "CL-2048",
+        "case_type": "healthcare",
+        "created_at": "2026-01-12",
+        "status": "denied",
+        "summary": "Healthcare claim denied due to missing pathology report and office note",
+        "denial_reason": "the review file did not include the pathology report and the treating provider office note",
+        "documents_needed": [
+          "pathology report",
+          "office note"
+        ],
+        "appeal_deadline": "2026-03-18",
+        "expected_reimbursement_amount": "0.00",
+        "allowed_max_amount": "1450.00",
+        "net_pay": "0.00",
+        "net_fee": "1450.00"
+      },
+      "verified_policyholder": null,
+      "engine_mode": "mock",
+      "model_activity": {
+        "interpretation_requests": 0,
+        "interpretation_succeeded": 0,
+        "planning_requests": 0,
+        "planning_succeeded": 0
+      },
+      "fallback_reason": null
+    },
+    {
+      "message": "No thanks, please skip the email summary.",
+      "session_id": "8d00224b-f127-46f3-9e2d-1e318627feab",
+      "reply": "I will skip the email summary as requested. Thank you for contacting claims support.",
+      "current_phase": "CONCLUDED",
+      "controller": "ppo42",
+      "policy_decision": {
+        "selected_action": null,
+        "probabilities": {
+          "ACK_EMOTION": 0.0,
+          "ASK_IDENTITY_FIELD": 0.0,
+          "EXPLAIN_VERIFICATION_GATE": 0.0,
+          "RESOLVE_INTENT": 0.0,
+          "ASK_CLAIM_CLARIFICATION": 0.0,
+          "ANSWER_GROUNDED": 0.0,
+          "OFFER_EMAIL_SUMMARY": 0.0,
+          "SEND_EMAIL": 0.0,
+          "ESCALATE_HUMAN": 0.0
+        },
+        "allowed_actions": [],
+        "action_mask": [
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false
+        ],
+        "source": "sop",
+        "checkpoint_sha256": null,
+        "checkpoint": null,
+        "fallback_reason": null,
+        "reason": "The SOP already completed or escalated this call; no policy is sampled.",
+        "forced": true,
+        "grounded_answered": false,
+        "response_generation": "deterministic"
+      },
+      "claim_choices": [],
+      "sop_state": {
+        "session_id": "8d00224b-f127-46f3-9e2d-1e318627feab",
+        "phase": "CONCLUDED",
+        "verified_party_id": "P9",
+        "identity_verified": true,
+        "verified_fields": [
+          "name",
+          "dob",
+          "id_last4"
+        ],
+        "cross_phase_memory": {
+          "case_id_hint": null,
+          "case_type_hint": "healthcare",
+          "status_hint": "denied",
+          "date_hint": "January",
+          "topic_hint": "appeal_deadline",
+          "raw_utterance_snippet": "appeal_deadline",
+          "notes": [
+            "healthcare / denied / January / denial_reason",
+            "documents",
+            "document_alternatives",
+            "file_format",
+            "appeal_deadline"
+          ],
+          "hint_history": {
+            "case_type_hint": [
+              "healthcare"
+            ],
+            "status_hint": [
+              "denied"
+            ],
+            "date_hint": [
+              "January"
+            ],
+            "topic_hint": [
+              "denial_reason",
+              "documents",
+              "document_alternatives",
+              "file_format",
+              "appeal_deadline"
+            ]
+          }
+        },
+        "active_case_id": "CL-2048",
+        "out_of_scope_count": 0,
+        "refusal_count": 0,
+        "post_process": {
+          "email_offered": true,
+          "draft_summary": "Dear [redacted],\n\nHere is a summary of our discussion today:\n\n1. What Was Discussed:\n   Claim CL-2048 (healthcare, created 2026-01-12): claim status, the recorded denial reason, required documents, the recorded appeal deadline, alternatives for unavailable documents, document format and readability.\n\n2. Claim Status & Outcome:\n   Recorded status: DENIED. Recorded reason: the review file did not include the pathology report and the treating provider office note.\n\n3. Major Follow-up Items & Next Steps:\n   - Required documents: pathology report, office note.\n   - Ask the hospital or lab for a replacement copy. A complete readable scan or certified copy may help while original-mailing requirements are confirmed. If no copy is available, request human review.\n   - Ask the clinic for a visit summary, discharge paperwork or a re-sent office note. If none is available, request human review of alternatives.\n   - A scan must be complete and fully readable, with patient and specimen details, testing date and any signature. If an original is required, confirm mailing instructions with support.\n   - Include patient name, visit date, assessment and follow-up recommendations. Upload all pages together in one PDF when possible.\n   - Recorded appeal deadline: 2026-03-18. Support must confirm available options if that date has passed.\n\nInsurance Claims Support Team\n\nDemo summary: delivery is simulated; no real email is sent.",
+          "user_decision": "declined",
+          "delivery_status": "skipped",
+          "outbox_id": null
+        },
+        "trace_log": [
+          {
+            "timestamp": "2026-09-14T04:43:48.171689+00:00",
+            "phase_before": "VERIFY_ID",
+            "phase_after": "VERIFY_ID",
+            "gate_evaluated": "VERIFY_ID_GATE",
+            "gate_passed": false,
+            "details": "Three distinct matching allowed PII fields are required with no contradictory values. Explain privacy and offer alternative fields.",
+            "data_shield_active": true
+          },
+          {
+            "timestamp": "2026-09-14T04:43:48.518842+00:00",
+            "phase_before": "VERIFY_ID",
+            "phase_after": "RESOLVE_INTENT",
+            "gate_evaluated": "VERIFY_ID_GATE",
+            "gate_passed": true,
+            "details": "Identity matched 3 allowed distinct PII fields: name, dob, id_last4. Policy number is lookup only.",
+            "data_shield_active": false
+          },
+          {
+            "timestamp": "2026-09-14T04:43:48.519079+00:00",
+            "phase_before": "RESOLVE_INTENT",
+            "phase_after": "PROCESS_CASE",
+            "gate_evaluated": "RESOLVE_INTENT_GATE",
+            "gate_passed": true,
+            "details": "Resolved owned claim CL-2048 using the intersection of remembered hints.",
+            "data_shield_active": false
+          },
+          {
+            "timestamp": "2026-09-14T04:43:49.005243+00:00",
+            "phase_before": "PROCESS_CASE",
+            "phase_after": "PROCESS_CASE",
+            "gate_evaluated": "PROCESS_CASE_GATE",
+            "gate_passed": true,
+            "details": "Answer only using the verified caller's selected claim and fixture guidance.",
+            "data_shield_active": false
+          },
+          {
+            "timestamp": "2026-09-14T04:43:49.286376+00:00",
+            "phase_before": "PROCESS_CASE",
+            "phase_after": "PROCESS_CASE",
+            "gate_evaluated": "PROCESS_CASE_GATE",
+            "gate_passed": true,
+            "details": "Answer only using the verified caller's selected claim and fixture guidance.",
+            "data_shield_active": false
+          },
+          {
+            "timestamp": "2026-09-14T04:43:49.621120+00:00",
+            "phase_before": "PROCESS_CASE",
+            "phase_after": "PROCESS_CASE",
+            "gate_evaluated": "PROCESS_CASE_GATE",
+            "gate_passed": true,
+            "details": "Answer only using the verified caller's selected claim and fixture guidance.",
+            "data_shield_active": false
+          },
+          {
+            "timestamp": "2026-09-14T04:43:49.935887+00:00",
+            "phase_before": "PROCESS_CASE",
+            "phase_after": "PROCESS_CASE",
+            "gate_evaluated": "PROCESS_CASE_GATE",
+            "gate_passed": true,
+            "details": "Answer only using the verified caller's selected claim and fixture guidance.",
+            "data_shield_active": false
+          },
+          {
+            "timestamp": "2026-09-14T04:43:50.303117+00:00",
+            "phase_before": "PROCESS_CASE",
+            "phase_after": "PROCESS_CASE",
+            "gate_evaluated": "PROCESS_CASE_GATE",
+            "gate_passed": true,
+            "details": "Answer only using the verified caller's selected claim and fixture guidance.",
+            "data_shield_active": false
+          },
+          {
+            "timestamp": "2026-09-14T04:43:50.753815+00:00",
+            "phase_before": "PROCESS_CASE",
+            "phase_after": "POST_PROCESS",
+            "gate_evaluated": "PROCESS_CASE_GATE",
+            "gate_passed": true,
+            "details": "Caller finished claim questions. Offer optional email summary; explicit send or skip decision is required on a subsequent turn.",
+            "data_shield_active": false
+          },
+          {
+            "timestamp": "2026-09-14T04:43:51.087288+00:00",
+            "phase_before": "POST_PROCESS",
+            "phase_after": "CONCLUDED",
+            "gate_evaluated": "POST_PROCESS_CONSENT",
+            "gate_passed": true,
+            "details": "Caller declined the optional email. No outbox entry created.",
+            "data_shield_active": false
+          }
+        ],
+        "discussion_topics": [
+          "status",
+          "denial_reason",
+          "documents",
+          "appeal_deadline",
+          "document_alternatives",
+          "file_format"
+        ],
+        "resolution_status": "resolved",
+        "pii_conflicts": [],
+        "is_proxy_caller": false,
+        "proxy_rep_name": null,
+        "proxy_relationship": null,
+        "proxy_consent_status": null,
+        "proxy_identity_verified": false,
+        "proxy_authorized_party_id": null,
+        "data_shield_active": false,
+        "collected_fields": [
+          "name",
+          "dob",
+          "id_last4"
+        ],
+        "history_snapshots": [],
+        "outbox_count": 0
+      },
+      "trace": [
+        {
+          "timestamp": "2026-09-14T04:43:48.171689+00:00",
+          "phase_before": "VERIFY_ID",
+          "phase_after": "VERIFY_ID",
+          "gate_evaluated": "VERIFY_ID_GATE",
+          "gate_passed": false,
+          "details": "Three distinct matching allowed PII fields are required with no contradictory values. Explain privacy and offer alternative fields.",
+          "data_shield_active": true
+        },
+        {
+          "timestamp": "2026-09-14T04:43:48.518842+00:00",
+          "phase_before": "VERIFY_ID",
+          "phase_after": "RESOLVE_INTENT",
+          "gate_evaluated": "VERIFY_ID_GATE",
+          "gate_passed": true,
+          "details": "Identity matched 3 allowed distinct PII fields: name, dob, id_last4. Policy number is lookup only.",
+          "data_shield_active": false
+        },
+        {
+          "timestamp": "2026-09-14T04:43:48.519079+00:00",
+          "phase_before": "RESOLVE_INTENT",
+          "phase_after": "PROCESS_CASE",
+          "gate_evaluated": "RESOLVE_INTENT_GATE",
+          "gate_passed": true,
+          "details": "Resolved owned claim CL-2048 using the intersection of remembered hints.",
+          "data_shield_active": false
+        },
+        {
+          "timestamp": "2026-09-14T04:43:49.005243+00:00",
+          "phase_before": "PROCESS_CASE",
+          "phase_after": "PROCESS_CASE",
+          "gate_evaluated": "PROCESS_CASE_GATE",
+          "gate_passed": true,
+          "details": "Answer only using the verified caller's selected claim and fixture guidance.",
+          "data_shield_active": false
+        },
+        {
+          "timestamp": "2026-09-14T04:43:49.286376+00:00",
+          "phase_before": "PROCESS_CASE",
+          "phase_after": "PROCESS_CASE",
+          "gate_evaluated": "PROCESS_CASE_GATE",
+          "gate_passed": true,
+          "details": "Answer only using the verified caller's selected claim and fixture guidance.",
+          "data_shield_active": false
+        },
+        {
+          "timestamp": "2026-09-14T04:43:49.621120+00:00",
+          "phase_before": "PROCESS_CASE",
+          "phase_after": "PROCESS_CASE",
+          "gate_evaluated": "PROCESS_CASE_GATE",
+          "gate_passed": true,
+          "details": "Answer only using the verified caller's selected claim and fixture guidance.",
+          "data_shield_active": false
+        },
+        {
+          "timestamp": "2026-09-14T04:43:49.935887+00:00",
+          "phase_before": "PROCESS_CASE",
+          "phase_after": "PROCESS_CASE",
+          "gate_evaluated": "PROCESS_CASE_GATE",
+          "gate_passed": true,
+          "details": "Answer only using the verified caller's selected claim and fixture guidance.",
+          "data_shield_active": false
+        },
+        {
+          "timestamp": "2026-09-14T04:43:50.303117+00:00",
+          "phase_before": "PROCESS_CASE",
+          "phase_after": "PROCESS_CASE",
+          "gate_evaluated": "PROCESS_CASE_GATE",
+          "gate_passed": true,
+          "details": "Answer only using the verified caller's selected claim and fixture guidance.",
+          "data_shield_active": false
+        },
+        {
+          "timestamp": "2026-09-14T04:43:50.753815+00:00",
+          "phase_before": "PROCESS_CASE",
+          "phase_after": "POST_PROCESS",
+          "gate_evaluated": "PROCESS_CASE_GATE",
+          "gate_passed": true,
+          "details": "Caller finished claim questions. Offer optional email summary; explicit send or skip decision is required on a subsequent turn.",
+          "data_shield_active": false
+        },
+        {
+          "timestamp": "2026-09-14T04:43:51.087288+00:00",
+          "phase_before": "POST_PROCESS",
+          "phase_after": "CONCLUDED",
+          "gate_evaluated": "POST_PROCESS_CONSENT",
+          "gate_passed": true,
+          "details": "Caller declined the optional email. No outbox entry created.",
+          "data_shield_active": false
+        }
+      ],
+      "active_case": {
+        "case_id": "CL-2048",
+        "case_type": "healthcare",
+        "created_at": "2026-01-12",
+        "status": "denied",
+        "summary": "Healthcare claim denied due to missing pathology report and office note",
+        "denial_reason": "the review file did not include the pathology report and the treating provider office note",
+        "documents_needed": [
+          "pathology report",
+          "office note"
+        ],
+        "appeal_deadline": "2026-03-18",
+        "expected_reimbursement_amount": "0.00",
+        "allowed_max_amount": "1450.00",
+        "net_pay": "0.00",
+        "net_fee": "1450.00"
+      },
+      "verified_policyholder": null,
+      "engine_mode": "mock",
+      "model_activity": {
+        "interpretation_requests": 0,
+        "interpretation_succeeded": 0,
+        "planning_requests": 0,
+        "planning_succeeded": 0
+      },
+      "fallback_reason": null
+    },
+    {
+      "message": "This is frustrating. I need help with my claim.",
+      "session_id": "8d00224b-f127-46f3-9e2d-1e318627feab",
+      "reply": "I understand this is frustrating, especially when you need an answer. \n\nPlease share your full name. You can also use the verification form.",
+      "current_phase": "VERIFY_ID",
+      "controller": "rule",
+      "policy_decision": {
+        "selected_action": "ACK_EMOTION",
+        "probabilities": {
+          "ACK_EMOTION": 1.0,
+          "ASK_IDENTITY_FIELD": 0.0,
+          "EXPLAIN_VERIFICATION_GATE": 0.0,
+          "RESOLVE_INTENT": 0.0,
+          "ASK_CLAIM_CLARIFICATION": 0.0,
+          "ANSWER_GROUNDED": 0.0,
+          "OFFER_EMAIL_SUMMARY": 0.0,
+          "SEND_EMAIL": 0.0,
+          "ESCALATE_HUMAN": 0.0
+        },
+        "allowed_actions": [
+          "ACK_EMOTION",
+          "ASK_IDENTITY_FIELD",
+          "EXPLAIN_VERIFICATION_GATE"
+        ],
+        "action_mask": [
+          true,
+          true,
+          true,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false
+        ],
+        "source": "rule",
+        "checkpoint_sha256": null,
+        "checkpoint": null,
+        "fallback_reason": null,
+        "reason": "The rule controller selected a permitted response action; probabilities are a one-hot decision, not a neural prediction.",
+        "forced": false,
+        "grounded_answered": false,
+        "response_generation": "deterministic"
+      },
+      "claim_choices": [],
+      "sop_state": {
+        "session_id": "8d00224b-f127-46f3-9e2d-1e318627feab",
+        "phase": "VERIFY_ID",
+        "verified_party_id": null,
+        "identity_verified": false,
+        "verified_fields": [],
+        "cross_phase_memory": {
+          "case_id_hint": null,
+          "case_type_hint": null,
+          "status_hint": null,
+          "date_hint": null,
+          "topic_hint": null,
+          "raw_utterance_snippet": null,
+          "notes": [],
+          "hint_history": {}
+        },
+        "active_case_id": null,
+        "out_of_scope_count": 0,
+        "refusal_count": 0,
+        "post_process": {
+          "email_offered": false,
+          "user_decision": null,
+          "delivery_status": null
+        },
+        "trace_log": [
+          {
+            "timestamp": "2026-09-14T04:43:51.353555+00:00",
+            "phase_before": "VERIFY_ID",
+            "phase_after": "VERIFY_ID",
+            "gate_evaluated": "VERIFY_ID_GATE",
+            "gate_passed": false,
+            "details": "Three distinct matching allowed PII fields are required with no contradictory values. Explain privacy and offer alternative fields.",
+            "data_shield_active": true
+          }
+        ],
+        "discussion_topics": [],
+        "resolution_status": null,
+        "pii_conflicts": [],
+        "is_proxy_caller": false,
+        "proxy_rep_name": null,
+        "proxy_relationship": null,
+        "proxy_consent_status": null,
+        "proxy_identity_verified": false,
+        "proxy_authorized_party_id": null,
+        "data_shield_active": true,
+        "collected_fields": [],
+        "history_snapshots": [],
+        "outbox_count": 0
+      },
+      "trace": [
+        {
+          "timestamp": "2026-09-14T04:43:51.353555+00:00",
+          "phase_before": "VERIFY_ID",
+          "phase_after": "VERIFY_ID",
+          "gate_evaluated": "VERIFY_ID_GATE",
+          "gate_passed": false,
+          "details": "Three distinct matching allowed PII fields are required with no contradictory values. Explain privacy and offer alternative fields.",
+          "data_shield_active": true
+        }
+      ],
+      "active_case": null,
+      "verified_policyholder": null,
+      "engine_mode": "mock",
+      "model_activity": {
+        "interpretation_requests": 0,
+        "interpretation_succeeded": 0,
+        "planning_requests": 0,
+        "planning_succeeded": 0
+      },
+      "fallback_reason": null
+    },
+    {
+      "message": "This is frustrating. I need help with my claim.",
+      "session_id": "8d00224b-f127-46f3-9e2d-1e318627feab",
+      "reply": "I understand this is frustrating, especially when you need an answer. \n\nPlease share your full name. You can also use the verification form.",
+      "current_phase": "VERIFY_ID",
+      "controller": "ppo42",
+      "policy_decision": {
+        "selected_action": "ACK_EMOTION",
+        "probabilities": {
+          "ACK_EMOTION": 0.9747332334518433,
+          "ASK_IDENTITY_FIELD": 0.00962082576006651,
+          "EXPLAIN_VERIFICATION_GATE": 0.015645964071154594,
+          "RESOLVE_INTENT": 0.0,
+          "ASK_CLAIM_CLARIFICATION": 0.0,
+          "ANSWER_GROUNDED": 0.0,
+          "OFFER_EMAIL_SUMMARY": 0.0,
+          "SEND_EMAIL": 0.0,
+          "ESCALATE_HUMAN": 0.0
+        },
+        "allowed_actions": [
+          "ACK_EMOTION",
+          "ASK_IDENTITY_FIELD",
+          "EXPLAIN_VERIFICATION_GATE"
+        ],
+        "action_mask": [
+          true,
+          true,
+          true,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false
+        ],
+        "source": "ppo42",
+        "checkpoint_sha256": "5c5511ab723d1a94ab0954d2f338711233fb91e2956bcdff6e2bb7bd60ca83d7",
+        "checkpoint": {
+          "sha256": "5c5511ab723d1a94ab0954d2f338711233fb91e2956bcdff6e2bb7bd60ca83d7",
+          "training_seed": 42,
+          "actual_steps": 60288,
+          "environment_version": 4,
+          "feature_version": 2,
+          "checkpoint_family": "customer_multi_turn_v1",
+          "mask_version": "customer_sop_v1"
+        },
+        "fallback_reason": null,
+        "reason": "The trained policy selected the largest probability among actions permitted for this real customer turn.",
+        "forced": false,
+        "grounded_answered": false,
+        "response_generation": "deterministic"
+      },
+      "claim_choices": [],
+      "sop_state": {
+        "session_id": "8d00224b-f127-46f3-9e2d-1e318627feab",
+        "phase": "VERIFY_ID",
+        "verified_party_id": null,
+        "identity_verified": false,
+        "verified_fields": [],
+        "cross_phase_memory": {
+          "case_id_hint": null,
+          "case_type_hint": null,
+          "status_hint": null,
+          "date_hint": null,
+          "topic_hint": null,
+          "raw_utterance_snippet": null,
+          "notes": [],
+          "hint_history": {}
+        },
+        "active_case_id": null,
+        "out_of_scope_count": 0,
+        "refusal_count": 0,
+        "post_process": {
+          "email_offered": false,
+          "user_decision": null,
+          "delivery_status": null
+        },
+        "trace_log": [
+          {
+            "timestamp": "2026-09-14T04:43:51.968563+00:00",
+            "phase_before": "VERIFY_ID",
+            "phase_after": "VERIFY_ID",
+            "gate_evaluated": "VERIFY_ID_GATE",
+            "gate_passed": false,
+            "details": "Three distinct matching allowed PII fields are required with no contradictory values. Explain privacy and offer alternative fields.",
+            "data_shield_active": true
+          }
+        ],
+        "discussion_topics": [],
+        "resolution_status": null,
+        "pii_conflicts": [],
+        "is_proxy_caller": false,
+        "proxy_rep_name": null,
+        "proxy_relationship": null,
+        "proxy_consent_status": null,
+        "proxy_identity_verified": false,
+        "proxy_authorized_party_id": null,
+        "data_shield_active": true,
+        "collected_fields": [],
+        "history_snapshots": [],
+        "outbox_count": 0
+      },
+      "trace": [
+        {
+          "timestamp": "2026-09-14T04:43:51.968563+00:00",
+          "phase_before": "VERIFY_ID",
+          "phase_after": "VERIFY_ID",
+          "gate_evaluated": "VERIFY_ID_GATE",
+          "gate_passed": false,
+          "details": "Three distinct matching allowed PII fields are required with no contradictory values. Explain privacy and offer alternative fields.",
+          "data_shield_active": true
+        }
+      ],
+      "active_case": null,
+      "verified_policyholder": null,
+      "engine_mode": "mock",
+      "model_activity": {
+        "interpretation_requests": 0,
+        "interpretation_succeeded": 0,
+        "planning_requests": 0,
+        "planning_succeeded": 0
+      },
+      "fallback_reason": null
+    },
+    {
+      "message": "This is frustrating. I need help with my claim.",
+      "session_id": "8d00224b-f127-46f3-9e2d-1e318627feab",
+      "reply": "I understand this is frustrating, especially when you need an answer. \n\nPlease share your full name. You can also use the verification form.",
+      "current_phase": "VERIFY_ID",
+      "controller": "ppo7",
+      "policy_decision": {
+        "selected_action": "ACK_EMOTION",
+        "probabilities": {
+          "ACK_EMOTION": 0.9720878601074219,
+          "ASK_IDENTITY_FIELD": 0.0025442736223340034,
+          "EXPLAIN_VERIFICATION_GATE": 0.02536781132221222,
+          "RESOLVE_INTENT": 0.0,
+          "ASK_CLAIM_CLARIFICATION": 0.0,
+          "ANSWER_GROUNDED": 0.0,
+          "OFFER_EMAIL_SUMMARY": 0.0,
+          "SEND_EMAIL": 0.0,
+          "ESCALATE_HUMAN": 0.0
+        },
+        "allowed_actions": [
+          "ACK_EMOTION",
+          "ASK_IDENTITY_FIELD",
+          "EXPLAIN_VERIFICATION_GATE"
+        ],
+        "action_mask": [
+          true,
+          true,
+          true,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false
+        ],
+        "source": "ppo7",
+        "checkpoint_sha256": "ab42f54f9a5238784f5977c65b7988c96b9933aa59bdb59672d78160c973b5cf",
+        "checkpoint": {
+          "sha256": "ab42f54f9a5238784f5977c65b7988c96b9933aa59bdb59672d78160c973b5cf",
+          "training_seed": 7,
+          "actual_steps": 60288,
+          "environment_version": 4,
+          "feature_version": 2,
+          "checkpoint_family": "customer_multi_turn_v1",
+          "mask_version": "customer_sop_v1"
+        },
+        "fallback_reason": null,
+        "reason": "The trained policy selected the largest probability among actions permitted for this real customer turn.",
+        "forced": false,
+        "grounded_answered": false,
+        "response_generation": "deterministic"
+      },
+      "claim_choices": [],
+      "sop_state": {
+        "session_id": "8d00224b-f127-46f3-9e2d-1e318627feab",
+        "phase": "VERIFY_ID",
+        "verified_party_id": null,
+        "identity_verified": false,
+        "verified_fields": [],
+        "cross_phase_memory": {
+          "case_id_hint": null,
+          "case_type_hint": null,
+          "status_hint": null,
+          "date_hint": null,
+          "topic_hint": null,
+          "raw_utterance_snippet": null,
+          "notes": [],
+          "hint_history": {}
+        },
+        "active_case_id": null,
+        "out_of_scope_count": 0,
+        "refusal_count": 0,
+        "post_process": {
+          "email_offered": false,
+          "user_decision": null,
+          "delivery_status": null
+        },
+        "trace_log": [
+          {
+            "timestamp": "2026-09-14T04:43:52.585840+00:00",
+            "phase_before": "VERIFY_ID",
+            "phase_after": "VERIFY_ID",
+            "gate_evaluated": "VERIFY_ID_GATE",
+            "gate_passed": false,
+            "details": "Three distinct matching allowed PII fields are required with no contradictory values. Explain privacy and offer alternative fields.",
+            "data_shield_active": true
+          }
+        ],
+        "discussion_topics": [],
+        "resolution_status": null,
+        "pii_conflicts": [],
+        "is_proxy_caller": false,
+        "proxy_rep_name": null,
+        "proxy_relationship": null,
+        "proxy_consent_status": null,
+        "proxy_identity_verified": false,
+        "proxy_authorized_party_id": null,
+        "data_shield_active": true,
+        "collected_fields": [],
+        "history_snapshots": [],
+        "outbox_count": 0
+      },
+      "trace": [
+        {
+          "timestamp": "2026-09-14T04:43:52.585840+00:00",
+          "phase_before": "VERIFY_ID",
+          "phase_after": "VERIFY_ID",
+          "gate_evaluated": "VERIFY_ID_GATE",
+          "gate_passed": false,
+          "details": "Three distinct matching allowed PII fields are required with no contradictory values. Explain privacy and offer alternative fields.",
+          "data_shield_active": true
+        }
+      ],
+      "active_case": null,
+      "verified_policyholder": null,
+      "engine_mode": "mock",
+      "model_activity": {
+        "interpretation_requests": 0,
+        "interpretation_succeeded": 0,
+        "planning_requests": 0,
+        "planning_succeeded": 0
+      },
+      "fallback_reason": null
+    },
+    {
+      "message": "My name is Margret Chen. My name is Margaret Chen. Why was my healthcare cliam deneid in January?",
+      "session_id": "8d00224b-f127-46f3-9e2d-1e318627feab",
+      "reply": "I\u2019ve kept your claim question for after verification. Please correct your full name, or use the verification form to review the details you provided.",
+      "current_phase": "VERIFY_ID",
+      "controller": "ppo7",
+      "policy_decision": {
+        "selected_action": "ASK_IDENTITY_FIELD",
+        "probabilities": {
+          "ACK_EMOTION": 0.0,
+          "ASK_IDENTITY_FIELD": 0.9892063140869141,
+          "EXPLAIN_VERIFICATION_GATE": 0.010793671011924744,
+          "RESOLVE_INTENT": 0.0,
+          "ASK_CLAIM_CLARIFICATION": 0.0,
+          "ANSWER_GROUNDED": 0.0,
+          "OFFER_EMAIL_SUMMARY": 0.0,
+          "SEND_EMAIL": 0.0,
+          "ESCALATE_HUMAN": 0.0
+        },
+        "allowed_actions": [
+          "ASK_IDENTITY_FIELD",
+          "EXPLAIN_VERIFICATION_GATE"
+        ],
+        "action_mask": [
+          false,
+          true,
+          true,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false
+        ],
+        "source": "ppo7",
+        "checkpoint_sha256": "ab42f54f9a5238784f5977c65b7988c96b9933aa59bdb59672d78160c973b5cf",
+        "checkpoint": {
+          "sha256": "ab42f54f9a5238784f5977c65b7988c96b9933aa59bdb59672d78160c973b5cf",
+          "training_seed": 7,
+          "actual_steps": 60288,
+          "environment_version": 4,
+          "feature_version": 2,
+          "checkpoint_family": "customer_multi_turn_v1",
+          "mask_version": "customer_sop_v1"
+        },
+        "fallback_reason": null,
+        "reason": "The trained policy selected the largest probability among actions permitted for this real customer turn.",
+        "forced": false,
+        "grounded_answered": false,
+        "response_generation": "deterministic"
+      },
+      "claim_choices": [],
+      "sop_state": {
+        "session_id": "8d00224b-f127-46f3-9e2d-1e318627feab",
+        "phase": "VERIFY_ID",
+        "verified_party_id": null,
+        "identity_verified": false,
+        "verified_fields": [],
+        "cross_phase_memory": {
+          "case_id_hint": null,
+          "case_type_hint": "healthcare",
+          "status_hint": "denied",
+          "date_hint": "January",
+          "topic_hint": "denial_reason",
+          "raw_utterance_snippet": "healthcare / denied / January / denial_reason",
+          "notes": [
+            "healthcare / denied / January / denial_reason"
+          ],
+          "hint_history": {
+            "case_type_hint": [
+              "healthcare"
+            ],
+            "status_hint": [
+              "denied"
+            ],
+            "date_hint": [
+              "January"
+            ],
+            "topic_hint": [
+              "denial_reason"
+            ]
+          }
+        },
+        "active_case_id": null,
+        "out_of_scope_count": 0,
+        "refusal_count": 0,
+        "post_process": {
+          "email_offered": false,
+          "user_decision": null,
+          "delivery_status": null
+        },
+        "trace_log": [
+          {
+            "timestamp": "2026-09-14T04:43:53.469716+00:00",
+            "phase_before": "VERIFY_ID",
+            "phase_after": "VERIFY_ID",
+            "gate_evaluated": "VERIFY_ID_GATE",
+            "gate_passed": false,
+            "details": "Three distinct matching allowed PII fields are required with no contradictory values. Explain privacy and offer alternative fields.",
+            "data_shield_active": true
+          },
+          {
+            "timestamp": "2026-09-14T04:43:53.537312+00:00",
+            "phase_before": "VERIFY_ID",
+            "phase_after": "VERIFY_ID",
+            "gate_evaluated": "VERIFY_ID_GATE",
+            "gate_passed": false,
+            "details": "Three distinct matching allowed PII fields are required with no contradictory values. Explain privacy and offer alternative fields.",
+            "data_shield_active": true
+          }
+        ],
+        "discussion_topics": [],
+        "resolution_status": null,
+        "pii_conflicts": [
+          "name"
+        ],
+        "is_proxy_caller": false,
+        "proxy_rep_name": null,
+        "proxy_relationship": null,
+        "proxy_consent_status": null,
+        "proxy_identity_verified": false,
+        "proxy_authorized_party_id": null,
+        "data_shield_active": true,
+        "collected_fields": [
+          "name"
+        ],
+        "history_snapshots": [],
+        "outbox_count": 0
+      },
+      "trace": [
+        {
+          "timestamp": "2026-09-14T04:43:53.469716+00:00",
+          "phase_before": "VERIFY_ID",
+          "phase_after": "VERIFY_ID",
+          "gate_evaluated": "VERIFY_ID_GATE",
+          "gate_passed": false,
+          "details": "Three distinct matching allowed PII fields are required with no contradictory values. Explain privacy and offer alternative fields.",
+          "data_shield_active": true
+        },
+        {
+          "timestamp": "2026-09-14T04:43:53.537312+00:00",
+          "phase_before": "VERIFY_ID",
+          "phase_after": "VERIFY_ID",
+          "gate_evaluated": "VERIFY_ID_GATE",
+          "gate_passed": false,
+          "details": "Three distinct matching allowed PII fields are required with no contradictory values. Explain privacy and offer alternative fields.",
+          "data_shield_active": true
+        }
+      ],
+      "active_case": null,
+      "verified_policyholder": null,
+      "engine_mode": "mock",
+      "model_activity": {
+        "interpretation_requests": 0,
+        "interpretation_succeeded": 0,
+        "planning_requests": 0,
+        "planning_succeeded": 0
+      },
+      "fallback_reason": null
+    }
+  ]
+}

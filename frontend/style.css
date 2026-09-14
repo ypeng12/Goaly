@@ -1732,3 +1732,63 @@ dialog::backdrop {
   .page-heading {margin-bottom:20px}
 }
 .customer-options .verification-progress {font-size:12px;font-weight:400;color:#6c552a;margin-bottom:12px}
+
+/* Keep free-form writing ahead of optional shortcuts and inspection tools. */
+.conversation-mode {display:flex;align-items:center;flex-wrap:wrap;gap:6px 16px;padding:10px 23px;border-bottom:1px solid var(--line);background:#f8faf7;font-size:12px;color:#52665b;flex-shrink:0}
+.conversation-mode > span:first-child {font-weight:650;color:var(--green)}
+.conversation-mode .text-button {margin-left:auto;min-height:28px;font-size:12px}
+.conversation-panel {min-height:0}
+.chat-window {height:clamp(230px,calc(100dvh - 650px),420px);padding-bottom:24px}
+.msg-text {font-size:15px;line-height:1.75}
+.msg-sender {font-size:11px}
+.msg-phase {font-size:10px}
+.input-container {padding:14px 21px;background:#fff;flex-shrink:0}
+#user-input {font-size:16px;min-height:72px;max-height:170px;line-height:1.6;resize:vertical}
+.send-button {height:42px;width:42px}
+.input-footer {font-size:10px;line-height:1.5}
+.customer-options {background:#fcfdfb}
+.customer-options summary {cursor:pointer;font-size:12px;color:var(--green);line-height:1.7;min-height:26px}
+.suggestion-note {font-size:12px;color:var(--muted);margin:10px 0 0;line-height:1.6}
+.policy-decision {border-top:1px solid var(--line);padding:12px 23px;background:#f6f9f5;font-size:12px;flex-shrink:0}
+.policy-decision > summary {cursor:pointer;line-height:1.7;color:#31584a}
+.policy-decision-body {padding:4px 0 6px;max-width:760px}
+.policy-decision-body > p {line-height:1.7;margin:10px 0}
+.policy-decision-body .decision-footnote {font-size:11px;color:#617469}
+.policy-decision-body .decision-fallback {padding:10px 12px;background:#fff6e8;border-left:3px solid #ad803a;color:#70582f}
+.decision-options {margin:12px 0}
+.decision-option {display:flex;justify-content:space-between;gap:18px;padding:7px 10px;border-bottom:1px solid #e3ebe4;line-height:1.5}
+.decision-option.selected {background:#eaf3e9;font-weight:650;color:#205a47}
+.decision-option span:last-child {font-variant-numeric:tabular-nums;white-space:nowrap}
+.policy-decision-body details {margin-top:12px}
+.policy-decision-body summary {cursor:pointer;color:#52665b}
+.policy-decision pre {max-height:220px;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere;padding:12px;font-size:11px;background:#fff;border:1px solid var(--line)}
+#config-form .field-help {line-height:1.6}
+@media(max-width:768px) {
+  .conversation-mode {padding:9px 16px;gap:4px 12px;font-size:11px}
+  .conversation-mode .text-button {font-size:11px}
+  .chat-window {height:clamp(230px,30dvh,320px);padding:20px 16px}
+  .input-container {padding:12px 14px}
+  #user-input {min-height:72px}
+  .customer-options .support-tools {margin-top:8px}
+  .policy-decision {padding:12px 16px}
+  .msg-text {font-size:15px}
+  .full-width-conversation .chat-msg {max-width:100%}
+}
+@media(max-width:520px) {
+  .customer-page .header {flex-wrap:nowrap;min-height:64px;gap:10px}
+  .customer-page .header-actions {width:auto;flex-wrap:nowrap;justify-content:flex-end;margin-left:auto}
+  .customer-page .header-actions .btn {flex:0 0 auto;min-width:30px}
+  .customer-page .header-actions .btn-text {display:none}
+  .customer-page .stepper {grid-template-columns:repeat(4,minmax(0,1fr))}
+  .customer-page .stepper .step-item {display:flex;flex-direction:column;align-items:flex-start;gap:6px;padding:10px 7px;border-bottom:0;border-right:1px solid var(--line)}
+  .customer-page .stepper .step-item:last-child {border-right:0}
+  .customer-page .step-name {font-size:9px;line-height:1.5}
+  .customer-page .panel-heading {height:48px}
+  .customer-page .scenario-tray {padding:11px 14px}
+}
+@media(max-width:520px) and (max-height:760px) {
+  .customer-page .page-heading .eyebrow,.customer-page .page-description {display:none}
+  .customer-page .page-heading {margin-bottom:12px}
+  .customer-page main {padding-top:12px}
+  .customer-page .chat-window {height:180px}
+}

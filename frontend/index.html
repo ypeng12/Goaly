@@ -9,7 +9,7 @@
   <link rel="stylesheet" href="/static/style.css">
   <script src="/static/app.js" defer></script>
 </head>
-<body>
+<body class="customer-page">
   <a href="#user-input" class="skip-link">Skip to conversation</a>
   <div class="app-shell">
     <header class="header">
@@ -20,15 +20,15 @@
       <div class="header-actions">
         <a class="btn btn-secondary" href="/lab">Developer lab ↗</a>
         <span class="engine-badge" id="engine-badge"><span class="status-dot"></span><span id="engine-label">Connecting</span></span>
-        <button id="btn-toggle-inspector" class="btn btn-secondary" type="button" aria-expanded="false" aria-label="Show how this call works"><span aria-hidden="true">🛡️</span> <span class="btn-text">How this works</span></button>
-        <button id="btn-config" class="btn btn-secondary" type="button"><span class="btn-text">API settings</span></button>
-        <button id="btn-reset" class="btn btn-primary" type="button"><span aria-hidden="true">＋</span> <span class="btn-text">New call</span></button>
+        <button id="btn-toggle-inspector" class="btn btn-secondary" type="button" aria-expanded="false" aria-label="Show how this call works" title="How this call works"><span aria-hidden="true">🛡️</span> <span class="btn-text">How this works</span></button>
+        <button id="btn-config" class="btn btn-secondary" type="button" aria-label="Conversation settings" title="Conversation settings"><span aria-hidden="true">⚙</span> <span class="btn-text">Settings</span></button>
+        <button id="btn-reset" class="btn btn-primary" type="button" aria-label="Start a new call" title="New call"><span aria-hidden="true">＋</span> <span class="btn-text">New call</span></button>
       </div>
     </header>
 
     <main>
       <div class="page-heading">
-        <div><p class="eyebrow">ONE STEP AT A TIME</p><h1>Let’s sort out your claim.</h1><p class="page-description">Check progress, understand a rejection, or get help with documents. Choose an option or tell us what happened.</p></div>
+        <div><p class="eyebrow">ONE STEP AT A TIME</p><h1>Let’s sort out your claim.</h1><p class="page-description">Tell us what happened, ask a follow-up, or say what is confusing. You do not need a claim number to start.</p></div>
         <div class="sandbox-note"><span class="sandbox-pill">DEMO WORKSPACE</span><p>Synthetic records · Simulated email &amp; handoff</p></div>
       </div>
 
@@ -43,6 +43,7 @@
       <div class="main-layout full-width-conversation">
         <section class="conversation-panel" aria-labelledby="conversation-heading">
           <div class="panel-heading"><div class="panel-title"><span class="live-dot" aria-hidden="true"></span><h2 id="conversation-heading">Your conversation</h2></div><span class="quiet-label" id="call-status">Identity verification</span></div>
+          <div class="conversation-mode"><span id="controller-label">Strategy: connecting</span><span id="language-label">Language: connecting</span><button id="btn-conversation-settings" class="text-button" type="button">Change</button></div>
           <details class="scenario-tray"><summary>Testing the demo? Try a sample call</summary><div class="scenario-chips" aria-label="Send a sample caller message">
             <button class="chip featured" id="scenario-margaret" type="button">Margaret’s January claim <span aria-hidden="true">↗</span></button>
             <button class="chip" id="scenario-partial" type="button">One detail at a time</button>
@@ -52,18 +53,19 @@
           </div><p class="scenario-hint">Each chip sends one message in this call. Use New call to start a separate scenario.</p></details>
 
           <div class="chat-window" id="chat-window" role="log" aria-label="Conversation messages" aria-live="polite" aria-relevant="additions text" tabindex="0"></div>
+          <div class="replay-notice" id="replay-notice" hidden>Viewing a saved turn. Return to live to continue the conversation.</div>
+          <div class="input-container">
+            <form id="chat-form"><label class="sr-only" for="user-input">Your message</label><textarea id="user-input" rows="3" maxlength="6000" placeholder="Tell me what happened, or ask a follow-up…" required aria-describedby="input-hint"></textarea><button type="submit" id="btn-send" class="send-button" aria-label="Send message"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m5 12 7-7 7 7M12 5v15"/></svg></button></form>
+            <div class="input-footer"><span id="input-hint">Free-form conversation · Use synthetic details in this demo.</span><span class="keyboard-hint">Enter to send <span aria-hidden="true">·</span> Shift + Enter for a new line</span></div>
+          </div>
           <div class="customer-options" id="customer-options" aria-label="Suggested next steps">
             <p id="verification-progress" class="verification-progress" role="status">Not verified · 0 of 3 details matched. Claim details are locked.</p>
-            <p id="choices-label">What would you like help with?</p><div id="topic-choices" class="scenario-chips"></div>
+            <details id="suggested-topics"><summary id="choices-label">Need an idea? See suggested questions</summary><div id="topic-choices" class="scenario-chips"></div><p class="suggestion-note">These are shortcuts. You can type your own question above.</p></details>
             <div class="support-tools"><button class="btn btn-primary" id="btn-open-verification" type="button">Verify using a form</button><button class="text-button" id="btn-correct" type="button">Correct something I typed</button><button class="text-button" id="btn-human" type="button">Ask for a person</button></div>
           </div>
           <div class="quick-actions" id="process-actions" hidden><span>Ready to wrap up?</span><button class="chip" id="btn-wrap-up" type="button">That answers my question</button></div>
           <div class="quick-actions consent-actions" id="post-process-actions" hidden><span>Would you like a summary?</span><button class="btn btn-primary" id="btn-accept-email" type="button">Yes, send summary</button><button class="btn btn-secondary" id="btn-decline-email" type="button">No thanks, skip</button></div>
-          <div class="replay-notice" id="replay-notice" hidden>Viewing a saved turn. Return to live to continue the conversation.</div>
-          <div class="input-container">
-            <form id="chat-form"><label class="sr-only" for="user-input">Your message</label><textarea id="user-input" rows="2" maxlength="6000" placeholder="Tell us what you need help with…" required aria-describedby="input-hint"></textarea><button type="submit" id="btn-send" class="send-button" aria-label="Send message"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m5 12 7-7 7 7M12 5v15"/></svg></button></form>
-            <div class="input-footer"><span id="input-hint">Use the synthetic test identities provided for this demo.</span><span class="keyboard-hint">Enter to send <span aria-hidden="true">·</span> Shift + Enter for a new line</span></div>
-          </div>
+          <details id="policy-decision" class="policy-decision" hidden><summary id="policy-decision-title">How this response was chosen</summary><div class="policy-decision-body"><p id="policy-decision-reason"></p><p id="policy-decision-model" hidden></p><p id="policy-decision-language" hidden></p><p id="policy-decision-fallback" class="decision-fallback" hidden></p><p id="policy-decision-boundary"></p><div id="policy-decision-options" class="decision-options"></div><p class="decision-footnote">Percentages show the strategy’s preference among allowed actions, not answer accuracy. SOP gates still control verification, claim access and email consent.</p><details><summary>Technical record</summary><pre id="policy-decision-record"></pre></details></div></details>
         </section>
 
         <aside class="inspector-panel hidden-drawer" aria-label="Workflow inspector">
@@ -105,11 +107,13 @@
   </dialog>
 
   <dialog id="config-modal" aria-labelledby="config-title">
-    <div class="modal-heading"><div><p class="eyebrow">MODEL CONNECTION</p><h2 id="config-title">API settings</h2></div><button class="close-button" id="modal-close" aria-label="Close settings" type="button">×</button></div>
-    <p class="modal-description">Choose how the agent interprets and responds. The same workflow gates apply in both modes.</p>
+    <div class="modal-heading"><div><p class="eyebrow">STRATEGY + LANGUAGE</p><h2 id="config-title">Conversation settings</h2></div><button class="close-button" id="modal-close" aria-label="Close settings" type="button">×</button></div>
+    <p class="modal-description">Strategy chooses an allowed next action. The language engine understands your message and helps express the response. The SOP keeps authority over access and consent.</p>
     <form id="config-form">
-      <label for="cfg-engine-mode">Response engine</label><select id="cfg-engine-mode"><option value="mock">Offline demo — deterministic responses</option><option value="llm">Live model — OpenAI-compatible API</option></select>
-      <p class="field-help">Offline mode is useful for repeatable tests. Live mode adds natural-language interpretation.</p>
+      <label for="cfg-controller">Conversation strategy</label><select id="cfg-controller"><option value="rule">Rule baseline — hand-written choices</option><option value="ppo42">Trained PPO — training seed 42</option><option value="ppo7">Trained PPO — training seed 7</option></select>
+      <p class="field-help">PPO selects actions from a trained checkpoint. It does not generate words or bypass required steps. The two seeds are separate training runs, not quality rankings.</p>
+      <label for="cfg-engine-mode">Language engine</label><select id="cfg-engine-mode"><option value="mock">Offline — local interpretation and grounded replies</option><option value="llm">Live model — OpenAI-compatible API</option></select>
+      <p class="field-help">Offline mode supports a bounded set of language patterns. Live mode adds model interpretation; factual answers remain tied to the claim record.</p>
       <div id="llm-config-fields" hidden>
         <label for="cfg-api-key">API auth token</label><input type="password" id="cfg-api-key" autocomplete="off" spellcheck="false" placeholder="Paste your API token" aria-describedby="token-help"><p class="field-help" id="token-help">Held in server memory for this session. Never saved in browser storage.</p>
         <label for="cfg-base-url">API base URL</label><input type="url" id="cfg-base-url" placeholder="https://api.openai.com/v1" spellcheck="false"><p class="field-help">Your token and conversation are sent to this provider. Use a trusted endpoint.</p>

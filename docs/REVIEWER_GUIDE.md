@@ -2,8 +2,9 @@
 
 This is a constrained customer-service agent harness demonstrated with synthetic
 insurance claims. A state machine owns privacy, phase transitions and consent;
-Masked PPO learns dialogue actions in a reactive caller environment. The customer
-demo and the policy experiments are separate entry points.
+Masked PPO learns dialogue actions in a reactive caller environment. The customer demo now executes a selected PPO or rule controller on real text
+turns. The lab separates current customer-policy evidence from the original
+version-3 simulator experiment.
 
 ## 1. Show the customer workflow
 
@@ -16,8 +17,10 @@ Start the application using the root README, then open
 2. Type `DOB is 1985-03-15`, then `SSN last four is 4472`.
    Three matching identity fields unlock claim access. The remembered hint selects
    CL-2048 without restarting intent collection.
-3. Ask `Can I use a scan of the pathology report?` The concise answer preserves
-   the document requirements. Ask for more detail to expand them.
+3. Ask `What documents do I need?`, then `What is the second one?`,
+   `I can't get it.`, and `Can I send photos?`. The answer follows the office
+   note through the conversation and preserves material/format conditions.
+   Ask `Can you explain that more simply?` to request a shorter explanation.
 4. Type `That answers my question.` The agent offers the conversation summary
    and asks for email consent. Choose Skip; no simulated email is sent.
 5. In a new session, try `This is ridiculous. Just tell me why my claim was denied.`
@@ -36,7 +39,16 @@ Email delivery and human transfer are simulated.
 
 ## 2. Show what the learned policy actually does
 
-Open **Developer lab** in the header or <http://127.0.0.1:8080/lab>.
+First stay in customer chat. Open **Settings**, choose PPO seed 42, and type
+`This is ridiculous. My name is Margaret Chen.` Expand **This response** to
+inspect the actual action, legal alternatives, probabilities and loaded weight
+hash. Switch to the rule controller to compare. Language mode is a separate
+setting. Single-choice actions are explicitly marked; consent/terminal turns
+belong to SOP and have no sampled action.
+
+Open **Developer lab** in the header or <http://127.0.0.1:8080/lab>. Review the
+current customer version-4 outcome report first. The simulator below is the
+original version-3 experiment with separate checkpoints:
 
 1. Select a frustrated caller and compare all policies using the same environment
    seed: RuleBased, Random, PPO seed 42 and PPO seed 7.
@@ -54,9 +66,10 @@ the appropriate outcome, then reduce effort. The selected run's takeaway is
 computed from its actual result. Reward is labelled **Training score**, action
 names are translated into plain language, and raw metadata stays expandable.
 
-Customer chat uses the shared SOP runtime with either the mock or configured
-language-model engine. The PPO checkpoint controls the synthetic policy lab;
-it does not control the customer chat. The UI labels this boundary explicitly.
+Customer chat and version-4 training share a mask and action executor. The
+caller is a person in the UI and a reactive text protocol during training.
+The original version-3 lab remains a historical reproducible experiment.
+[Read the runtime contract and acceptance goal](CUSTOMER_RUNTIME.md).
 
 ## 3. Evidence and limits
 
@@ -106,7 +119,7 @@ OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 python3 -m eval.emotion_ablation \
   --timesteps 25000 --seeds 42 7
 ```
 
-The live suite exercises ten scenarios through HTTP. Missing credentials produce
+The live suite exercises workflow and contextual follow-up scenarios through HTTP. Missing credentials produce
 `status: not_run` and exit code 2. Provider fallback is a failure, even if the
 offline response is correct. Tokens are not included in the evidence file.
 Docker CI runs offline checks and both browser sizes without paid model calls.

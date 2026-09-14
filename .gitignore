@@ -10,3 +10,4 @@ __pycache__/
 eval/*trajectory*.jsonl
 *.zip
 !artifacts/emotion_ablation/training_source.zip
+!artifacts/customer_policy/*.zip

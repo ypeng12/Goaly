@@ -17,7 +17,7 @@ OUT_OF_SCOPE_PATTERNS = [
 TOPIC_PATTERNS = {
     'document_alternatives': r"alternative|substitute|replacement|can't get|cannot get|don't have|lost (?:the |my )?(?:report|note)|no (?:readable )?copy",
     'submission_timing': r'how soon.*(?:submit|send)|when.*(?:submit|send)|deadline to submit',
-    'processing_time': r'how long|processing time|review time|after (?:i |you )?(?:submit|send|receive)|once.*submit',
+    'processing_time': r'how long|how many (?:business |working )?(?:days|weeks|hours).{0,45}(?:review|process|take)|processing time|review time|after (?:i |you )?(?:submit|send|receive)|once.*submit',
     'submission_method': r'how (?:do|can|should) i (?:send|submit|upload)|where.*(?:send|submit|upload)|portal|upload link',
     'file_format': r'file type|format|scan|pdf|readable|legible|photo',
     'receipt_confirmation': r'confirm.*receipt|know you got|confirmation|show up in status|received (?:it|them|the)',
@@ -175,7 +175,7 @@ class UtteranceExtractor:
             return False
         # Unknown questions are declined unless they concern the service or its workflow.
         question = bool(re.search(r'\b(?:what|why|how|who|where|when|explain|teach|tell me about)\b', low))
-        service = bool(re.search(r'\b(?:claim|claims|policy|coverage|insurance|verify|verification|identity|info|information|name|dob|phone|email|ssn|id|documents?|reports?|notes?|appeal|denied|denial|submit|send|upload|payment|pay|paid|amount|fee|reimbursement|portal|healthcare|dental|auto|human|representative|consent|summary|privacy|status|format|scan|pdf|receipt|confirmation|review|processing|original|copy|alternative|substitute|long|soon|deadline|that|it|this|them|those)\b', low))
+        service = bool(re.search(r'\b(?:claim|claims|policy|coverage|insurance|verify|verification|identity|info|information|name|dob|phone|email|ssn|id|documents?|paperwork|materials?|reports?|notes?|appeal|denied|denial|submit|send|upload|payment|pay|paid|amount|fee|reimbursement|portal|healthcare|dental|auto|human|representative|consent|summary|privacy|status|format|scan|pdf|receipt|confirmation|review|processing|original|copy|alternative|substitute|long|soon|deadline|that|it|this|them|those)\b', low))
         return question and not service
 
     @staticmethod

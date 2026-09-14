@@ -17,7 +17,17 @@ const SCENARIOS = {
   "scenario-oos": "What is RL?",
   "scenario-proxy": "I am David Chen calling on behalf of my mother Margaret Chen, policy POL-9921. Her DOB is 1985-03-15 and her SSN last four is 4472. I’m calling about her denied healthcare claim from January."
 };
-const WELCOME = "Hi, I’m Aegis. I can help with a claim — a request for your insurer to pay for a loss or expense.\n\nPick a topic below, or tell me what happened. We’ll verify your identity before opening your claim.";
+const CONTROLLER_LABELS = {rule: 'Rule baseline', ppo42: 'Trained PPO · 42', ppo7: 'Trained PPO · 7', sop: 'Required SOP step'};
+const ACTION_LABELS = {
+  ACK_EMOTION: 'acknowledge your concern', ASK_IDENTITY_FIELD: 'ask for an identity detail',
+  EXPLAIN_VERIFICATION_GATE: 'explain why verification is needed', RESOLVE_INTENT: 'understand your request',
+  ASK_CLAIM_CLARIFICATION: 'clarify which claim you mean', ANSWER_GROUNDED: 'answer from the claim record',
+  OFFER_EMAIL_SUMMARY: 'offer an optional summary', SEND_EMAIL: 'send the agreed summary',
+  ESCALATE_HUMAN: 'request a human representative'
+};
+const WELCOME = "Hi, I’m Aegis. Tell me what happened with your claim — your request for insurance payment. You can ask follow-up questions in your own words.\n\nWe’ll verify your identity before opening your record. Use the form if that’s easier than typing your details.";
+let requestedController = new URLSearchParams(window.location.search).get('controller');
+if (!Object.hasOwn(CONTROLLER_LABELS, requestedController) || requestedController === 'sop') requestedController = null;
 let sessionId = null;
 let config = {};
 let busy = false;
@@ -67,12 +77,13 @@ function syncControls() {
   });
   $("btn-reset").disabled = busy;
   $("btn-config").disabled = busy || replaying || !sessionId;
+  $("btn-conversation-settings").disabled = busy || replaying || !sessionId;
   $("time-travel-slider").disabled = busy || snapshots.length < 2;
   $("replay-notice").hidden = !replaying;
   $("inspector-mode").textContent = replaying ? "REPLAY" : "LIVE";
   $("inspector-mode").className = replaying ? "tag pending" : "tag verified";
   $("chat-window").setAttribute("aria-busy", String(busy));
-  $("user-input").placeholder = replaying ? "Return to live to continue…" : isTerminal() ? "This call has ended. Start a new call to continue." : "Tell us what you need help with…";
+  $("user-input").placeholder = replaying ? "Return to live to continue…" : isTerminal() ? "This call has ended. Start a new call to continue." : liveData.current_phase === 'PROCESS_CASE' ? 'Ask a follow-up — for example, “What does the second item mean?”' : "Tell me what happened, or ask a follow-up…";
 }
 function renderMessage(message) {
   const role = ["user", "assistant", "system"].includes(message.role) ? message.role : "system";
@@ -201,6 +212,7 @@ function renderInspector(data) {
   renderClaim(identityVerified ? data.active_case : null, identityVerified);
   renderSummary(state.post_process || {}, identityVerified);
   renderAudit(state.trace_log || data.trace || []);
+  renderPolicyDecision(data);
   $("process-actions").hidden = data.current_phase !== "PROCESS_CASE";
   $("post-process-actions").hidden = data.current_phase !== "POST_PROCESS" || ["accepted", "declined"].includes(state.post_process?.user_decision);
   renderChoices(data);
@@ -234,8 +246,10 @@ function renderChoices(data) {
       ['I can’t get a document', 'I cannot get the documents. What alternatives are available?']);
     else items.push(['Understand the payment', 'What payment amounts are recorded for my claim?']);
   }
-  $('choices-label').textContent = phase === 'RESOLVE_INTENT' && data.claim_choices?.length ? 'Which claim do you mean?' : phase === 'PROCESS_CASE' ? 'What would help next?' : 'What would you like help with?';
-  $('choices-label').hidden = !items.length;
+  const chooseClaim = phase === 'RESOLVE_INTENT' && data.claim_choices?.length;
+  $('choices-label').textContent = chooseClaim ? 'Choose the claim you mean' : 'Need an idea? See suggested questions';
+  $('suggested-topics').hidden = !items.length;
+  if (chooseClaim) $('suggested-topics').open = true;
   items.forEach(([label, message]) => {
     const button = node('button', 'chip', label);
     button.type = 'button'; button.addEventListener('click', () => sendMessage(message)); choices.append(button);
@@ -300,11 +314,57 @@ function renderEngine(data = {}) {
   const isLive = !fallback && (mode.includes("llm") || mode === "live" || (!mode && config.has_api_key && !config.use_mock_only));
   $("engine-badge").className = `engine-badge${fallback ? " fallback" : isLive ? " live" : ""}`;
   $("engine-label").textContent = fallback ? "Offline fallback" : isLive ? (mode ? "Live model" : "Live model ready") : "Offline demo";
+  $('language-label').textContent = `Language: ${fallback ? 'offline fallback' : isLive ? 'live model' : 'offline'}`;
+  const actualSource = data.policy_decision?.source;
+  const controller = data.controller || config.controller;
+  $('controller-label').textContent = `Strategy: ${CONTROLLER_LABELS[controller] || controller || 'not reported'}${actualSource && actualSource !== controller && actualSource !== 'sop' ? ` · this turn used ${CONTROLLER_LABELS[actualSource] || actualSource}` : ''}`;
   if (fallback) notice("The model could not complete this turn. The offline engine supplied the response; workflow gates remained active.");
   else if (replaying) notice("");
 }
+function renderPolicyDecision(data) {
+  const decision = data.policy_decision;
+  $('policy-decision').hidden = !decision;
+  if (!decision) return;
+  const action = ACTION_LABELS[decision.selected_action] || decision.selected_action;
+  const source = CONTROLLER_LABELS[decision.source] || decision.source || 'SOP';
+  $('policy-decision-title').textContent = action ? `This response: ${action} · ${source}` : `This response: ${source}`;
+  $('policy-decision-reason').textContent = decision.reason || 'The server did not include a decision explanation.';
+  const checkpoint = decision.checkpoint;
+  $('policy-decision-model').hidden = !checkpoint;
+  if (checkpoint) {
+    const family = checkpoint.checkpoint_family === 'customer_multi_turn_v1' ? 'Customer conversation model'
+      : checkpoint.checkpoint_family === 'legacy_simulator_v3' ? 'Original simulator model' : 'Trained model';
+    $('policy-decision-model').textContent = `Model used: ${family}${checkpoint.environment_version ? ` · environment v${checkpoint.environment_version}` : ''}.`;
+  }
+  $('policy-decision-fallback').hidden = !decision.fallback_reason;
+  $('policy-decision-fallback').textContent = decision.fallback_reason || '';
+  const activity = data.model_activity;
+  $('policy-decision-language').hidden = !activity;
+  if (activity) {
+    const interpretation = Number(activity.interpretation_requests || 0), planning = Number(activity.planning_requests || 0);
+    const generation = {deterministic: 'local grounded reply', deterministic_grounded: 'local grounded reply',
+      live_fact_plan: 'model-selected grounded facts', grounded_plan_fallback: 'local grounded fallback'}[decision.response_generation];
+    $('policy-decision-language').textContent = interpretation + planning === 0
+      ? 'No language-model request was sent for this turn. The reply used local grounding.'
+      : `Language-model activity: ${activity.interpretation_succeeded || 0}/${interpretation} interpretation requests and ${activity.planning_succeeded || 0}/${planning} fact-planning requests succeeded.${generation ? ` Response: ${generation}.` : ''}`;
+  }
+  $('policy-decision-boundary').textContent = decision.forced
+    ? 'The SOP required this step. The policy could not choose to skip it.'
+    : 'The policy chose among the actions currently allowed by the SOP.';
+  $('policy-decision-options').replaceChildren();
+  (decision.allowed_actions || []).forEach(actionName => {
+    const probability = decision.probabilities?.[actionName];
+    const selected = actionName === decision.selected_action;
+    const row = node('div', `decision-option${selected ? ' selected' : ''}`);
+    row.append(node('span', '', `${selected ? '✓ ' : ''}${ACTION_LABELS[actionName] || actionName}`));
+    if (typeof probability === 'number' && Number.isFinite(probability)) row.append(node('span', '', `${(probability * 100).toFixed(1)}%`));
+    $('policy-decision-options').append(row);
+  });
+  $('policy-decision-record').textContent = JSON.stringify(decision, null, 2);
+}
 function applyConfig(data) {
   config = data;
+  $('cfg-controller').value = data.controller || 'ppo42';
   $("cfg-engine-mode").value = data.has_api_key && !data.use_mock_only ? "llm" : "mock";
   $("cfg-base-url").value = data.base_url || "https://api.openai.com/v1";
   $("cfg-model").value = data.model || "gpt-4o-mini";
@@ -332,7 +392,12 @@ async function resetSession() {
     renderMessages(liveMessages);
     renderInspector(liveData);
     renderReplayStatus(0);
-    applyConfig(await request(`/api/config?session_id=${encodeURIComponent(sessionId)}`));
+    let sessionConfig = await request(`/api/config?session_id=${encodeURIComponent(sessionId)}`);
+    if (requestedController) {
+      sessionConfig = await request('/api/config', {method: 'POST', body: JSON.stringify({session_id: sessionId, controller: requestedController})});
+      requestedController = null;
+    }
+    applyConfig(sessionConfig);
   } catch (error) {
     notice(error.message);
   } finally { busy = false; syncControls(); }
@@ -359,9 +424,9 @@ async function saveConfig(event) {
   $("config-save").textContent = "Saving…";
   syncControls();
   try {
-    const data = await request("/api/config", {method: "POST", body: JSON.stringify({session_id: sessionId, use_mock: mock, api_key: token || undefined, base_url: $("cfg-base-url").value.trim() || undefined, model: $("cfg-model").value.trim() || undefined})});
+    const data = await request("/api/config", {method: "POST", body: JSON.stringify({session_id: sessionId, controller: $('cfg-controller').value, use_mock: mock, api_key: token || undefined, base_url: $("cfg-base-url").value.trim() || undefined, model: $("cfg-model").value.trim() || undefined})});
     applyConfig(data);
-    notice(mock ? "Offline demo enabled for this session." : "Live model configured for this session. The next response will show the engine actually used.");
+    notice(`${CONTROLLER_LABELS[data.controller] || data.controller || 'Strategy'} configured for the next turn. ${mock ? 'Language engine: offline.' : 'Live model configured; each response shows the engine actually used.'}`);
     closeConfig();
   } catch (error) {
     $("config-error").textContent = error.message;
@@ -518,6 +583,7 @@ $("btn-decline-email").addEventListener("click", () => sendMessage("No thanks, p
 $("time-travel-slider").addEventListener("input", event => applySnapshot(Number(event.target.value)));
 $("btn-revert-live").addEventListener("click", () => { applySnapshot(snapshots.length - 1); if (!isTerminal()) $("user-input").focus(); });
 $("btn-config").addEventListener("click", () => { applyConfig(config); $("config-error").hidden = true; $("config-modal").showModal(); });
+$('btn-conversation-settings').addEventListener('click', () => $('btn-config').click());
 $("modal-close").addEventListener("click", closeConfig);
 $("modal-cancel").addEventListener("click", closeConfig);
 $("config-modal").addEventListener("cancel", () => { $("cfg-api-key").value = ""; });

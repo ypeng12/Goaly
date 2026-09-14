@@ -145,4 +145,28 @@ def evidence():
                 result[key] = None  # A training report may be being replaced.
         else:
             result[key] = None
+    customer_path = ROOT / 'artifacts/customer_policy/comparison.json'
+    result['customer_policy'] = None
+    if customer_path.is_file():
+        try:
+            customer = json.loads(customer_path.read_text())
+            # The initial page needs outcomes, not the full synthetic transcript.
+            result['customer_policy'] = {
+                key: customer.get(key) for key in
+                ('schema_version', 'environment_version', 'mask_version', 'split', 'limitations', 'passed', 'checks')
+            }
+            result['customer_policy']['policies'] = {
+                key: {field: data.get(field) for field in ('checkpoint', 'metrics')}
+                for key, data in customer.get('policies', {}).items()
+            }
+        except (OSError, json.JSONDecodeError):
+            pass
     return result
+
+
+@router.get('/api/lab/customer-report')
+def customer_policy_report():
+    path = ROOT / 'artifacts/customer_policy/comparison.json'
+    if not path.is_file():
+        raise HTTPException(404, 'The customer policy report has not been generated.')
+    return FileResponse(path, media_type='application/json', filename='customer-policy-comparison.json')

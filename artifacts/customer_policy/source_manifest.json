@@ -1,0 +1,115 @@
+{
+  "purpose": "Source snapshot captured while both customer PPO runs were collecting rollouts. All recorded checkpoint start-source hashes must match this archive before publication.",
+  "files": {
+    "fixtures/claim_schema.json": "f95f0b49b4522e56b4b65dbdf4d74204b348bf43a333920a07d8d6589969ec4a",
+    "fixtures/claims.json": "67cd68333853ac24d9dda791fdd24a9515c8c25671331661735bd34bba7189e0",
+    "fixtures/consent_scenarios.json": "e1c49b14f21d7f956042f0737a4f5b9c2b09f63e5b4abfbe203df089cd678304",
+    "fixtures/policyholders.json": "7eb92602a256cabe628ddbe31d739609ebf00d9672e327f73ff31ae9bee1189c",
+    "fixtures/representatives.json": "ebc55c04c068a762e3596048fef0ebfeef21b19f595b64e0bdd64cc2c26c8b34",
+    "fixtures/required_document_guideline.json": "f17077ab365cfeb7cf7c6b81ec1602a5e327c0da4c55c4b37192ac1c71d89772",
+    "backend/harness/customer_training.py": "8cb4a06e7e9a89939a8963acbfb247a3663c7ddb9a32cfdf07487a85de2fcd14",
+    "backend/harness/customer_policy.py": "e42e983756f1cdaa3a3a590377087d8342a7905b14c49b4a8e82ecff4a7a4953",
+    "backend/harness/customer_service.py": "5d7a4d77a21305de756276250c3ba46ff1e383a27b91f1eea0ede41c1466e881",
+    "backend/harness/conversation_context.py": "a64944a3b0bf24740c088375c5f3111275a3835b33d2458cbc416f04da9baf5f",
+    "backend/harness/state_machine.py": "a48425dcc5f9b6aeb7a04cf588d9e4defa23103654c42841fae24ad0beff6c91",
+    "backend/harness/extractor.py": "88bb36366ea047043aa94a7e564d5132a9205624bf3746bd58d8b8853f8d5a41",
+    "backend/harness/grounded_data.py": "7508554e4b9a3390e3ee251ceb1a7d96e93c71893b6c0b5392600f04267c9107",
+    "backend/harness/context_builder.py": "890098dfcc842dfeb617a96a0b1db873e3e0263ccec054f8d1d911469695857f",
+    "backend/harness/types.py": "438738481249f312819ddee0ef366cdab59055c429b34185b13245b4bfacb96c",
+    "backend/harness/dialogue.py": "00355ad9637ea44853f7e4339e81cdd63ae4c9d6d8f32a44ff5a294969efd4ff",
+    "backend/harness/rl_baseline.py": "57752835c726874dcef4a3b77784fa8739dbac9cf69b3141c23aefedf55ed9e4",
+    "backend/engine/mock_engine.py": "6275a37393d38ba9b837e21e311a86bd9bf0c35f47258ffd7d8b09621a2ae8e7",
+    "backend/engine/base.py": "b3c02d4020343483bbf8d2e6277849729ba6f075c950c87da1d1b37793a1e04a",
+    "backend/rl/ppo_trainer.py": "2080f544a41d38a487e9d3855f2bd6d1619983987588d0d7e0548c3102fd717e",
+    "backend/rl/featurizer.py": "d7033979e0201970fb367deeae24220534e3b29646fbcf80928bb26fb3d960c2",
+    "backend/rl/models.py": "e364494e71f88d1ff5f55cdf138e3d1c25b0599f9a1be12ae19b8a448ee86a2c",
+    "train_customer_policy.py": "fb68f8aa40785402743f9fcfc17aed0ad8bd4dab260c82f21af5e5ff0e09954a",
+    "requirements.txt": "568dceb930e6d7546a23fbab32c69af702c904e889212124f53ec10d7bfa8297"
+  },
+  "archive_sha256": "20ef2d05c22947996b4e39cbe35049b4e2ab6fb38e36db32d90fa3d1f63b5b85",
+  "base_commit": "11a85a89b1a8b8e9da3ff67976c4241dfc8d5db9",
+  "reproduction": "Overlay training_source.zip onto this repository at base_commit, install requirements, then run train_customer_policy.py with the recorded seed and requested steps. The archive is a source overlay, not a standalone application.",
+  "stages": {
+    "initial_20k": {
+      "42": {
+        "file": "artifacts/customer_policy/initial_20k/seed42.pt",
+        "sha256": "4b972b2fe3f8f9f54354a84a16856d2f5a80298f4e955edf8c8c9c5846b5a265",
+        "actual_steps": 20096,
+        "requested_steps": 20000,
+        "dataset_revision": 1,
+        "source_archive": "training_source.zip",
+        "source_archive_sha256": "20ef2d05c22947996b4e39cbe35049b4e2ab6fb38e36db32d90fa3d1f63b5b85",
+        "training_source_unchanged": true,
+        "archive_matches_training_source": true
+      },
+      "7": {
+        "file": "artifacts/customer_policy/initial_20k/seed7.pt",
+        "sha256": "43f52fd03356d31f4d28024f0ca60873b987c2b199c247d119b33402271f260f",
+        "actual_steps": 20096,
+        "requested_steps": 20000,
+        "dataset_revision": 1,
+        "source_archive": "training_source.zip",
+        "source_archive_sha256": "20ef2d05c22947996b4e39cbe35049b4e2ab6fb38e36db32d90fa3d1f63b5b85",
+        "training_source_unchanged": true,
+        "archive_matches_training_source": true
+      }
+    },
+    "initial_40k": {
+      "42": {
+        "file": "artifacts/customer_policy/initial_40k/seed42.pt",
+        "sha256": "88acdcae11296a6b8231ed6863cc84746ad7497f6eca85ab189f110c27a35a9e",
+        "actual_steps": 40192,
+        "requested_steps": 40000,
+        "dataset_revision": 1,
+        "source_archive": "training_source_f176faaab867bd1c.zip",
+        "source_archive_sha256": "09aadd0e93344c237a680488a5516a8e682d2b1cf9ff346535ef457709978546",
+        "training_source_unchanged": true,
+        "archive_matches_training_source": true
+      },
+      "7": {
+        "file": "artifacts/customer_policy/initial_40k/seed7.pt",
+        "sha256": "ad318f745cc06655ab4090cfa7283f579d30da83bc63ff258f0a31005f44b9d9",
+        "actual_steps": 40192,
+        "requested_steps": 40000,
+        "dataset_revision": 1,
+        "source_archive": "training_source_f176faaab867bd1c.zip",
+        "source_archive_sha256": "09aadd0e93344c237a680488a5516a8e682d2b1cf9ff346535ef457709978546",
+        "training_source_unchanged": true,
+        "archive_matches_training_source": true
+      }
+    },
+    "final_60k": {
+      "42": {
+        "file": "artifacts/customer_policy/seed42.pt",
+        "sha256": "5c5511ab723d1a94ab0954d2f338711233fb91e2956bcdff6e2bb7bd60ca83d7",
+        "actual_steps": 60288,
+        "requested_steps": 60000,
+        "dataset_revision": 2,
+        "source_archive": "training_source_4a9beb3efbe008d2.zip",
+        "source_archive_sha256": "df3080f9dace4eb44ee544cd6f65db95d8a3314722ea3b22e279ecdd5cd46326",
+        "training_source_unchanged": true,
+        "archive_matches_training_source": true
+      },
+      "7": {
+        "file": "artifacts/customer_policy/seed7.pt",
+        "sha256": "ab42f54f9a5238784f5977c65b7988c96b9933aa59bdb59672d78160c973b5cf",
+        "actual_steps": 60288,
+        "requested_steps": 60000,
+        "dataset_revision": 2,
+        "source_archive": "training_source_4a9beb3efbe008d2.zip",
+        "source_archive_sha256": "df3080f9dace4eb44ee544cd6f65db95d8a3314722ea3b22e279ecdd5cd46326",
+        "training_source_unchanged": true,
+        "archive_matches_training_source": true
+      }
+    }
+  },
+  "evaluation_source_hashes": {
+    "eval/customer_policy_comparison.py": "5c82ceaf0276b7c5c45055e927ed31695aafb292aef3e580eb275acb7e623eff",
+    "backend/harness/customer_training.py": "a08a94470c8b375c6653e158b3e66ae87d3ebcf743d25da122d634233c67de5f",
+    "backend/harness/customer_policy.py": "046b82cfd130963c9fb2db774f5574b0ad787f5439f14d13218b21c733b41c2b",
+    "backend/harness/customer_service.py": "5d7a4d77a21305de756276250c3ba46ff1e383a27b91f1eea0ede41c1466e881",
+    "backend/harness/conversation_context.py": "a64944a3b0bf24740c088375c5f3111275a3835b33d2458cbc416f04da9baf5f",
+    "backend/engine/mock_engine.py": "6275a37393d38ba9b837e21e311a86bd9bf0c35f47258ffd7d8b09621a2ae8e7"
+  },
+  "all_stage_source_checks_passed": true
+}

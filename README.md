@@ -13,9 +13,28 @@ semantics, measuring outcomes, and connecting dialogue actions to actual speech.
 | Reward and evaluation | Grounded-answer completion, reason-based escalation, paired policy comparisons | Multi-seed audit, profile slices and reproducible JSON reports |
 | Bounded conversation | Empathy, gate explanations, alternate PII, grounded claim answers, send/skip choice | Customer UI and exported synthetic RL dialogue trajectories |
 
-The customer UI uses the SOP runtime and optional model-assisted interpretation.
-The learned PPO controller runs in the separate simulation environment.
+Customer chat now runs the selected **rule / PPO seed 42 / PPO seed 7** controller.
+The language setting is independent: offline uses the bounded interpreter and
+composer; a configured API model interprets broader wording, resolves document
+references and arranges approved facts. The model does not authorize claim
+access, invent facts, or grant email consent.
 DPO outputs are preference **data**; no DPO model has been trained.
+
+```mermaid
+flowchart LR
+  U[Customer message] --> I[Context and bounded interpretation]
+  I --> S[SOP gates and state]
+  S --> M[Allowed actions]
+  M --> P[Masked PPO or rule policy]
+  P --> R[Execute action with authorized facts]
+  R --> U
+```
+
+The acceptance target is a complete, useful conversation: remember the early
+case hint, verify three matching fields, answer contextual follow-ups without
+making the customer start over, offer alternatives grounded in records, and
+respect send or skip. A short call or high training reward alone is insufficient.
+See [the customer runtime and policy evidence](docs/CUSTOMER_RUNTIME.md).
 
 ## Run the demo
 
@@ -29,8 +48,15 @@ pip install -r requirements.txt
 ~~~
 
 Open <http://127.0.0.1:8080>. Offline mode works without credentials.
-Open **Developer lab** in the header, or <http://127.0.0.1:8080/lab>, to run the actual
-rule, random and two trained PPO policies against the same synthetic caller.
+Use **Settings** to choose the controller. Expand **This response** below the
+conversation to inspect the executed action, permitted alternatives, actual
+probabilities, checkpoint identity and any fallback. A mandatory SOP response
+has no sampled policy action. No illegal action is made available to PPO.
+
+Open **Developer lab** in the header, or <http://127.0.0.1:8080/lab>, for the
+current customer-policy report and the original version-3 simulator experiment.
+The latter runs rule, random and two historical PPO policies against the same
+synthetic caller; its weights and metrics are separate from customer version 4.
 The lab exposes checkpoint hashes, legal action probabilities, dialogue replay,
 reward components and JSON downloads. Customer sessions and lab runs are separate.
 For a live model, open **API settings**, select **Live model**, and enter an
@@ -53,6 +79,13 @@ one or two matching details never advance the SOP. Common business spelling
 errors are tolerated without fuzzy-matching identity or interpreting misspelled
 consent as approval. Available claim choices come only from the verified owner.
 
+The text box is the primary input. Optional suggestions are collapsed until
+needed; they send ordinary messages rather than bypassing dialogue. Try
+**What documents do I need? → What is the second one? → I can’t get it. → Can I
+send photos? → And the deadline?** The answer keeps the currently discussed
+document in context and clarifies when the reference is ambiguous. Unconfirmed
+photo formats are identified as unconfirmed, not promised acceptable.
+
 Under **Testing the demo?**, try **Margaret’s January claim**, ask about missing documents, then select
 **That answers my question** and choose **send** or **skip**. The inspector shows
 verification, remembered hints, claim access, consent and replay. You can also
@@ -65,7 +98,43 @@ to expand them. See the [five-minute reviewer guide](docs/REVIEWER_GUIDE.md).
 For a plain-language explanation of the UI and current technical checks, see
 [the customer usability and technical review](docs/UX_AND_TECHNICAL_REVIEW.md).
 
-## Reproduce the RL experiment
+## Train the customer conversation policy
+
+Version 4 uses the **same mask and action executor as customer chat**. Its
+reactive caller reads the actual reply, asks multiple document questions, can
+repeat an unanswered concern, and makes its own explicit email choice. Reward
+charges ignoring distress and unnecessary verification explanations based on
+what was actually said. Completion requires answering the caller’s questions
+and resolving consent, not merely reaching a terminal phase.
+
+```bash
+# Fresh runs on the current scenario distribution (not historical warm starts).
+OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 python3 train_customer_policy.py --timesteps 60000 --seed 42
+OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 python3 train_customer_policy.py --timesteps 60000 --seed 7
+OMP_NUM_THREADS=1 python3 -m eval.customer_policy_comparison --assert-thresholds
+```
+
+The customer checkpoints live under `artifacts/customer_policy/`; the original
+weights remain available for a before/after comparison using the same current
+executor. See [the comparison JSON](artifacts/customer_policy/comparison.json)
+and [runtime explanation](docs/CUSTOMER_RUNTIME.md). The delivered weights each
+received three 20,000-step segments (60,288 actual steps), with a scenario
+coverage revision before the final segment. A fresh 60k run above is a different
+experiment. [Exact history, source overlays and warm-start instructions](artifacts/customer_policy/README.md)
+retain both unsuccessful intermediate runs and the final checkpoints.
+
+On the seven development scenarios, both original PPO checkpoints complete 3/7
+cases, cause 2/7 unresolved handoffs and time out on 1/7. Both new checkpoints
+complete 6/7 with one expected no-match handoff, matching the rule baseline;
+measured violations, timeouts and ignored distress are zero. Mean policy actions
+are 8.286 for rules and both new seeds; mean assistant responses are 9.143 for
+rules and 9.286 for PPO. This fixes the earlier multi-turn adaptation weakness;
+it does **not** demonstrate superiority over rules. The scenarios were inspected
+during language-routing development and are not a blind human evaluation.
+The two experiments have separate environment versions and must not have their
+scores pooled.
+
+## Reproduce the original RL experiment
 
 Environment version 3 and feature schema version 2 correct the previous reset,
 empty-case, action/speech, escalation and preference-pair issues. The reward also
@@ -152,7 +221,8 @@ python3 -m pytest -q
 python3 -m eval.eval_benchmark
 ~~~
 
-The local suite passes 167 tests in a freshly installed Python environment.
+The final local suite passes 292 tests. The delivery report records the commands,
+source checks and browser evidence for this checkout.
 Tests include same-seed reset, snapshot replay,
 history order, empty-case features, emotional observations, speech-sensitive
 caller behavior, false escalation, send/skip and preference group isolation.
@@ -163,7 +233,7 @@ Additional acceptance commands:
 # Start the app first; browser tooling is optional.
 python3 -m pip install playwright==1.58.0
 python3 -m playwright install chromium
-python3 -m eval.browser_acceptance
+python3 -m eval.browser_acceptance --require-customer-report
 
 # Configure AI_API_KEY, AI_BASE_URL and AI_MODEL in .env.
 python3 -m eval.live_acceptance
@@ -174,9 +244,9 @@ OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 python3 -m eval.emotion_ablation \
 ~~~
 
 Browser evidence covers customer chat and RL Lab at desktop and 390px phone
-widths. The live HTTP suite covers ten scenarios: missing credentials produce
+widths. The live HTTP suite covers workflow and multi-turn reference scenarios: missing credentials produce
 `not_run` with exit code 2, and provider fallback cannot count as a pass.
-Read [live status](artifacts/live_acceptance.json) before claiming provider acceptance.
+Read [live status](artifacts/customer_runtime/live_acceptance.json) before claiming provider acceptance.
 
 The [emotion ablation](artifacts/emotion_ablation/report.md) zeros only feature
 dimensions 20–24, keeping masks, rewards, profiles, architecture and budget fixed.
@@ -210,8 +280,9 @@ create 50 independent human conversations. Two training seeds are a stability
 check, not a statistical claim about deployment performance.
 
 Action masking enforces safety boundaries; zero sampled violations do not prove
-that PPO learned safety. The UI's live model proposes bounded interpretations;
-protected replies use a grounded composer. These experiments do not measure
+that PPO learned safety. The UI's live model proposes bounded interpretations
+and a validated fact presentation plan; protected replies retain complete
+authorized facts and their conditions. These experiments do not measure
 human satisfaction or prove free-form conversational generalization.
 
 See [walkthrough](walkthrough.md) for the environment contract and design choices.

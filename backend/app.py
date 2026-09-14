@@ -1,5 +1,6 @@
 """Local demo API. Each opaque session owns its state, model settings and turn lock."""
 import asyncio
+import copy
 import ipaddress
 import os
 import re
@@ -8,7 +9,7 @@ import time
 import uuid
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Optional
+from typing import Literal, Optional
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -24,6 +25,10 @@ from .harness.state_machine import SOPStateMachine
 from .harness.grounded_data import grounded_data
 from .engine.llm_engine import LLMEngine
 from .engine.mock_engine import MockEngine
+from .harness.conversation_context import apply_model_reference, prepare_conversation_turn
+from .harness.customer_policy import decide, record_execution
+from .harness.customer_service import render_policy_reply
+from .harness.extractor import UtteranceExtractor
 from .lab import router as lab_router
 
 app = FastAPI(title='Insurance Claims SOP Harness', version='2.0.0')
@@ -37,6 +42,10 @@ class Session:
     machine: SOPStateMachine
     engine: LLMEngine = field(default_factory=LLMEngine)
     use_mock: bool = False
+    controller: str = 'ppo42'
+    policy_state: dict = field(default_factory=dict)
+    policy_decision: Optional[dict] = None
+    policy_snapshots: list = field(default_factory=list)
     history: list = field(default_factory=list)
     lock: asyncio.Lock = field(default_factory=asyncio.Lock)
     touched: float = field(default_factory=time.monotonic)
@@ -58,6 +67,7 @@ class ConfigRequest(SessionRequest):
     base_url: Optional[str] = Field(default=None, max_length=500)
     model: Optional[str] = Field(default=None, min_length=1, max_length=150)
     use_mock: Optional[bool] = None
+    controller: Optional[Literal['rule', 'ppo42', 'ppo7']] = None
 
 
 class ResetRequest(Payload):
@@ -103,7 +113,22 @@ def get_session(sid):
 def config_view(item):
     return {'model': item.engine.model, 'base_url': item.engine.base_url,
             'has_api_key': bool(item.engine.api_key), 'use_mock_only': item.use_mock,
-            'engine_mode': 'mock' if item.use_mock or not item.engine.api_key else 'live'}
+            'engine_mode': 'mock' if item.use_mock or not item.engine.api_key else 'live',
+            'controller': item.controller}
+
+
+def public_policy_decision(item):
+    return public_decision(item.policy_decision)
+
+
+def public_decision(decision):
+    if not decision:
+        return None
+    # Observation/raw speech and internal runtime memory are never API fields.
+    fields = ('selected_action', 'probabilities', 'allowed_actions', 'action_mask',
+              'source', 'checkpoint_sha256', 'checkpoint', 'fallback_reason',
+              'reason', 'forced', 'grounded_answered', 'response_generation')
+    return {key: decision[key] for key in fields if key in decision}
 
 
 def redact_text(value):
@@ -129,16 +154,20 @@ def redact_tree(data):
     return data
 
 
-def public_state(sm):
+def public_state(sm, *, force_shield=False):
     state = sm.state
-    authorized = sm.get_verified_policyholder() is not None
+    authorized = not force_shield and sm.get_verified_policyholder() is not None
     output = state.model_dump(mode='json', exclude={'accumulated_pii', 'history_snapshots', 'mock_outbox'})
     output['identity_verified'] = authorized
     output['data_shield_active'] = not authorized
     output['collected_fields'] = [k for k in ['name', 'dob', 'phone', 'email', 'id_last4'] if getattr(state.accumulated_pii, k)]
     if not authorized:
         output['active_case_id'] = None
+        output['verified_party_id'] = None
         output['post_process'] = {'email_offered': False, 'user_decision': None, 'delivery_status': None}
+        for event in output['trace_log']:
+            if not event.get('data_shield_active', True):
+                event['details'] = 'Protected historical decision; claim details are currently locked.'
     output['post_process'].pop('sent_to', None)
     output['history_snapshots'] = []
     output['outbox_count'] = len(getattr(state, 'mock_outbox', [])) if authorized else 0
@@ -155,10 +184,12 @@ def reply_payload(sid, item, reply=None):
         choices = [{'case_id': c.case_id, 'case_type': c.case_type, 'created_at': c.created_at}
                    for c in candidates[:6]]
     return {'session_id': sid, 'reply': reply, 'current_phase': public['phase'],
+            'controller': item.controller, 'policy_decision': public_policy_decision(item),
             'claim_choices': choices,
             'sop_state': public, 'trace': public['trace_log'],
             'active_case': claim.model_dump(mode='json', exclude={'party_id'}) if claim else None,
             'verified_policyholder': None, 'engine_mode': item.engine.last_mode,
+            'model_activity': dict(item.engine.model_activity),
             'fallback_reason': item.engine.fallback_reason}
 
 
@@ -196,6 +227,10 @@ async def reset_session(req: ResetRequest):
         async with item.lock:
             item.machine = SOPStateMachine(req.session_id)
             item.history.clear()
+            item.policy_state.clear()
+            item.policy_decision = None
+            item.policy_snapshots.clear()
+            item.engine.reset_turn_activity()
         sid = req.session_id
     else:
         expired = [k for k, v in sessions.items() if time.monotonic() - v.touched > SESSION_TTL and not v.lock.locked()]
@@ -235,6 +270,8 @@ async def update_config(req: ConfigRequest):
         item.engine.update_config(req.api_key, req.base_url, req.model)
         if req.use_mock is not None:
             item.use_mock = req.use_mock
+        if req.controller is not None:
+            item.controller = req.controller
     return config_view(item)
 
 
@@ -252,22 +289,53 @@ async def state_endpoint(session_id: str):
 
 def process_turn(item, message):
     sm = item.machine
+    item.engine.reset_turn_activity()
+    context = prepare_conversation_turn(sm, message, item.history)
     if item.use_mock or sm.state.phase in [Phase.CONCLUDED, Phase.ESCALATED]:
         semantic = {}
         item.engine.last_mode = 'mock' if item.use_mock or not item.engine.api_key else 'live'
         item.engine.fallback_reason = None
     else:
-        semantic = item.engine.interpret(message, sm.state, item.history)
-    result = sm.evaluate_turn(message, semantic=semantic)
-    result['response_topics'] = semantic.get('response_topics')
-    result['response_style'] = semantic.get('response_style', 'concise')
-    reply = item.engine.generate_response(message, result, item.history)
+        semantic = item.engine.interpret(message, sm.state, item.history, conversation_context=context)
+    context = apply_model_reference(sm, message, context, semantic)
+    context['public_help'] = UtteranceExtractor.support_orientation(message)
+    result = sm.evaluate_turn(message, semantic=semantic, conversation_context=context)
+    return complete_customer_response(item, message, result, context, semantic)
+
+
+def complete_customer_response(item, message, result, context, semantic=None):
+    """One execution path for text chat and a submitted identity form."""
+    sm = item.machine
+    semantic = semantic or {}
+    # A bounded emotion proposal may influence conversational action choice,
+    # never identity evidence, claim permissions or consent.
+    context = {**context, 'emotion': result.get('emotion')}
+    proposed = [t for t in semantic.get('response_topics', []) or [] if t != 'unknown']
+    contextual_topics = context.get('response_topics', [])
+    result['response_topics'] = (contextual_topics if context.get('is_contextual_followup') or context.get('document_focus')
+                                 else proposed or contextual_topics)
+    result['response_style'] = (context.get('response_style', 'concise') if context.get('is_contextual_followup')
+                                else semantic.get('response_style', 'concise'))
+    decision = decide(sm, message, item.history, item.controller, item.policy_state, conversation_context=context)
+    # Offline mode must not call a provider even if this session has a token.
+    engine = MockEngine() if item.use_mock else item.engine
+    reply = render_policy_reply(sm, message, result, context, decision,
+                                engine=engine, history=item.history,
+                                enable_response_planning=bool(not item.use_mock and item.engine.api_key and item.engine.last_mode == 'live'))
+    if message == '[Submitted Security Verification Card]' and sm.get_verified_policyholder():
+        reply = f'Thank you, {sm.get_verified_policyholder().name}. ' + reply
     if hasattr(sm, 'record_grounded_topics'):
         sm.record_grounded_topics(result.get('grounded_topics', []))
     if sm.state.phase == Phase.POST_PROCESS:
         sm.state.post_process.draft_summary = sm.generate_draft_email(sm.get_verified_policyholder(), sm.get_active_claim())
     item.history.extend([{'role': 'user', 'content': message}, {'role': 'assistant', 'content': reply}])
+    answered = bool(result.get('grounded_answer_delivered'))
+    decision['grounded_answered'] = answered
+    decision['response_generation'] = result.get('response_generation', 'deterministic')
+    record_execution(item.policy_state, decision, grounded_answered=answered)
+    item.policy_decision = decision
     sm.record_snapshot(message, reply)
+    item.policy_snapshots.append({'state': copy.deepcopy(item.policy_state), 'decision': copy.deepcopy(decision)})
     return reply
 
 
@@ -298,20 +366,18 @@ async def verify_card(req: VerifyCardRequest):
             "id_last4": req.id_last4 or "",
             "id_type": req.id_type or "",
         }
-        res = item.machine.verify_card_data(form_data)
-        reply = res["agent_reply"]
+        sm = item.machine
+        item.engine.reset_turn_activity()
+        previous_snapshots = len(sm.state.history_snapshots)
+        res = sm.verify_card_data(form_data)
         if res.get('field_errors'):
-            return {**reply_payload(req.session_id, item, reply), 'field_errors': res['field_errors']}
-        if item.machine.get_verified_policyholder():
-            # Reuse the guarded composer so remembered intent opens the case now.
-            # No second caller message, model request or fabricated claim facts.
-            reply = res['agent_reply'].split('. ', 1)[0] + '. ' + MockEngine().generate_response('', res, item.history)
-            if item.machine.state.history_snapshots:
-                item.machine.state.history_snapshots[-1].agent_reply = reply
-        item.history.extend([
-            {'role': 'user', 'content': '[Submitted Security Verification Card]'},
-            {'role': 'assistant', 'content': reply}
-        ])
+            return {**reply_payload(req.session_id, item, res['agent_reply']), 'field_errors': res['field_errors']}
+        # The state-machine card helper is also used on its own; replace its
+        # provisional snapshot with the response actually chosen and displayed.
+        del sm.state.history_snapshots[previous_snapshots:]
+        message = '[Submitted Security Verification Card]'
+        context = prepare_conversation_turn(sm, '', item.history)
+        reply = complete_customer_response(item, message, res, context)
         return reply_payload(req.session_id, item, reply)
 
 
@@ -322,7 +388,15 @@ async def restore(req: RestoreRequest):
     async with item.lock:
         if not item.machine.restore_to_turn(req.turn_index):
             raise HTTPException(400, 'Invalid turn index')
+        item.engine.reset_turn_activity()
         item.history = item.history[:(req.turn_index + 1) * 2]
+        item.policy_snapshots = item.policy_snapshots[:req.turn_index + 1]
+        if item.policy_snapshots:
+            snapshot = item.policy_snapshots[-1]
+            item.policy_state = copy.deepcopy(snapshot['state'])
+            item.policy_decision = copy.deepcopy(snapshot['decision'])
+        else:
+            item.policy_state, item.policy_decision = {}, None
         return {'status': 'restored', **reply_payload(req.session_id, item)}
 
 
@@ -331,13 +405,20 @@ async def trajectory(session_id: str):
     item = get_session(session_id)
     async with item.lock:
         snapshots = []
-        for snapshot in item.machine.state.history_snapshots:
+        current_owner = item.machine.get_verified_policyholder()
+        for index, snapshot in enumerate(item.machine.state.history_snapshots):
             temporary = SOPStateMachine(session_id)
             temporary.state = SOPState.model_validate(snapshot.state_dump)
+            past_owner = temporary.get_verified_policyholder()
+            can_read_claim = bool(current_owner and past_owner and current_owner.party_id == past_owner.party_id)
+            policy = item.policy_snapshots[index]['decision'] if index < len(item.policy_snapshots) else None
             snapshots.append({'turn_index': snapshot.turn_index, 'phase': snapshot.phase,
-                              'state_dump': public_state(temporary),
+                              'state_dump': public_state(temporary, force_shield=not can_read_claim),
+                              'policy_decision': public_decision(policy),
                               'user_message': '[caller text omitted; may contain PII]',
-                              'agent_reply': redact_text(snapshot.agent_reply), 'timestamp': snapshot.timestamp})
+                              'agent_reply': (redact_text(snapshot.agent_reply) if can_read_claim or not past_owner
+                                              else '[Protected historical reply omitted; claim access is currently locked.]'),
+                              'timestamp': snapshot.timestamp})
         return {'session_id': session_id, 'turns_count': len(snapshots), 'snapshots': snapshots}
 
 

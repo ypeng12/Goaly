@@ -1,0 +1,18 @@
+{
+  "suite": "live HTTP acceptance",
+  "status": "not_run",
+  "passed": false,
+  "provider_model": "gpt-4o-mini",
+  "controller": "ppo42",
+  "cases": [],
+  "live_turns": 0,
+  "live_fact_plan_turns": 0,
+  "provider_activity_totals": {
+    "interpretation_requests": 0,
+    "interpretation_succeeded": 0,
+    "planning_requests": 0,
+    "planning_succeeded": 0
+  },
+  "note": "Synthetic identities; email and handoff remain simulated. Live evidence comes from actual adapter requests and validated fact plans, never the mode label.",
+  "reason": "No AI_API_KEY or OPENAI_API_KEY configured. No provider calls made."
+}

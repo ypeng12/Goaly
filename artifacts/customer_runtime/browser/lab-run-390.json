@@ -1,0 +1,3482 @@
+{
+  "profile_id": "all:0",
+  "seed": 42,
+  "synthetic": true,
+  "actions": [
+    "ACK_EMOTION",
+    "ASK_IDENTITY_FIELD",
+    "EXPLAIN_VERIFICATION_GATE",
+    "RESOLVE_INTENT",
+    "ASK_CLAIM_CLARIFICATION",
+    "ANSWER_GROUNDED",
+    "OFFER_EMAIL_SUMMARY",
+    "SEND_EMAIL",
+    "ESCALATE_HUMAN"
+  ],
+  "runs": [
+    {
+      "id": "rule",
+      "label": "Rule baseline",
+      "checkpoint": null,
+      "opening": "This is absolutely ridiculous — I've been waiting for weeks! My name is Margaret Chen and I need help with my denied healthcare claim.",
+      "turns": [
+        {
+          "session_id": "6d869327-2c70-4dec-aeb6-c84277b52bae",
+          "turn": 1,
+          "agent_action": "ACK_EMOTION",
+          "agent_reply": "I hear how frustrating this is. Thank you for explaining your concern. We can take this at your pace.",
+          "caller_utterance": "Thank you for understanding. Let's continue.",
+          "final_reply": "",
+          "observation_before": {
+            "caller_utterance": "This is absolutely ridiculous — I've been waiting for weeks! My name is Margaret Chen and I need help with my denied healthcare claim.",
+            "last_agent_reply": "",
+            "reply": "",
+            "phase": "VERIFY_ID",
+            "verified_fields": [
+              "name"
+            ],
+            "memory_slots": {
+              "case_type_hint": "healthcare",
+              "status_hint": "denied",
+              "date_hint": "",
+              "topic_hint": "denial_reason"
+            },
+            "data_shield_active": true,
+            "active_case_id": "",
+            "action_mask": [
+              true,
+              true,
+              true,
+              false,
+              false,
+              false,
+              false,
+              false,
+              true
+            ],
+            "emotion": "frustration",
+            "privacy_concern": false,
+            "refusal": false,
+            "demands_human": false,
+            "resolution_attempts": 0,
+            "grounded_answered": false
+          },
+          "observation": {
+            "caller_utterance": "Thank you for understanding. Let's continue.",
+            "last_agent_reply": "I hear how frustrating this is. Thank you for explaining your concern. We can take this at your pace.",
+            "reply": "I hear how frustrating this is. Thank you for explaining your concern. We can take this at your pace.",
+            "phase": "VERIFY_ID",
+            "verified_fields": [
+              "name"
+            ],
+            "memory_slots": {
+              "case_type_hint": "healthcare",
+              "status_hint": "denied",
+              "date_hint": "",
+              "topic_hint": "denial_reason"
+            },
+            "data_shield_active": true,
+            "active_case_id": "",
+            "action_mask": [
+              true,
+              true,
+              true,
+              false,
+              false,
+              false,
+              false,
+              false,
+              true
+            ],
+            "emotion": "neutral",
+            "privacy_concern": false,
+            "refusal": false,
+            "demands_human": false,
+            "resolution_attempts": 0,
+            "grounded_answered": false
+          },
+          "reward": -0.1,
+          "terminated": false,
+          "truncated": false,
+          "info": {
+            "turn": 1,
+            "agent_action": "ACK_EMOTION",
+            "agent_reply": "I hear how frustrating this is. Thank you for explaining your concern. We can take this at your pace.",
+            "caller_utterance": "Thank you for understanding. Let's continue.",
+            "final_reply": "",
+            "phase_transition": "VERIFY_ID -> VERIFY_ID",
+            "task_success": false,
+            "appropriate_escalation": false,
+            "premature_termination": false,
+            "constraint_violation": false,
+            "structural_violations": [],
+            "reward_components": {
+              "turn_cost": -0.1,
+              "new_identity_fields": 0,
+              "ignored_distress": 0,
+              "new_memory_fields": 0,
+              "first_phase_visit": 0,
+              "grounded_answer": 0,
+              "completion": 0,
+              "escalation_reward": 0,
+              "truncation_penalty": 0,
+              "structural_violations": 0
+            },
+            "escalation_reason": null,
+            "termination_reason": "in_progress"
+          },
+          "probabilities": [
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "value_estimate": null,
+          "distribution_note": "Rule decision shown as one-hot; not a neural probability."
+        },
+        {
+          "session_id": "6d869327-2c70-4dec-aeb6-c84277b52bae",
+          "turn": 2,
+          "agent_action": "ASK_IDENTITY_FIELD",
+          "agent_reply": "Please share your date of birth.",
+          "caller_utterance": "My date of birth is 03/15/1985.",
+          "final_reply": "",
+          "observation_before": {
+            "caller_utterance": "Thank you for understanding. Let's continue.",
+            "last_agent_reply": "I hear how frustrating this is. Thank you for explaining your concern. We can take this at your pace.",
+            "reply": "I hear how frustrating this is. Thank you for explaining your concern. We can take this at your pace.",
+            "phase": "VERIFY_ID",
+            "verified_fields": [
+              "name"
+            ],
+            "memory_slots": {
+              "case_type_hint": "healthcare",
+              "status_hint": "denied",
+              "date_hint": "",
+              "topic_hint": "denial_reason"
+            },
+            "data_shield_active": true,
+            "active_case_id": "",
+            "action_mask": [
+              true,
+              true,
+              true,
+              false,
+              false,
+              false,
+              false,
+              false,
+              true
+            ],
+            "emotion": "neutral",
+            "privacy_concern": false,
+            "refusal": false,
+            "demands_human": false,
+            "resolution_attempts": 0,
+            "grounded_answered": false
+          },
+          "observation": {
+            "caller_utterance": "My date of birth is 03/15/1985.",
+            "last_agent_reply": "Please share your date of birth.",
+            "reply": "Please share your date of birth.",
+            "phase": "VERIFY_ID",
+            "verified_fields": [
+              "name",
+              "dob"
+            ],
+            "memory_slots": {
+              "case_type_hint": "healthcare",
+              "status_hint": "denied",
+              "date_hint": "",
+              "topic_hint": "denial_reason"
+            },
+            "data_shield_active": true,
+            "active_case_id": "",
+            "action_mask": [
+              true,
+              true,
+              true,
+              false,
+              false,
+              false,
+              false,
+              false,
+              true
+            ],
+            "emotion": "neutral",
+            "privacy_concern": false,
+            "refusal": false,
+            "demands_human": false,
+            "resolution_attempts": 0,
+            "grounded_answered": false
+          },
+          "reward": 0.9,
+          "terminated": false,
+          "truncated": false,
+          "info": {
+            "turn": 2,
+            "agent_action": "ASK_IDENTITY_FIELD",
+            "agent_reply": "Please share your date of birth.",
+            "caller_utterance": "My date of birth is 03/15/1985.",
+            "final_reply": "",
+            "phase_transition": "VERIFY_ID -> VERIFY_ID",
+            "task_success": false,
+            "appropriate_escalation": false,
+            "premature_termination": false,
+            "constraint_violation": false,
+            "structural_violations": [],
+            "reward_components": {
+              "turn_cost": -0.1,
+              "new_identity_fields": 1,
+              "ignored_distress": 0,
+              "new_memory_fields": 0,
+              "first_phase_visit": 0,
+              "grounded_answer": 0,
+              "completion": 0,
+              "escalation_reward": 0,
+              "truncation_penalty": 0,
+              "structural_violations": 0
+            },
+            "escalation_reason": null,
+            "termination_reason": "in_progress"
+          },
+          "probabilities": [
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "value_estimate": null,
+          "distribution_note": "Rule decision shown as one-hot; not a neural probability."
+        },
+        {
+          "session_id": "6d869327-2c70-4dec-aeb6-c84277b52bae",
+          "turn": 3,
+          "agent_action": "ASK_IDENTITY_FIELD",
+          "agent_reply": "Please share your phone number.",
+          "caller_utterance": "My phone number is (650) 521-2836.",
+          "final_reply": "",
+          "observation_before": {
+            "caller_utterance": "My date of birth is 03/15/1985.",
+            "last_agent_reply": "Please share your date of birth.",
+            "reply": "Please share your date of birth.",
+            "phase": "VERIFY_ID",
+            "verified_fields": [
+              "name",
+              "dob"
+            ],
+            "memory_slots": {
+              "case_type_hint": "healthcare",
+              "status_hint": "denied",
+              "date_hint": "",
+              "topic_hint": "denial_reason"
+            },
+            "data_shield_active": true,
+            "active_case_id": "",
+            "action_mask": [
+              true,
+              true,
+              true,
+              false,
+              false,
+              false,
+              false,
+              false,
+              true
+            ],
+            "emotion": "neutral",
+            "privacy_concern": false,
+            "refusal": false,
+            "demands_human": false,
+            "resolution_attempts": 0,
+            "grounded_answered": false
+          },
+          "observation": {
+            "caller_utterance": "My phone number is (650) 521-2836.",
+            "last_agent_reply": "Please share your phone number.",
+            "reply": "Please share your phone number.",
+            "phase": "PROCESS_CASE",
+            "verified_fields": [
+              "name",
+              "dob",
+              "phone"
+            ],
+            "memory_slots": {
+              "case_type_hint": "healthcare",
+              "status_hint": "denied",
+              "date_hint": "",
+              "topic_hint": "denial_reason"
+            },
+            "data_shield_active": false,
+            "active_case_id": "CL-2048",
+            "action_mask": [
+              true,
+              false,
+              false,
+              true,
+              true,
+              true,
+              false,
+              false,
+              true
+            ],
+            "emotion": "neutral",
+            "privacy_concern": false,
+            "refusal": false,
+            "demands_human": false,
+            "resolution_attempts": 0,
+            "grounded_answered": false
+          },
+          "reward": 2.9,
+          "terminated": false,
+          "truncated": false,
+          "info": {
+            "turn": 3,
+            "agent_action": "ASK_IDENTITY_FIELD",
+            "agent_reply": "Please share your phone number.",
+            "caller_utterance": "My phone number is (650) 521-2836.",
+            "final_reply": "",
+            "phase_transition": "VERIFY_ID -> PROCESS_CASE",
+            "task_success": false,
+            "appropriate_escalation": false,
+            "premature_termination": false,
+            "constraint_violation": false,
+            "structural_violations": [],
+            "reward_components": {
+              "turn_cost": -0.1,
+              "new_identity_fields": 1,
+              "ignored_distress": 0,
+              "new_memory_fields": 0,
+              "first_phase_visit": 2,
+              "grounded_answer": 0,
+              "completion": 0,
+              "escalation_reward": 0,
+              "truncation_penalty": 0,
+              "structural_violations": 0
+            },
+            "escalation_reason": null,
+            "termination_reason": "in_progress"
+          },
+          "probabilities": [
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "value_estimate": null,
+          "distribution_note": "Rule decision shown as one-hot; not a neural probability."
+        },
+        {
+          "session_id": "6d869327-2c70-4dec-aeb6-c84277b52bae",
+          "turn": 4,
+          "agent_action": "ANSWER_GROUNDED",
+          "agent_reply": "Identity verified. I found the claim using your earlier details.\n\nClaim CL-2048 is denied. It is a healthcare claim created on 2026-01-12.\n\nThe recorded denial reason is that the review file did not include the pathology report and the treating provider office note.\n\nThe requested documents are: pathology report, office note.\n\nThe recorded appeal deadline is 2026-03-18. That date has passed. A human claims representative must review whether any options remain; I cannot promise an extension.\n\nChoose a next step below, or ask in your own words.",
+          "caller_utterance": "Thank you for explaining the claim details. That is all the questions I have.",
+          "final_reply": "",
+          "observation_before": {
+            "caller_utterance": "My phone number is (650) 521-2836.",
+            "last_agent_reply": "Please share your phone number.",
+            "reply": "Please share your phone number.",
+            "phase": "PROCESS_CASE",
+            "verified_fields": [
+              "name",
+              "dob",
+              "phone"
+            ],
+            "memory_slots": {
+              "case_type_hint": "healthcare",
+              "status_hint": "denied",
+              "date_hint": "",
+              "topic_hint": "denial_reason"
+            },
+            "data_shield_active": false,
+            "active_case_id": "CL-2048",
+            "action_mask": [
+              true,
+              false,
+              false,
+              true,
+              true,
+              true,
+              false,
+              false,
+              true
+            ],
+            "emotion": "neutral",
+            "privacy_concern": false,
+            "refusal": false,
+            "demands_human": false,
+            "resolution_attempts": 0,
+            "grounded_answered": false
+          },
+          "observation": {
+            "caller_utterance": "Thank you for explaining the claim details. That is all the questions I have.",
+            "last_agent_reply": "Identity verified. I found the claim using your earlier details.\n\nClaim CL-2048 is denied. It is a healthcare claim created on 2026-01-12.\n\nThe recorded denial reason is that the review file did not include the pathology report and the treating provider office note.\n\nThe requested documents are: pathology report, office note.\n\nThe recorded appeal deadline is 2026-03-18. That date has passed. A human claims representative must review whether any options remain; I cannot promise an extension.\n\nChoose a next step below, or ask in your own words.",
+            "reply": "Identity verified. I found the claim using your earlier details.\n\nClaim CL-2048 is denied. It is a healthcare claim created on 2026-01-12.\n\nThe recorded denial reason is that the review file did not include the pathology report and the treating provider office note.\n\nThe requested documents are: pathology report, office note.\n\nThe recorded appeal deadline is 2026-03-18. That date has passed. A human claims representative must review whether any options remain; I cannot promise an extension.\n\nChoose a next step below, or ask in your own words.",
+            "phase": "POST_PROCESS",
+            "verified_fields": [
+              "name",
+              "dob",
+              "phone"
+            ],
+            "memory_slots": {
+              "case_type_hint": "healthcare",
+              "status_hint": "denied",
+              "date_hint": "",
+              "topic_hint": "denial_reason"
+            },
+            "data_shield_active": false,
+            "active_case_id": "CL-2048",
+            "action_mask": [
+              true,
+              false,
+              false,
+              false,
+              false,
+              false,
+              true,
+              false,
+              true
+            ],
+            "emotion": "neutral",
+            "privacy_concern": false,
+            "refusal": false,
+            "demands_human": false,
+            "resolution_attempts": 0,
+            "grounded_answered": true
+          },
+          "reward": 2.9,
+          "terminated": false,
+          "truncated": false,
+          "info": {
+            "turn": 4,
+            "agent_action": "ANSWER_GROUNDED",
+            "agent_reply": "Identity verified. I found the claim using your earlier details.\n\nClaim CL-2048 is denied. It is a healthcare claim created on 2026-01-12.\n\nThe recorded denial reason is that the review file did not include the pathology report and the treating provider office note.\n\nThe requested documents are: pathology report, office note.\n\nThe recorded appeal deadline is 2026-03-18. That date has passed. A human claims representative must review whether any options remain; I cannot promise an extension.\n\nChoose a next step below, or ask in your own words.",
+            "caller_utterance": "Thank you for explaining the claim details. That is all the questions I have.",
+            "final_reply": "",
+            "phase_transition": "PROCESS_CASE -> POST_PROCESS",
+            "task_success": false,
+            "appropriate_escalation": false,
+            "premature_termination": false,
+            "constraint_violation": false,
+            "structural_violations": [],
+            "reward_components": {
+              "turn_cost": -0.1,
+              "new_identity_fields": 0,
+              "ignored_distress": 0,
+              "new_memory_fields": 0,
+              "first_phase_visit": 2,
+              "grounded_answer": 1,
+              "completion": 0,
+              "escalation_reward": 0,
+              "truncation_penalty": 0,
+              "structural_violations": 0
+            },
+            "escalation_reason": null,
+            "termination_reason": "in_progress"
+          },
+          "probabilities": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0
+          ],
+          "value_estimate": null,
+          "distribution_note": "Rule decision shown as one-hot; not a neural probability."
+        },
+        {
+          "session_id": "6d869327-2c70-4dec-aeb6-c84277b52bae",
+          "turn": 5,
+          "agent_action": "OFFER_EMAIL_SUMMARY",
+          "agent_reply": "Would you like an email summary of what we discussed, the claim outcome and next steps, or would you prefer to skip it?",
+          "caller_utterance": "Yes, please send the summary to my email.",
+          "final_reply": "The email summary was added to the demo outbox for margaret@email.com. Delivery is simulated; no real email was sent. Thank you for contacting claims support.",
+          "observation_before": {
+            "caller_utterance": "Thank you for explaining the claim details. That is all the questions I have.",
+            "last_agent_reply": "Identity verified. I found the claim using your earlier details.\n\nClaim CL-2048 is denied. It is a healthcare claim created on 2026-01-12.\n\nThe recorded denial reason is that the review file did not include the pathology report and the treating provider office note.\n\nThe requested documents are: pathology report, office note.\n\nThe recorded appeal deadline is 2026-03-18. That date has passed. A human claims representative must review whether any options remain; I cannot promise an extension.\n\nChoose a next step below, or ask in your own words.",
+            "reply": "Identity verified. I found the claim using your earlier details.\n\nClaim CL-2048 is denied. It is a healthcare claim created on 2026-01-12.\n\nThe recorded denial reason is that the review file did not include the pathology report and the treating provider office note.\n\nThe requested documents are: pathology report, office note.\n\nThe recorded appeal deadline is 2026-03-18. That date has passed. A human claims representative must review whether any options remain; I cannot promise an extension.\n\nChoose a next step below, or ask in your own words.",
+            "phase": "POST_PROCESS",
+            "verified_fields": [
+              "name",
+              "dob",
+              "phone"
+            ],
+            "memory_slots": {
+              "case_type_hint": "healthcare",
+              "status_hint": "denied",
+              "date_hint": "",
+              "topic_hint": "denial_reason"
+            },
+            "data_shield_active": false,
+            "active_case_id": "CL-2048",
+            "action_mask": [
+              true,
+              false,
+              false,
+              false,
+              false,
+              false,
+              true,
+              false,
+              true
+            ],
+            "emotion": "neutral",
+            "privacy_concern": false,
+            "refusal": false,
+            "demands_human": false,
+            "resolution_attempts": 0,
+            "grounded_answered": true
+          },
+          "observation": {
+            "caller_utterance": "Yes, please send the summary to my email.",
+            "last_agent_reply": "The email summary was added to the demo outbox for margaret@email.com. Delivery is simulated; no real email was sent. Thank you for contacting claims support.",
+            "reply": "The email summary was added to the demo outbox for margaret@email.com. Delivery is simulated; no real email was sent. Thank you for contacting claims support.",
+            "phase": "CONCLUDED",
+            "verified_fields": [
+              "name",
+              "dob",
+              "phone"
+            ],
+            "memory_slots": {
+              "case_type_hint": "healthcare",
+              "status_hint": "denied",
+              "date_hint": "",
+              "topic_hint": "denial_reason"
+            },
+            "data_shield_active": false,
+            "active_case_id": "CL-2048",
+            "action_mask": [
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false
+            ],
+            "emotion": "neutral",
+            "privacy_concern": false,
+            "refusal": false,
+            "demands_human": false,
+            "resolution_attempts": 0,
+            "grounded_answered": true
+          },
+          "reward": 9.9,
+          "terminated": true,
+          "truncated": false,
+          "info": {
+            "turn": 5,
+            "agent_action": "OFFER_EMAIL_SUMMARY",
+            "agent_reply": "Would you like an email summary of what we discussed, the claim outcome and next steps, or would you prefer to skip it?",
+            "caller_utterance": "Yes, please send the summary to my email.",
+            "final_reply": "The email summary was added to the demo outbox for margaret@email.com. Delivery is simulated; no real email was sent. Thank you for contacting claims support.",
+            "phase_transition": "POST_PROCESS -> CONCLUDED",
+            "task_success": true,
+            "appropriate_escalation": false,
+            "premature_termination": false,
+            "constraint_violation": false,
+            "structural_violations": [],
+            "reward_components": {
+              "turn_cost": -0.1,
+              "new_identity_fields": 0,
+              "ignored_distress": 0,
+              "new_memory_fields": 0,
+              "first_phase_visit": 0,
+              "grounded_answer": 0,
+              "completion": 10,
+              "escalation_reward": 0,
+              "truncation_penalty": 0,
+              "structural_violations": 0
+            },
+            "escalation_reason": null,
+            "termination_reason": "concluded"
+          },
+          "probabilities": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0
+          ],
+          "value_estimate": null,
+          "distribution_note": "Rule decision shown as one-hot; not a neural probability."
+        }
+      ],
+      "metrics": {
+        "outcome": "case_completed",
+        "final_phase": "CONCLUDED",
+        "turn_count": 5,
+        "return": 16.5,
+        "violations": 0,
+        "verified_fields": 3
+      }
+    },
+    {
+      "id": "random",
+      "label": "Random legal actions",
+      "checkpoint": null,
+      "opening": "This is absolutely ridiculous — I've been waiting for weeks! My name is Margaret Chen and I need help with my denied healthcare claim.",
+      "turns": [
+        {
+          "session_id": "4428f2bb-c674-4661-85fd-472015febd10",
+          "turn": 1,
+          "agent_action": "ACK_EMOTION",
+          "agent_reply": "I hear how frustrating this is. Thank you for explaining your concern. We can take this at your pace.",
+          "caller_utterance": "Thank you for understanding. Let's continue.",
+          "final_reply": "",
+          "observation_before": {
+            "caller_utterance": "This is absolutely ridiculous — I've been waiting for weeks! My name is Margaret Chen and I need help with my denied healthcare claim.",
+            "last_agent_reply": "",
+            "reply": "",
+            "phase": "VERIFY_ID",
+            "verified_fields": [
+              "name"
+            ],
+            "memory_slots": {
+              "case_type_hint": "healthcare",
+              "status_hint": "denied",
+              "date_hint": "",
+              "topic_hint": "denial_reason"
+            },
+            "data_shield_active": true,
+            "active_case_id": "",
+            "action_mask": [
+              true,
+              true,
+              true,
+              false,
+              false,
+              false,
+              false,
+              false,
+              true
+            ],
+            "emotion": "frustration",
+            "privacy_concern": false,
+            "refusal": false,
+            "demands_human": false,
+            "resolution_attempts": 0,
+            "grounded_answered": false
+          },
+          "observation": {
+            "caller_utterance": "Thank you for understanding. Let's continue.",
+            "last_agent_reply": "I hear how frustrating this is. Thank you for explaining your concern. We can take this at your pace.",
+            "reply": "I hear how frustrating this is. Thank you for explaining your concern. We can take this at your pace.",
+            "phase": "VERIFY_ID",
+            "verified_fields": [
+              "name"
+            ],
+            "memory_slots": {
+              "case_type_hint": "healthcare",
+              "status_hint": "denied",
+              "date_hint": "",
+              "topic_hint": "denial_reason"
+            },
+            "data_shield_active": true,
+            "active_case_id": "",
+            "action_mask": [
+              true,
+              true,
+              true,
+              false,
+              false,
+              false,
+              false,
+              false,
+              true
+            ],
+            "emotion": "neutral",
+            "privacy_concern": false,
+            "refusal": false,
+            "demands_human": false,
+            "resolution_attempts": 0,
+            "grounded_answered": false
+          },
+          "reward": -0.1,
+          "terminated": false,
+          "truncated": false,
+          "info": {
+            "turn": 1,
+            "agent_action": "ACK_EMOTION",
+            "agent_reply": "I hear how frustrating this is. Thank you for explaining your concern. We can take this at your pace.",
+            "caller_utterance": "Thank you for understanding. Let's continue.",
+            "final_reply": "",
+            "phase_transition": "VERIFY_ID -> VERIFY_ID",
+            "task_success": false,
+            "appropriate_escalation": false,
+            "premature_termination": false,
+            "constraint_violation": false,
+            "structural_violations": [],
+            "reward_components": {
+              "turn_cost": -0.1,
+              "new_identity_fields": 0,
+              "ignored_distress": 0,
+              "new_memory_fields": 0,
+              "first_phase_visit": 0,
+              "grounded_answer": 0,
+              "completion": 0,
+              "escalation_reward": 0,
+              "truncation_penalty": 0,
+              "structural_violations": 0
+            },
+            "escalation_reason": null,
+            "termination_reason": "in_progress"
+          },
+          "probabilities": [
+            0.25,
+            0.25,
+            0.25,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0.25
+          ],
+          "value_estimate": null,
+          "distribution_note": "Uniform probabilities over legal actions; execution samples with the chosen seed."
+        },
+        {
+          "session_id": "4428f2bb-c674-4661-85fd-472015febd10",
+          "turn": 2,
+          "agent_action": "ACK_EMOTION",
+          "agent_reply": "I hear how difficult this is. Thank you for explaining your concern. We can take this at your pace.",
+          "caller_utterance": "Thank you for understanding. Let's continue.",
+          "final_reply": "",
+          "observation_before": {
+            "caller_utterance": "Thank you for understanding. Let's continue.",
+            "last_agent_reply": "I hear how frustrating this is. Thank you for explaining your concern. We can take this at your pace.",
+            "reply": "I hear how frustrating this is. Thank you for explaining your concern. We can take this at your pace.",
+            "phase": "VERIFY_ID",
+            "verified_fields": [
+              "name"
+            ],
+            "memory_slots": {
+              "case_type_hint": "healthcare",
+              "status_hint": "denied",
+              "date_hint": "",
+              "topic_hint": "denial_reason"
+            },
+            "data_shield_active": true,
+            "active_case_id": "",
+            "action_mask": [
+              true,
+              true,
+              true,
+              false,
+              false,
+              false,
+              false,
+              false,
+              true
+            ],
+            "emotion": "neutral",
+            "privacy_concern": false,
+            "refusal": false,
+            "demands_human": false,
+            "resolution_attempts": 0,
+            "grounded_answered": false
+          },
+          "observation": {
+            "caller_utterance": "Thank you for understanding. Let's continue.",
+            "last_agent_reply": "I hear how difficult this is. Thank you for explaining your concern. We can take this at your pace.",
+            "reply": "I hear how difficult this is. Thank you for explaining your concern. We can take this at your pace.",
+            "phase": "VERIFY_ID",
+            "verified_fields": [
+              "name"
+            ],
+            "memory_slots": {
+              "case_type_hint": "healthcare",
+              "status_hint": "denied",
+              "date_hint": "",
+              "topic_hint": "denial_reason"
+            },
+            "data_shield_active": true,
+            "active_case_id": "",
+            "action_mask": [
+              true,
+              true,
+              true,
+              false,
+              false,
+              false,
+              false,
+              false,
+              true
+            ],
+            "emotion": "neutral",
+            "privacy_concern": false,
+            "refusal": false,
+            "demands_human": false,
+            "resolution_attempts": 0,
+            "grounded_answered": false
+          },
+          "reward": -0.1,
+          "terminated": false,
+          "truncated": false,
+          "info": {
+            "turn": 2,
+            "agent_action": "ACK_EMOTION",
+            "agent_reply": "I hear how difficult this is. Thank you for explaining your concern. We can take this at your pace.",
+            "caller_utterance": "Thank you for understanding. Let's continue.",
+            "final_reply": "",
+            "phase_transition": "VERIFY_ID -> VERIFY_ID",
+            "task_success": false,
+            "appropriate_escalation": false,
+            "premature_termination": false,
+            "constraint_violation": false,
+            "structural_violations": [],
+            "reward_components": {
+              "turn_cost": -0.1,
+              "new_identity_fields": 0,
+              "ignored_distress": 0,
+              "new_memory_fields": 0,
+              "first_phase_visit": 0,
+              "grounded_answer": 0,
+              "completion": 0,
+              "escalation_reward": 0,
+              "truncation_penalty": 0,
+              "structural_violations": 0
+            },
+            "escalation_reason": null,
+            "termination_reason": "in_progress"
+          },
+          "probabilities": [
+            0.25,
+            0.25,
+            0.25,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0.25
+          ],
+          "value_estimate": null,
+          "distribution_note": "Uniform probabilities over legal actions; execution samples with the chosen seed."
+        },
+        {
+          "session_id": "4428f2bb-c674-4661-85fd-472015febd10",
+          "turn": 3,
+          "agent_action": "EXPLAIN_VERIFICATION_GATE",
+          "agent_reply": "To protect your claim information, we need three matching identity details. You can use phone or email instead of a government ID. Let's take one thing at a time. Please share your date of birth.",
+          "caller_utterance": "My date of birth is 03/15/1985.",
+          "final_reply": "",
+          "observation_before": {
+            "caller_utterance": "Thank you for understanding. Let's continue.",
+            "last_agent_reply": "I hear how difficult this is. Thank you for explaining your concern. We can take this at your pace.",
+            "reply": "I hear how difficult this is. Thank you for explaining your concern. We can take this at your pace.",
+            "phase": "VERIFY_ID",
+            "verified_fields": [
+              "name"
+            ],
+            "memory_slots": {
+              "case_type_hint": "healthcare",
+              "status_hint": "denied",
+              "date_hint": "",
+              "topic_hint": "denial_reason"
+            },
+            "data_shield_active": true,
+            "active_case_id": "",
+            "action_mask": [
+              true,
+              true,
+              true,
+              false,
+              false,
+              false,
+              false,
+              false,
+              true
+            ],
+            "emotion": "neutral",
+            "privacy_concern": false,
+            "refusal": false,
+            "demands_human": false,
+            "resolution_attempts": 0,
+            "grounded_answered": false
+          },
+          "observation": {
+            "caller_utterance": "My date of birth is 03/15/1985.",
+            "last_agent_reply": "To protect your claim information, we need three matching identity details. You can use phone or email instead of a government ID. Let's take one thing at a time. Please share your date of birth.",
+            "reply": "To protect your claim information, we need three matching identity details. You can use phone or email instead of a government ID. Let's take one thing at a time. Please share your date of birth.",
+            "phase": "VERIFY_ID",
+            "verified_fields": [
+              "name",
+              "dob"
+            ],
+            "memory_slots": {
+              "case_type_hint": "healthcare",
+              "status_hint": "denied",
+              "date_hint": "",
+              "topic_hint": "denial_reason"
+            },
+            "data_shield_active": true,
+            "active_case_id": "",
+            "action_mask": [
+              true,
+              true,
+              true,
+              false,
+              false,
+              false,
+              false,
+              false,
+              true
+            ],
+            "emotion": "neutral",
+            "privacy_concern": false,
+            "refusal": false,
+            "demands_human": false,
+            "resolution_attempts": 0,
+            "grounded_answered": false
+          },
+          "reward": 0.9,
+          "terminated": false,
+          "truncated": false,
+          "info": {
+            "turn": 3,
+            "agent_action": "EXPLAIN_VERIFICATION_GATE",
+            "agent_reply": "To protect your claim information, we need three matching identity details. You can use phone or email instead of a government ID. Let's take one thing at a time. Please share your date of birth.",
+            "caller_utterance": "My date of birth is 03/15/1985.",
+            "final_reply": "",
+            "phase_transition": "VERIFY_ID -> VERIFY_ID",
+            "task_success": false,
+            "appropriate_escalation": false,
+            "premature_termination": false,
+            "constraint_violation": false,
+            "structural_violations": [],
+            "reward_components": {
+              "turn_cost": -0.1,
+              "new_identity_fields": 1,
+              "ignored_distress": 0,
+              "new_memory_fields": 0,
+              "first_phase_visit": 0,
+              "grounded_answer": 0,
+              "completion": 0,
+              "escalation_reward": 0,
+              "truncation_penalty": 0,
+              "structural_violations": 0
+            },
+            "escalation_reason": null,
+            "termination_reason": "in_progress"
+          },
+          "probabilities": [
+            0.25,
+            0.25,
+            0.25,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0.25
+          ],
+          "value_estimate": null,
+          "distribution_note": "Uniform probabilities over legal actions; execution samples with the chosen seed."
+        },
+        {
+          "session_id": "4428f2bb-c674-4661-85fd-472015febd10",
+          "turn": 4,
+          "agent_action": "ASK_IDENTITY_FIELD",
+          "agent_reply": "Please share your phone number.",
+          "caller_utterance": "My phone number is (650) 521-2836.",
+          "final_reply": "",
+          "observation_before": {
+            "caller_utterance": "My date of birth is 03/15/1985.",
+            "last_agent_reply": "To protect your claim information, we need three matching identity details. You can use phone or email instead of a government ID. Let's take one thing at a time. Please share your date of birth.",
+            "reply": "To protect your claim information, we need three matching identity details. You can use phone or email instead of a government ID. Let's take one thing at a time. Please share your date of birth.",
+            "phase": "VERIFY_ID",
+            "verified_fields": [
+              "name",
+              "dob"
+            ],
+            "memory_slots": {
+              "case_type_hint": "healthcare",
+              "status_hint": "denied",
+              "date_hint": "",
+              "topic_hint": "denial_reason"
+            },
+            "data_shield_active": true,
+            "active_case_id": "",
+            "action_mask": [
+              true,
+              true,
+              true,
+              false,
+              false,
+              false,
+              false,
+              false,
+              true
+            ],
+            "emotion": "neutral",
+            "privacy_concern": false,
+            "refusal": false,
+            "demands_human": false,
+            "resolution_attempts": 0,
+            "grounded_answered": false
+          },
+          "observation": {
+            "caller_utterance": "My phone number is (650) 521-2836.",
+            "last_agent_reply": "Please share your phone number.",
+            "reply": "Please share your phone number.",
+            "phase": "PROCESS_CASE",
+            "verified_fields": [
+              "name",
+              "dob",
+              "phone"
+            ],
+            "memory_slots": {
+              "case_type_hint": "healthcare",
+              "status_hint": "denied",
+              "date_hint": "",
+              "topic_hint": "denial_reason"
+            },
+            "data_shield_active": false,
+            "active_case_id": "CL-2048",
+            "action_mask": [
+              true,
+              false,
+              false,
+              true,
+              true,
+              true,
+              false,
+              false,
+              true
+            ],
+            "emotion": "neutral",
+            "privacy_concern": false,
+            "refusal": false,
+            "demands_human": false,
+            "resolution_attempts": 0,
+            "grounded_answered": false
+          },
+          "reward": 2.9,
+          "terminated": false,
+          "truncated": false,
+          "info": {
+            "turn": 4,
+            "agent_action": "ASK_IDENTITY_FIELD",
+            "agent_reply": "Please share your phone number.",
+            "caller_utterance": "My phone number is (650) 521-2836.",
+            "final_reply": "",
+            "phase_transition": "VERIFY_ID -> PROCESS_CASE",
+            "task_success": false,
+            "appropriate_escalation": false,
+            "premature_termination": false,
+            "constraint_violation": false,
+            "structural_violations": [],
+            "reward_components": {
+              "turn_cost": -0.1,
+              "new_identity_fields": 1,
+              "ignored_distress": 0,
+              "new_memory_fields": 0,
+              "first_phase_visit": 2,
+              "grounded_answer": 0,
+              "completion": 0,
+              "escalation_reward": 0,
+              "truncation_penalty": 0,
+              "structural_violations": 0
+            },
+            "escalation_reason": null,
+            "termination_reason": "in_progress"
+          },
+          "probabilities": [
+            0.25,
+            0.25,
+            0.25,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0.25
+          ],
+          "value_estimate": null,
+          "distribution_note": "Uniform probabilities over legal actions; execution samples with the chosen seed."
+        },
+        {
+          "session_id": "4428f2bb-c674-4661-85fd-472015febd10",
+          "turn": 5,
+          "agent_action": "RESOLVE_INTENT",
+          "agent_reply": "I saved your earlier claim question: healthcare / denied. What would you like to understand about it?",
+          "caller_utterance": "I need the status and next steps for my denied healthcare claim.",
+          "final_reply": "",
+          "observation_before": {
+            "caller_utterance": "My phone number is (650) 521-2836.",
+            "last_agent_reply": "Please share your phone number.",
+            "reply": "Please share your phone number.",
+            "phase": "PROCESS_CASE",
+            "verified_fields": [
+              "name",
+              "dob",
+              "phone"
+            ],
+            "memory_slots": {
+              "case_type_hint": "healthcare",
+              "status_hint": "denied",
+              "date_hint": "",
+              "topic_hint": "denial_reason"
+            },
+            "data_shield_active": false,
+            "active_case_id": "CL-2048",
+            "action_mask": [
+              true,
+              false,
+              false,
+              true,
+              true,
+              true,
+              false,
+              false,
+              true
+            ],
+            "emotion": "neutral",
+            "privacy_concern": false,
+            "refusal": false,
+            "demands_human": false,
+            "resolution_attempts": 0,
+            "grounded_answered": false
+          },
+          "observation": {
+            "caller_utterance": "I need the status and next steps for my denied healthcare claim.",
+            "last_agent_reply": "I saved your earlier claim question: healthcare / denied. What would you like to understand about it?",
+            "reply": "I saved your earlier claim question: healthcare / denied. What would you like to understand about it?",
+            "phase": "PROCESS_CASE",
+            "verified_fields": [
+              "name",
+              "dob",
+              "phone"
+            ],
+            "memory_slots": {
+              "case_type_hint": "healthcare",
+              "status_hint": "denied",
+              "date_hint": "",
+              "topic_hint": "denial_reason"
+            },
+            "data_shield_active": false,
+            "active_case_id": "CL-2048",
+            "action_mask": [
+              true,
+              false,
+              false,
+              true,
+              true,
+              true,
+              false,
+              false,
+              true
+            ],
+            "emotion": "neutral",
+            "privacy_concern": false,
+            "refusal": false,
+            "demands_human": false,
+            "resolution_attempts": 0,
+            "grounded_answered": false
+          },
+          "reward": -0.1,
+          "terminated": false,
+          "truncated": false,
+          "info": {
+            "turn": 5,
+            "agent_action": "RESOLVE_INTENT",
+            "agent_reply": "I saved your earlier claim question: healthcare / denied. What would you like to understand about it?",
+            "caller_utterance": "I need the status and next steps for my denied healthcare claim.",
+            "final_reply": "",
+            "phase_transition": "PROCESS_CASE -> PROCESS_CASE",
+            "task_success": false,
+            "appropriate_escalation": false,
+            "premature_termination": false,
+            "constraint_violation": false,
+            "structural_violations": [],
+            "reward_components": {
+              "turn_cost": -0.1,
+              "new_identity_fields": 0,
+              "ignored_distress": 0,
+              "new_memory_fields": 0,
+              "first_phase_visit": 0,
+              "grounded_answer": 0,
+              "completion": 0,
+              "escalation_reward": 0,
+              "truncation_penalty": 0,
+              "structural_violations": 0
+            },
+            "escalation_reason": null,
+            "termination_reason": "in_progress"
+          },
+          "probabilities": [
+            0.2,
+            0,
+            0,
+            0.2,
+            0.2,
+            0.2,
+            0,
+            0,
+            0.2
+          ],
+          "value_estimate": null,
+          "distribution_note": "Uniform probabilities over legal actions; execution samples with the chosen seed."
+        },
+        {
+          "session_id": "4428f2bb-c674-4661-85fd-472015febd10",
+          "turn": 6,
+          "agent_action": "RESOLVE_INTENT",
+          "agent_reply": "I saved your earlier claim question: healthcare / denied. What would you like to understand about it?",
+          "caller_utterance": "I need the status and next steps for my denied healthcare claim.",
+          "final_reply": "",
+          "observation_before": {
+            "caller_utterance": "I need the status and next steps for my denied healthcare claim.",
+            "last_agent_reply": "I saved your earlier claim question: healthcare / denied. What would you like to understand about it?",
+            "reply": "I saved your earlier claim question: healthcare / denied. What would you like to understand about it?",
+            "phase": "PROCESS_CASE",
+            "verified_fields": [
+              "name",
+              "dob",
+              "phone"
+            ],
+            "memory_slots": {
+              "case_type_hint": "healthcare",
+              "status_hint": "denied",
+              "date_hint": "",
+              "topic_hint": "denial_reason"
+            },
+            "data_shield_active": false,
+            "active_case_id": "CL-2048",
+            "action_mask": [
+              true,
+              false,
+              false,
+              true,
+              true,
+              true,
+              false,
+              false,
+              true
+            ],
+            "emotion": "neutral",
+            "privacy_concern": false,
+            "refusal": false,
+            "demands_human": false,
+            "resolution_attempts": 0,
+            "grounded_answered": false
+          },
+          "observation": {
+            "caller_utterance": "I need the status and next steps for my denied healthcare claim.",
+            "last_agent_reply": "I saved your earlier claim question: healthcare / denied. What would you like to understand about it?",
+            "reply": "I saved your earlier claim question: healthcare / denied. What would you like to understand about it?",
+            "phase": "PROCESS_CASE",
+            "verified_fields": [
+              "name",
+              "dob",
+              "phone"
+            ],
+            "memory_slots": {
+              "case_type_hint": "healthcare",
+              "status_hint": "denied",
+              "date_hint": "",
+              "topic_hint": "denial_reason"
+            },
+            "data_shield_active": false,
+            "active_case_id": "CL-2048",
+            "action_mask": [
+              true,
+              false,
+              false,
+              true,
+              true,
+              true,
+              false,
+              false,
+              true
+            ],
+            "emotion": "neutral",
+            "privacy_concern": false,
+            "refusal": false,
+            "demands_human": false,
+            "resolution_attempts": 0,
+            "grounded_answered": false
+          },
+          "reward": -0.1,
+          "terminated": false,
+          "truncated": false,
+          "info": {
+            "turn": 6,
+            "agent_action": "RESOLVE_INTENT",
+            "agent_reply": "I saved your earlier claim question: healthcare / denied. What would you like to understand about it?",
+            "caller_utterance": "I need the status and next steps for my denied healthcare claim.",
+            "final_reply": "",
+            "phase_transition": "PROCESS_CASE -> PROCESS_CASE",
+            "task_success": false,
+            "appropriate_escalation": false,
+            "premature_termination": false,
+            "constraint_violation": false,
+            "structural_violations": [],
+            "reward_components": {
+              "turn_cost": -0.1,
+              "new_identity_fields": 0,
+              "ignored_distress": 0,
+              "new_memory_fields": 0,
+              "first_phase_visit": 0,
+              "grounded_answer": 0,
+              "completion": 0,
+              "escalation_reward": 0,
+              "truncation_penalty": 0,
+              "structural_violations": 0
+            },
+            "escalation_reason": null,
+            "termination_reason": "in_progress"
+          },
+          "probabilities": [
+            0.2,
+            0,
+            0,
+            0.2,
+            0.2,
+            0.2,
+            0,
+            0,
+            0.2
+          ],
+          "value_estimate": null,
+          "distribution_note": "Uniform probabilities over legal actions; execution samples with the chosen seed."
+        },
+        {
+          "session_id": "4428f2bb-c674-4661-85fd-472015febd10",
+          "turn": 7,
+          "agent_action": "ACK_EMOTION",
+          "agent_reply": "I hear how difficult this is. Thank you for explaining your concern. We can take this at your pace.",
+          "caller_utterance": "Thank you for understanding. Let's continue.",
+          "final_reply": "",
+          "observation_before": {
+            "caller_utterance": "I need the status and next steps for my denied healthcare claim.",
+            "last_agent_reply": "I saved your earlier claim question: healthcare / denied. What would you like to understand about it?",
+            "reply": "I saved your earlier claim question: healthcare / denied. What would you like to understand about it?",
+            "phase": "PROCESS_CASE",
+            "verified_fields": [
+              "name",
+              "dob",
+              "phone"
+            ],
+            "memory_slots": {
+              "case_type_hint": "healthcare",
+              "status_hint": "denied",
+              "date_hint": "",
+              "topic_hint": "denial_reason"
+            },
+            "data_shield_active": false,
+            "active_case_id": "CL-2048",
+            "action_mask": [
+              true,
+              false,
+              false,
+              true,
+              true,
+              true,
+              false,
+              false,
+              true
+            ],
+            "emotion": "neutral",
+            "privacy_concern": false,
+            "refusal": false,
+            "demands_human": false,
+            "resolution_attempts": 0,
+            "grounded_answered": false
+          },
+          "observation": {
+            "caller_utterance": "Thank you for understanding. Let's continue.",
+            "last_agent_reply": "I hear how difficult this is. Thank you for explaining your concern. We can take this at your pace.",
+            "reply": "I hear how difficult this is. Thank you for explaining your concern. We can take this at your pace.",
+            "phase": "PROCESS_CASE",
+            "verified_fields": [
+              "name",
+              "dob",
+              "phone"
+            ],
+            "memory_slots": {
+              "case_type_hint": "healthcare",
+              "status_hint": "denied",
+              "date_hint": "",
+              "topic_hint": "denial_reason"
+            },
+            "data_shield_active": false,
+            "active_case_id": "CL-2048",
+            "action_mask": [
+              true,
+              false,
+              false,
+              true,
+              true,
+              true,
+              false,
+              false,
+              true
+            ],
+            "emotion": "neutral",
+            "privacy_concern": false,
+            "refusal": false,
+            "demands_human": false,
+            "resolution_attempts": 0,
+            "grounded_answered": false
+          },
+          "reward": -0.1,
+          "terminated": false,
+          "truncated": false,
+          "info": {
+            "turn": 7,
+            "agent_action": "ACK_EMOTION",
+            "agent_reply": "I hear how difficult this is. Thank you for explaining your concern. We can take this at your pace.",
+            "caller_utterance": "Thank you for understanding. Let's continue.",
+            "final_reply": "",
+            "phase_transition": "PROCESS_CASE -> PROCESS_CASE",
+            "task_success": false,
+            "appropriate_escalation": false,
+            "premature_termination": false,
+            "constraint_violation": false,
+            "structural_violations": [],
+            "reward_components": {
+              "turn_cost": -0.1,
+              "new_identity_fields": 0,
+              "ignored_distress": 0,
+              "new_memory_fields": 0,
+              "first_phase_visit": 0,
+              "grounded_answer": 0,
+              "completion": 0,
+              "escalation_reward": 0,
+              "truncation_penalty": 0,
+              "structural_violations": 0
+            },
+            "escalation_reason": null,
+            "termination_reason": "in_progress"
+          },
+          "probabilities": [
+            0.2,
+            0,
+            0,
+            0.2,
+            0.2,
+            0.2,
+            0,
+            0,
+            0.2
+          ],
+          "value_estimate": null,
+          "distribution_note": "Uniform probabilities over legal actions; execution samples with the chosen seed."
+        },
+        {
+          "session_id": "4428f2bb-c674-4661-85fd-472015febd10",
+          "turn": 8,
+          "agent_action": "ESCALATE_HUMAN",
+          "agent_reply": "I will connect you with a human claims representative. This demo simulates the handoff; verification is still required for protected details.",
+          "caller_utterance": "",
+          "final_reply": "",
+          "observation_before": {
+            "caller_utterance": "Thank you for understanding. Let's continue.",
+            "last_agent_reply": "I hear how difficult this is. Thank you for explaining your concern. We can take this at your pace.",
+            "reply": "I hear how difficult this is. Thank you for explaining your concern. We can take this at your pace.",
+            "phase": "PROCESS_CASE",
+            "verified_fields": [
+              "name",
+              "dob",
+              "phone"
+            ],
+            "memory_slots": {
+              "case_type_hint": "healthcare",
+              "status_hint": "denied",
+              "date_hint": "",
+              "topic_hint": "denial_reason"
+            },
+            "data_shield_active": false,
+            "active_case_id": "CL-2048",
+            "action_mask": [
+              true,
+              false,
+              false,
+              true,
+              true,
+              true,
+              false,
+              false,
+              true
+            ],
+            "emotion": "neutral",
+            "privacy_concern": false,
+            "refusal": false,
+            "demands_human": false,
+            "resolution_attempts": 0,
+            "grounded_answered": false
+          },
+          "observation": {
+            "caller_utterance": "Thank you for understanding. Let's continue.",
+            "last_agent_reply": "I will connect you with a human claims representative. This demo simulates the handoff; verification is still required for protected details.",
+            "reply": "I will connect you with a human claims representative. This demo simulates the handoff; verification is still required for protected details.",
+            "phase": "ESCALATED",
+            "verified_fields": [
+              "name",
+              "dob",
+              "phone"
+            ],
+            "memory_slots": {
+              "case_type_hint": "healthcare",
+              "status_hint": "denied",
+              "date_hint": "",
+              "topic_hint": "denial_reason"
+            },
+            "data_shield_active": false,
+            "active_case_id": "CL-2048",
+            "action_mask": [
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              true
+            ],
+            "emotion": "neutral",
+            "privacy_concern": false,
+            "refusal": false,
+            "demands_human": false,
+            "resolution_attempts": 0,
+            "grounded_answered": false
+          },
+          "reward": -3.1,
+          "terminated": true,
+          "truncated": false,
+          "info": {
+            "turn": 8,
+            "agent_action": "ESCALATE_HUMAN",
+            "agent_reply": "I will connect you with a human claims representative. This demo simulates the handoff; verification is still required for protected details.",
+            "caller_utterance": "",
+            "final_reply": "",
+            "phase_transition": "PROCESS_CASE -> ESCALATED",
+            "task_success": false,
+            "appropriate_escalation": false,
+            "premature_termination": true,
+            "constraint_violation": false,
+            "structural_violations": [],
+            "reward_components": {
+              "turn_cost": -0.1,
+              "new_identity_fields": 0,
+              "ignored_distress": 0,
+              "new_memory_fields": 0,
+              "first_phase_visit": 0,
+              "grounded_answer": 0,
+              "completion": 0,
+              "escalation_reward": -3,
+              "truncation_penalty": 0,
+              "structural_violations": 0
+            },
+            "escalation_reason": null,
+            "termination_reason": "agent_escalation"
+          },
+          "probabilities": [
+            0.2,
+            0,
+            0,
+            0.2,
+            0.2,
+            0.2,
+            0,
+            0,
+            0.2
+          ],
+          "value_estimate": null,
+          "distribution_note": "Uniform probabilities over legal actions; execution samples with the chosen seed."
+        }
+      ],
+      "metrics": {
+        "outcome": "premature_exit",
+        "final_phase": "ESCALATED",
+        "turn_count": 8,
+        "return": 0.2,
+        "violations": 0,
+        "verified_fields": 3
+      }
+    },
+    {
+      "id": "ppo42",
+      "label": "PPO · seed 42",
+      "checkpoint": {
+        "sha256": "ffdc1f016dc45d6710aed4625312cf75df8cbb11f4fad7603e92c7455af62f35",
+        "training_seed": 42,
+        "actual_steps": 75136,
+        "environment_version": 3,
+        "feature_version": 2
+      },
+      "opening": "This is absolutely ridiculous — I've been waiting for weeks! My name is Margaret Chen and I need help with my denied healthcare claim.",
+      "turns": [
+        {
+          "session_id": "78775df3-1514-4950-a6ff-e3c8cc06bfc3",
+          "turn": 1,
+          "agent_action": "ACK_EMOTION",
+          "agent_reply": "I hear how frustrating this is. Thank you for explaining your concern. We can take this at your pace.",
+          "caller_utterance": "Thank you for understanding. Let's continue.",
+          "final_reply": "",
+          "observation_before": {
+            "caller_utterance": "This is absolutely ridiculous — I've been waiting for weeks! My name is Margaret Chen and I need help with my denied healthcare claim.",
+            "last_agent_reply": "",
+            "reply": "",
+            "phase": "VERIFY_ID",
+            "verified_fields": [
+              "name"
+            ],
+            "memory_slots": {
+              "case_type_hint": "healthcare",
+              "status_hint": "denied",
+              "date_hint": "",
+              "topic_hint": "denial_reason"
+            },
+            "data_shield_active": true,
+            "active_case_id": "",
+            "action_mask": [
+              true,
+              true,
+              true,
+              false,
+              false,
+              false,
+              false,
+              false,
+              true
+            ],
+            "emotion": "frustration",
+            "privacy_concern": false,
+            "refusal": false,
+            "demands_human": false,
+            "resolution_attempts": 0,
+            "grounded_answered": false
+          },
+          "observation": {
+            "caller_utterance": "Thank you for understanding. Let's continue.",
+            "last_agent_reply": "I hear how frustrating this is. Thank you for explaining your concern. We can take this at your pace.",
+            "reply": "I hear how frustrating this is. Thank you for explaining your concern. We can take this at your pace.",
+            "phase": "VERIFY_ID",
+            "verified_fields": [
+              "name"
+            ],
+            "memory_slots": {
+              "case_type_hint": "healthcare",
+              "status_hint": "denied",
+              "date_hint": "",
+              "topic_hint": "denial_reason"
+            },
+            "data_shield_active": true,
+            "active_case_id": "",
+            "action_mask": [
+              true,
+              true,
+              true,
+              false,
+              false,
+              false,
+              false,
+              false,
+              true
+            ],
+            "emotion": "neutral",
+            "privacy_concern": false,
+            "refusal": false,
+            "demands_human": false,
+            "resolution_attempts": 0,
+            "grounded_answered": false
+          },
+          "reward": -0.1,
+          "terminated": false,
+          "truncated": false,
+          "info": {
+            "turn": 1,
+            "agent_action": "ACK_EMOTION",
+            "agent_reply": "I hear how frustrating this is. Thank you for explaining your concern. We can take this at your pace.",
+            "caller_utterance": "Thank you for understanding. Let's continue.",
+            "final_reply": "",
+            "phase_transition": "VERIFY_ID -> VERIFY_ID",
+            "task_success": false,
+            "appropriate_escalation": false,
+            "premature_termination": false,
+            "constraint_violation": false,
+            "structural_violations": [],
+            "reward_components": {
+              "turn_cost": -0.1,
+              "new_identity_fields": 0,
+              "ignored_distress": 0,
+              "new_memory_fields": 0,
+              "first_phase_visit": 0,
+              "grounded_answer": 0,
+              "completion": 0,
+              "escalation_reward": 0,
+              "truncation_penalty": 0,
+              "structural_violations": 0
+            },
+            "escalation_reason": null,
+            "termination_reason": "in_progress"
+          },
+          "probabilities": [
+            0.871027946472168,
+            0.08498873561620712,
+            0.0439610481262207,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0.000022256192096392624
+          ],
+          "value_estimate": 15.646821975708008,
+          "distribution_note": "Masked policy probabilities; execution selects the largest probability."
+        },
+        {
+          "session_id": "78775df3-1514-4950-a6ff-e3c8cc06bfc3",
+          "turn": 2,
+          "agent_action": "ASK_IDENTITY_FIELD",
+          "agent_reply": "Please share your date of birth.",
+          "caller_utterance": "My date of birth is 03/15/1985.",
+          "final_reply": "",
+          "observation_before": {
+            "caller_utterance": "Thank you for understanding. Let's continue.",
+            "last_agent_reply": "I hear how frustrating this is. Thank you for explaining your concern. We can take this at your pace.",
+            "reply": "I hear how frustrating this is. Thank you for explaining your concern. We can take this at your pace.",
+            "phase": "VERIFY_ID",
+            "verified_fields": [
+              "name"
+            ],
+            "memory_slots": {
+              "case_type_hint": "healthcare",
+              "status_hint": "denied",
+              "date_hint": "",
+              "topic_hint": "denial_reason"
+            },
+            "data_shield_active": true,
+            "active_case_id": "",
+            "action_mask": [
+              true,
+              true,
+              true,
+              false,
+              false,
+              false,
+              false,
+              false,
+              true
+            ],
+            "emotion": "neutral",
+            "privacy_concern": false,
+            "refusal": false,
+            "demands_human": false,
+            "resolution_attempts": 0,
+            "grounded_answered": false
+          },
+          "observation": {
+            "caller_utterance": "My date of birth is 03/15/1985.",
+            "last_agent_reply": "Please share your date of birth.",
+            "reply": "Please share your date of birth.",
+            "phase": "VERIFY_ID",
+            "verified_fields": [
+              "name",
+              "dob"
+            ],
+            "memory_slots": {
+              "case_type_hint": "healthcare",
+              "status_hint": "denied",
+              "date_hint": "",
+              "topic_hint": "denial_reason"
+            },
+            "data_shield_active": true,
+            "active_case_id": "",
+            "action_mask": [
+              true,
+              true,
+              true,
+              false,
+              false,
+              false,
+              false,
+              false,
+              true
+            ],
+            "emotion": "neutral",
+            "privacy_concern": false,
+            "refusal": false,
+            "demands_human": false,
+            "resolution_attempts": 0,
+            "grounded_answered": false
+          },
+          "reward": 0.9,
+          "terminated": false,
+          "truncated": false,
+          "info": {
+            "turn": 2,
+            "agent_action": "ASK_IDENTITY_FIELD",
+            "agent_reply": "Please share your date of birth.",
+            "caller_utterance": "My date of birth is 03/15/1985.",
+            "final_reply": "",
+            "phase_transition": "VERIFY_ID -> VERIFY_ID",
+            "task_success": false,
+            "appropriate_escalation": false,
+            "premature_termination": false,
+            "constraint_violation": false,
+            "structural_violations": [],
+            "reward_components": {
+              "turn_cost": -0.1,
+              "new_identity_fields": 1,
+              "ignored_distress": 0,
+              "new_memory_fields": 0,
+              "first_phase_visit": 0,
+              "grounded_answer": 0,
+              "completion": 0,
+              "escalation_reward": 0,
+              "truncation_penalty": 0,
+              "structural_violations": 0
+            },
+            "escalation_reason": null,
+            "termination_reason": "in_progress"
+          },
+          "probabilities": [
+            0.27335143089294434,
+            0.5499967932701111,
+            0.1765640377998352,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0.00008775697642704472
+          ],
+          "value_estimate": 13.442620277404785,
+          "distribution_note": "Masked policy probabilities; execution selects the largest probability."
+        },
+        {
+          "session_id": "78775df3-1514-4950-a6ff-e3c8cc06bfc3",
+          "turn": 3,
+          "agent_action": "ASK_IDENTITY_FIELD",
+          "agent_reply": "Please share your phone number.",
+          "caller_utterance": "My phone number is (650) 521-2836.",
+          "final_reply": "",
+          "observation_before": {
+            "caller_utterance": "My date of birth is 03/15/1985.",
+            "last_agent_reply": "Please share your date of birth.",
+            "reply": "Please share your date of birth.",
+            "phase": "VERIFY_ID",
+            "verified_fields": [
+              "name",
+              "dob"
+            ],
+            "memory_slots": {
+              "case_type_hint": "healthcare",
+              "status_hint": "denied",
+              "date_hint": "",
+              "topic_hint": "denial_reason"
+            },
+            "data_shield_active": true,
+            "active_case_id": "",
+            "action_mask": [
+              true,
+              true,
+              true,
+              false,
+              false,
+              false,
+              false,
+              false,
+              true
+            ],
+            "emotion": "neutral",
+            "privacy_concern": false,
+            "refusal": false,
+            "demands_human": false,
+            "resolution_attempts": 0,
+            "grounded_answered": false
+          },
+          "observation": {
+            "caller_utterance": "My phone number is (650) 521-2836.",
+            "last_agent_reply": "Please share your phone number.",
+            "reply": "Please share your phone number.",
+            "phase": "PROCESS_CASE",
+            "verified_fields": [
+              "name",
+              "dob",
+              "phone"
+            ],
+            "memory_slots": {
+              "case_type_hint": "healthcare",
+              "status_hint": "denied",
+              "date_hint": "",
+              "topic_hint": "denial_reason"
+            },
+            "data_shield_active": false,
+            "active_case_id": "CL-2048",
+            "action_mask": [
+              true,
+              false,
+              false,
+              true,
+              true,
+              true,
+              false,
+              false,
+              true
+            ],
+            "emotion": "neutral",
+            "privacy_concern": false,
+            "refusal": false,
+            "demands_human": false,
+            "resolution_attempts": 0,
+            "grounded_answered": false
+          },
+          "reward": 2.9,
+          "terminated": false,
+          "truncated": false,
+          "info": {
+            "turn": 3,
+            "agent_action": "ASK_IDENTITY_FIELD",
+            "agent_reply": "Please share your phone number.",
+            "caller_utterance": "My phone number is (650) 521-2836.",
+            "final_reply": "",
+            "phase_transition": "VERIFY_ID -> PROCESS_CASE",
+            "task_success": false,
+            "appropriate_escalation": false,
+            "premature_termination": false,
+            "constraint_violation": false,
+            "structural_violations": [],
+            "reward_components": {
+              "turn_cost": -0.1,
+              "new_identity_fields": 1,
+              "ignored_distress": 0,
+              "new_memory_fields": 0,
+              "first_phase_visit": 2,
+              "grounded_answer": 0,
+              "completion": 0,
+              "escalation_reward": 0,
+              "truncation_penalty": 0,
+              "structural_violations": 0
+            },
+            "escalation_reason": null,
+            "termination_reason": "in_progress"
+          },
+          "probabilities": [
+            0.1723230928182602,
+            0.6251715421676636,
+            0.20240162312984467,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0.00010374435078119859
+          ],
+          "value_estimate": 13.701737403869629,
+          "distribution_note": "Masked policy probabilities; execution selects the largest probability."
+        },
+        {
+          "session_id": "78775df3-1514-4950-a6ff-e3c8cc06bfc3",
+          "turn": 4,
+          "agent_action": "ANSWER_GROUNDED",
+          "agent_reply": "Identity verified. I found the claim using your earlier details.\n\nClaim CL-2048 is denied. It is a healthcare claim created on 2026-01-12.\n\nThe recorded denial reason is that the review file did not include the pathology report and the treating provider office note.\n\nThe requested documents are: pathology report, office note.\n\nThe recorded appeal deadline is 2026-03-18. That date has passed. A human claims representative must review whether any options remain; I cannot promise an extension.\n\nChoose a next step below, or ask in your own words.",
+          "caller_utterance": "Thank you for explaining the claim details. That is all the questions I have.",
+          "final_reply": "",
+          "observation_before": {
+            "caller_utterance": "My phone number is (650) 521-2836.",
+            "last_agent_reply": "Please share your phone number.",
+            "reply": "Please share your phone number.",
+            "phase": "PROCESS_CASE",
+            "verified_fields": [
+              "name",
+              "dob",
+              "phone"
+            ],
+            "memory_slots": {
+              "case_type_hint": "healthcare",
+              "status_hint": "denied",
+              "date_hint": "",
+              "topic_hint": "denial_reason"
+            },
+            "data_shield_active": false,
+            "active_case_id": "CL-2048",
+            "action_mask": [
+              true,
+              false,
+              false,
+              true,
+              true,
+              true,
+              false,
+              false,
+              true
+            ],
+            "emotion": "neutral",
+            "privacy_concern": false,
+            "refusal": false,
+            "demands_human": false,
+            "resolution_attempts": 0,
+            "grounded_answered": false
+          },
+          "observation": {
+            "caller_utterance": "Thank you for explaining the claim details. That is all the questions I have.",
+            "last_agent_reply": "Identity verified. I found the claim using your earlier details.\n\nClaim CL-2048 is denied. It is a healthcare claim created on 2026-01-12.\n\nThe recorded denial reason is that the review file did not include the pathology report and the treating provider office note.\n\nThe requested documents are: pathology report, office note.\n\nThe recorded appeal deadline is 2026-03-18. That date has passed. A human claims representative must review whether any options remain; I cannot promise an extension.\n\nChoose a next step below, or ask in your own words.",
+            "reply": "Identity verified. I found the claim using your earlier details.\n\nClaim CL-2048 is denied. It is a healthcare claim created on 2026-01-12.\n\nThe recorded denial reason is that the review file did not include the pathology report and the treating provider office note.\n\nThe requested documents are: pathology report, office note.\n\nThe recorded appeal deadline is 2026-03-18. That date has passed. A human claims representative must review whether any options remain; I cannot promise an extension.\n\nChoose a next step below, or ask in your own words.",
+            "phase": "POST_PROCESS",
+            "verified_fields": [
+              "name",
+              "dob",
+              "phone"
+            ],
+            "memory_slots": {
+              "case_type_hint": "healthcare",
+              "status_hint": "denied",
+              "date_hint": "",
+              "topic_hint": "denial_reason"
+            },
+            "data_shield_active": false,
+            "active_case_id": "CL-2048",
+            "action_mask": [
+              true,
+              false,
+              false,
+              false,
+              false,
+              false,
+              true,
+              false,
+              true
+            ],
+            "emotion": "neutral",
+            "privacy_concern": false,
+            "refusal": false,
+            "demands_human": false,
+            "resolution_attempts": 0,
+            "grounded_answered": true
+          },
+          "reward": 2.9,
+          "terminated": false,
+          "truncated": false,
+          "info": {
+            "turn": 4,
+            "agent_action": "ANSWER_GROUNDED",
+            "agent_reply": "Identity verified. I found the claim using your earlier details.\n\nClaim CL-2048 is denied. It is a healthcare claim created on 2026-01-12.\n\nThe recorded denial reason is that the review file did not include the pathology report and the treating provider office note.\n\nThe requested documents are: pathology report, office note.\n\nThe recorded appeal deadline is 2026-03-18. That date has passed. A human claims representative must review whether any options remain; I cannot promise an extension.\n\nChoose a next step below, or ask in your own words.",
+            "caller_utterance": "Thank you for explaining the claim details. That is all the questions I have.",
+            "final_reply": "",
+            "phase_transition": "PROCESS_CASE -> POST_PROCESS",
+            "task_success": false,
+            "appropriate_escalation": false,
+            "premature_termination": false,
+            "constraint_violation": false,
+            "structural_violations": [],
+            "reward_components": {
+              "turn_cost": -0.1,
+              "new_identity_fields": 0,
+              "ignored_distress": 0,
+              "new_memory_fields": 0,
+              "first_phase_visit": 2,
+              "grounded_answer": 1,
+              "completion": 0,
+              "escalation_reward": 0,
+              "truncation_penalty": 0,
+              "structural_violations": 0
+            },
+            "escalation_reason": null,
+            "termination_reason": "in_progress"
+          },
+          "probabilities": [
+            0.0020074364729225636,
+            0,
+            0,
+            0.00152317073661834,
+            0.0006401031860150397,
+            0.9958171248435974,
+            0,
+            0,
+            0.00001216516648128163
+          ],
+          "value_estimate": 12.887317657470703,
+          "distribution_note": "Masked policy probabilities; execution selects the largest probability."
+        },
+        {
+          "session_id": "78775df3-1514-4950-a6ff-e3c8cc06bfc3",
+          "turn": 5,
+          "agent_action": "OFFER_EMAIL_SUMMARY",
+          "agent_reply": "Would you like an email summary of what we discussed, the claim outcome and next steps, or would you prefer to skip it?",
+          "caller_utterance": "Yes, please send the summary to my email.",
+          "final_reply": "The email summary was added to the demo outbox for margaret@email.com. Delivery is simulated; no real email was sent. Thank you for contacting claims support.",
+          "observation_before": {
+            "caller_utterance": "Thank you for explaining the claim details. That is all the questions I have.",
+            "last_agent_reply": "Identity verified. I found the claim using your earlier details.\n\nClaim CL-2048 is denied. It is a healthcare claim created on 2026-01-12.\n\nThe recorded denial reason is that the review file did not include the pathology report and the treating provider office note.\n\nThe requested documents are: pathology report, office note.\n\nThe recorded appeal deadline is 2026-03-18. That date has passed. A human claims representative must review whether any options remain; I cannot promise an extension.\n\nChoose a next step below, or ask in your own words.",
+            "reply": "Identity verified. I found the claim using your earlier details.\n\nClaim CL-2048 is denied. It is a healthcare claim created on 2026-01-12.\n\nThe recorded denial reason is that the review file did not include the pathology report and the treating provider office note.\n\nThe requested documents are: pathology report, office note.\n\nThe recorded appeal deadline is 2026-03-18. That date has passed. A human claims representative must review whether any options remain; I cannot promise an extension.\n\nChoose a next step below, or ask in your own words.",
+            "phase": "POST_PROCESS",
+            "verified_fields": [
+              "name",
+              "dob",
+              "phone"
+            ],
+            "memory_slots": {
+              "case_type_hint": "healthcare",
+              "status_hint": "denied",
+              "date_hint": "",
+              "topic_hint": "denial_reason"
+            },
+            "data_shield_active": false,
+            "active_case_id": "CL-2048",
+            "action_mask": [
+              true,
+              false,
+              false,
+              false,
+              false,
+              false,
+              true,
+              false,
+              true
+            ],
+            "emotion": "neutral",
+            "privacy_concern": false,
+            "refusal": false,
+            "demands_human": false,
+            "resolution_attempts": 0,
+            "grounded_answered": true
+          },
+          "observation": {
+            "caller_utterance": "Yes, please send the summary to my email.",
+            "last_agent_reply": "The email summary was added to the demo outbox for margaret@email.com. Delivery is simulated; no real email was sent. Thank you for contacting claims support.",
+            "reply": "The email summary was added to the demo outbox for margaret@email.com. Delivery is simulated; no real email was sent. Thank you for contacting claims support.",
+            "phase": "CONCLUDED",
+            "verified_fields": [
+              "name",
+              "dob",
+              "phone"
+            ],
+            "memory_slots": {
+              "case_type_hint": "healthcare",
+              "status_hint": "denied",
+              "date_hint": "",
+              "topic_hint": "denial_reason"
+            },
+            "data_shield_active": false,
+            "active_case_id": "CL-2048",
+            "action_mask": [
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false
+            ],
+            "emotion": "neutral",
+            "privacy_concern": false,
+            "refusal": false,
+            "demands_human": false,
+            "resolution_attempts": 0,
+            "grounded_answered": true
+          },
+          "reward": 9.9,
+          "terminated": true,
+          "truncated": false,
+          "info": {
+            "turn": 5,
+            "agent_action": "OFFER_EMAIL_SUMMARY",
+            "agent_reply": "Would you like an email summary of what we discussed, the claim outcome and next steps, or would you prefer to skip it?",
+            "caller_utterance": "Yes, please send the summary to my email.",
+            "final_reply": "The email summary was added to the demo outbox for margaret@email.com. Delivery is simulated; no real email was sent. Thank you for contacting claims support.",
+            "phase_transition": "POST_PROCESS -> CONCLUDED",
+            "task_success": true,
+            "appropriate_escalation": false,
+            "premature_termination": false,
+            "constraint_violation": false,
+            "structural_violations": [],
+            "reward_components": {
+              "turn_cost": -0.1,
+              "new_identity_fields": 0,
+              "ignored_distress": 0,
+              "new_memory_fields": 0,
+              "first_phase_visit": 0,
+              "grounded_answer": 0,
+              "completion": 10,
+              "escalation_reward": 0,
+              "truncation_penalty": 0,
+              "structural_violations": 0
+            },
+            "escalation_reason": null,
+            "termination_reason": "concluded"
+          },
+          "probabilities": [
+            0.0009660374489612877,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0.9989915490150452,
+            0,
+            0.000042375060729682446
+          ],
+          "value_estimate": 10.07236099243164,
+          "distribution_note": "Masked policy probabilities; execution selects the largest probability."
+        }
+      ],
+      "metrics": {
+        "outcome": "case_completed",
+        "final_phase": "CONCLUDED",
+        "turn_count": 5,
+        "return": 16.5,
+        "violations": 0,
+        "verified_fields": 3
+      }
+    },
+    {
+      "id": "ppo7",
+      "label": "PPO · seed 7",
+      "checkpoint": {
+        "sha256": "402a582a31db6d1db3f028aadf693ee0c385efda213912ef689f0bfb6e0f3f0b",
+        "training_seed": 7,
+        "actual_steps": 75136,
+        "environment_version": 3,
+        "feature_version": 2
+      },
+      "opening": "This is absolutely ridiculous — I've been waiting for weeks! My name is Margaret Chen and I need help with my denied healthcare claim.",
+      "turns": [
+        {
+          "session_id": "791297a2-2731-48f3-a310-da74b33c8cc3",
+          "turn": 1,
+          "agent_action": "ACK_EMOTION",
+          "agent_reply": "I hear how frustrating this is. Thank you for explaining your concern. We can take this at your pace.",
+          "caller_utterance": "Thank you for understanding. Let's continue.",
+          "final_reply": "",
+          "observation_before": {
+            "caller_utterance": "This is absolutely ridiculous — I've been waiting for weeks! My name is Margaret Chen and I need help with my denied healthcare claim.",
+            "last_agent_reply": "",
+            "reply": "",
+            "phase": "VERIFY_ID",
+            "verified_fields": [
+              "name"
+            ],
+            "memory_slots": {
+              "case_type_hint": "healthcare",
+              "status_hint": "denied",
+              "date_hint": "",
+              "topic_hint": "denial_reason"
+            },
+            "data_shield_active": true,
+            "active_case_id": "",
+            "action_mask": [
+              true,
+              true,
+              true,
+              false,
+              false,
+              false,
+              false,
+              false,
+              true
+            ],
+            "emotion": "frustration",
+            "privacy_concern": false,
+            "refusal": false,
+            "demands_human": false,
+            "resolution_attempts": 0,
+            "grounded_answered": false
+          },
+          "observation": {
+            "caller_utterance": "Thank you for understanding. Let's continue.",
+            "last_agent_reply": "I hear how frustrating this is. Thank you for explaining your concern. We can take this at your pace.",
+            "reply": "I hear how frustrating this is. Thank you for explaining your concern. We can take this at your pace.",
+            "phase": "VERIFY_ID",
+            "verified_fields": [
+              "name"
+            ],
+            "memory_slots": {
+              "case_type_hint": "healthcare",
+              "status_hint": "denied",
+              "date_hint": "",
+              "topic_hint": "denial_reason"
+            },
+            "data_shield_active": true,
+            "active_case_id": "",
+            "action_mask": [
+              true,
+              true,
+              true,
+              false,
+              false,
+              false,
+              false,
+              false,
+              true
+            ],
+            "emotion": "neutral",
+            "privacy_concern": false,
+            "refusal": false,
+            "demands_human": false,
+            "resolution_attempts": 0,
+            "grounded_answered": false
+          },
+          "reward": -0.1,
+          "terminated": false,
+          "truncated": false,
+          "info": {
+            "turn": 1,
+            "agent_action": "ACK_EMOTION",
+            "agent_reply": "I hear how frustrating this is. Thank you for explaining your concern. We can take this at your pace.",
+            "caller_utterance": "Thank you for understanding. Let's continue.",
+            "final_reply": "",
+            "phase_transition": "VERIFY_ID -> VERIFY_ID",
+            "task_success": false,
+            "appropriate_escalation": false,
+            "premature_termination": false,
+            "constraint_violation": false,
+            "structural_violations": [],
+            "reward_components": {
+              "turn_cost": -0.1,
+              "new_identity_fields": 0,
+              "ignored_distress": 0,
+              "new_memory_fields": 0,
+              "first_phase_visit": 0,
+              "grounded_answer": 0,
+              "completion": 0,
+              "escalation_reward": 0,
+              "truncation_penalty": 0,
+              "structural_violations": 0
+            },
+            "escalation_reason": null,
+            "termination_reason": "in_progress"
+          },
+          "probabilities": [
+            0.9650456309318542,
+            0.020528141409158707,
+            0.014405407942831516,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0.000020829094864893705
+          ],
+          "value_estimate": 15.429140090942383,
+          "distribution_note": "Masked policy probabilities; execution selects the largest probability."
+        },
+        {
+          "session_id": "791297a2-2731-48f3-a310-da74b33c8cc3",
+          "turn": 2,
+          "agent_action": "ACK_EMOTION",
+          "agent_reply": "I hear how difficult this is. Thank you for explaining your concern. We can take this at your pace.",
+          "caller_utterance": "Thank you for understanding. Let's continue.",
+          "final_reply": "",
+          "observation_before": {
+            "caller_utterance": "Thank you for understanding. Let's continue.",
+            "last_agent_reply": "I hear how frustrating this is. Thank you for explaining your concern. We can take this at your pace.",
+            "reply": "I hear how frustrating this is. Thank you for explaining your concern. We can take this at your pace.",
+            "phase": "VERIFY_ID",
+            "verified_fields": [
+              "name"
+            ],
+            "memory_slots": {
+              "case_type_hint": "healthcare",
+              "status_hint": "denied",
+              "date_hint": "",
+              "topic_hint": "denial_reason"
+            },
+            "data_shield_active": true,
+            "active_case_id": "",
+            "action_mask": [
+              true,
+              true,
+              true,
+              false,
+              false,
+              false,
+              false,
+              false,
+              true
+            ],
+            "emotion": "neutral",
+            "privacy_concern": false,
+            "refusal": false,
+            "demands_human": false,
+            "resolution_attempts": 0,
+            "grounded_answered": false
+          },
+          "observation": {
+            "caller_utterance": "Thank you for understanding. Let's continue.",
+            "last_agent_reply": "I hear how difficult this is. Thank you for explaining your concern. We can take this at your pace.",
+            "reply": "I hear how difficult this is. Thank you for explaining your concern. We can take this at your pace.",
+            "phase": "VERIFY_ID",
+            "verified_fields": [
+              "name"
+            ],
+            "memory_slots": {
+              "case_type_hint": "healthcare",
+              "status_hint": "denied",
+              "date_hint": "",
+              "topic_hint": "denial_reason"
+            },
+            "data_shield_active": true,
+            "active_case_id": "",
+            "action_mask": [
+              true,
+              true,
+              true,
+              false,
+              false,
+              false,
+              false,
+              false,
+              true
+            ],
+            "emotion": "neutral",
+            "privacy_concern": false,
+            "refusal": false,
+            "demands_human": false,
+            "resolution_attempts": 0,
+            "grounded_answered": false
+          },
+          "reward": -0.1,
+          "terminated": false,
+          "truncated": false,
+          "info": {
+            "turn": 2,
+            "agent_action": "ACK_EMOTION",
+            "agent_reply": "I hear how difficult this is. Thank you for explaining your concern. We can take this at your pace.",
+            "caller_utterance": "Thank you for understanding. Let's continue.",
+            "final_reply": "",
+            "phase_transition": "VERIFY_ID -> VERIFY_ID",
+            "task_success": false,
+            "appropriate_escalation": false,
+            "premature_termination": false,
+            "constraint_violation": false,
+            "structural_violations": [],
+            "reward_components": {
+              "turn_cost": -0.1,
+              "new_identity_fields": 0,
+              "ignored_distress": 0,
+              "new_memory_fields": 0,
+              "first_phase_visit": 0,
+              "grounded_answer": 0,
+              "completion": 0,
+              "escalation_reward": 0,
+              "truncation_penalty": 0,
+              "structural_violations": 0
+            },
+            "escalation_reason": null,
+            "termination_reason": "in_progress"
+          },
+          "probabilities": [
+            0.49327725172042847,
+            0.22121548652648926,
+            0.2853274941444397,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0.00017973165086004883
+          ],
+          "value_estimate": 13.955635070800781,
+          "distribution_note": "Masked policy probabilities; execution selects the largest probability."
+        },
+        {
+          "session_id": "791297a2-2731-48f3-a310-da74b33c8cc3",
+          "turn": 3,
+          "agent_action": "ACK_EMOTION",
+          "agent_reply": "I hear how difficult this is. Thank you for explaining your concern. We can take this at your pace.",
+          "caller_utterance": "Thank you for understanding. Let's continue.",
+          "final_reply": "",
+          "observation_before": {
+            "caller_utterance": "Thank you for understanding. Let's continue.",
+            "last_agent_reply": "I hear how difficult this is. Thank you for explaining your concern. We can take this at your pace.",
+            "reply": "I hear how difficult this is. Thank you for explaining your concern. We can take this at your pace.",
+            "phase": "VERIFY_ID",
+            "verified_fields": [
+              "name"
+            ],
+            "memory_slots": {
+              "case_type_hint": "healthcare",
+              "status_hint": "denied",
+              "date_hint": "",
+              "topic_hint": "denial_reason"
+            },
+            "data_shield_active": true,
+            "active_case_id": "",
+            "action_mask": [
+              true,
+              true,
+              true,
+              false,
+              false,
+              false,
+              false,
+              false,
+              true
+            ],
+            "emotion": "neutral",
+            "privacy_concern": false,
+            "refusal": false,
+            "demands_human": false,
+            "resolution_attempts": 0,
+            "grounded_answered": false
+          },
+          "observation": {
+            "caller_utterance": "Thank you for understanding. Let's continue.",
+            "last_agent_reply": "I hear how difficult this is. Thank you for explaining your concern. We can take this at your pace.",
+            "reply": "I hear how difficult this is. Thank you for explaining your concern. We can take this at your pace.",
+            "phase": "VERIFY_ID",
+            "verified_fields": [
+              "name"
+            ],
+            "memory_slots": {
+              "case_type_hint": "healthcare",
+              "status_hint": "denied",
+              "date_hint": "",
+              "topic_hint": "denial_reason"
+            },
+            "data_shield_active": true,
+            "active_case_id": "",
+            "action_mask": [
+              true,
+              true,
+              true,
+              false,
+              false,
+              false,
+              false,
+              false,
+              true
+            ],
+            "emotion": "neutral",
+            "privacy_concern": false,
+            "refusal": false,
+            "demands_human": false,
+            "resolution_attempts": 0,
+            "grounded_answered": false
+          },
+          "reward": -0.1,
+          "terminated": false,
+          "truncated": false,
+          "info": {
+            "turn": 3,
+            "agent_action": "ACK_EMOTION",
+            "agent_reply": "I hear how difficult this is. Thank you for explaining your concern. We can take this at your pace.",
+            "caller_utterance": "Thank you for understanding. Let's continue.",
+            "final_reply": "",
+            "phase_transition": "VERIFY_ID -> VERIFY_ID",
+            "task_success": false,
+            "appropriate_escalation": false,
+            "premature_termination": false,
+            "constraint_violation": false,
+            "structural_violations": [],
+            "reward_components": {
+              "turn_cost": -0.1,
+              "new_identity_fields": 0,
+              "ignored_distress": 0,
+              "new_memory_fields": 0,
+              "first_phase_visit": 0,
+              "grounded_answer": 0,
+              "completion": 0,
+              "escalation_reward": 0,
+              "truncation_penalty": 0,
+              "structural_violations": 0
+            },
+            "escalation_reason": null,
+            "termination_reason": "in_progress"
+          },
+          "probabilities": [
+            0.48828715085983276,
+            0.19607432186603546,
+            0.31551864743232727,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0.00011989172344328836
+          ],
+          "value_estimate": 15.008501052856445,
+          "distribution_note": "Masked policy probabilities; execution selects the largest probability."
+        },
+        {
+          "session_id": "791297a2-2731-48f3-a310-da74b33c8cc3",
+          "turn": 4,
+          "agent_action": "ACK_EMOTION",
+          "agent_reply": "I hear how difficult this is. Thank you for explaining your concern. We can take this at your pace.",
+          "caller_utterance": "Thank you for understanding. Let's continue.",
+          "final_reply": "",
+          "observation_before": {
+            "caller_utterance": "Thank you for understanding. Let's continue.",
+            "last_agent_reply": "I hear how difficult this is. Thank you for explaining your concern. We can take this at your pace.",
+            "reply": "I hear how difficult this is. Thank you for explaining your concern. We can take this at your pace.",
+            "phase": "VERIFY_ID",
+            "verified_fields": [
+              "name"
+            ],
+            "memory_slots": {
+              "case_type_hint": "healthcare",
+              "status_hint": "denied",
+              "date_hint": "",
+              "topic_hint": "denial_reason"
+            },
+            "data_shield_active": true,
+            "active_case_id": "",
+            "action_mask": [
+              true,
+              true,
+              true,
+              false,
+              false,
+              false,
+              false,
+              false,
+              true
+            ],
+            "emotion": "neutral",
+            "privacy_concern": false,
+            "refusal": false,
+            "demands_human": false,
+            "resolution_attempts": 0,
+            "grounded_answered": false
+          },
+          "observation": {
+            "caller_utterance": "Thank you for understanding. Let's continue.",
+            "last_agent_reply": "I hear how difficult this is. Thank you for explaining your concern. We can take this at your pace.",
+            "reply": "I hear how difficult this is. Thank you for explaining your concern. We can take this at your pace.",
+            "phase": "VERIFY_ID",
+            "verified_fields": [
+              "name"
+            ],
+            "memory_slots": {
+              "case_type_hint": "healthcare",
+              "status_hint": "denied",
+              "date_hint": "",
+              "topic_hint": "denial_reason"
+            },
+            "data_shield_active": true,
+            "active_case_id": "",
+            "action_mask": [
+              true,
+              true,
+              true,
+              false,
+              false,
+              false,
+              false,
+              false,
+              true
+            ],
+            "emotion": "neutral",
+            "privacy_concern": false,
+            "refusal": false,
+            "demands_human": false,
+            "resolution_attempts": 0,
+            "grounded_answered": false
+          },
+          "reward": -0.1,
+          "terminated": false,
+          "truncated": false,
+          "info": {
+            "turn": 4,
+            "agent_action": "ACK_EMOTION",
+            "agent_reply": "I hear how difficult this is. Thank you for explaining your concern. We can take this at your pace.",
+            "caller_utterance": "Thank you for understanding. Let's continue.",
+            "final_reply": "",
+            "phase_transition": "VERIFY_ID -> VERIFY_ID",
+            "task_success": false,
+            "appropriate_escalation": false,
+            "premature_termination": false,
+            "constraint_violation": false,
+            "structural_violations": [],
+            "reward_components": {
+              "turn_cost": -0.1,
+              "new_identity_fields": 0,
+              "ignored_distress": 0,
+              "new_memory_fields": 0,
+              "first_phase_visit": 0,
+              "grounded_answer": 0,
+              "completion": 0,
+              "escalation_reward": 0,
+              "truncation_penalty": 0,
+              "structural_violations": 0
+            },
+            "escalation_reason": null,
+            "termination_reason": "in_progress"
+          },
+          "probabilities": [
+            0.4688699245452881,
+            0.18031592667102814,
+            0.3507172763347626,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0.00009684839460533112
+          ],
+          "value_estimate": 15.704346656799316,
+          "distribution_note": "Masked policy probabilities; execution selects the largest probability."
+        },
+        {
+          "session_id": "791297a2-2731-48f3-a310-da74b33c8cc3",
+          "turn": 5,
+          "agent_action": "ACK_EMOTION",
+          "agent_reply": "I hear how difficult this is. Thank you for explaining your concern. We can take this at your pace.",
+          "caller_utterance": "Thank you for understanding. Let's continue.",
+          "final_reply": "",
+          "observation_before": {
+            "caller_utterance": "Thank you for understanding. Let's continue.",
+            "last_agent_reply": "I hear how difficult this is. Thank you for explaining your concern. We can take this at your pace.",
+            "reply": "I hear how difficult this is. Thank you for explaining your concern. We can take this at your pace.",
+            "phase": "VERIFY_ID",
+            "verified_fields": [
+              "name"
+            ],
+            "memory_slots": {
+              "case_type_hint": "healthcare",
+              "status_hint": "denied",
+              "date_hint": "",
+              "topic_hint": "denial_reason"
+            },
+            "data_shield_active": true,
+            "active_case_id": "",
+            "action_mask": [
+              true,
+              true,
+              true,
+              false,
+              false,
+              false,
+              false,
+              false,
+              true
+            ],
+            "emotion": "neutral",
+            "privacy_concern": false,
+            "refusal": false,
+            "demands_human": false,
+            "resolution_attempts": 0,
+            "grounded_answered": false
+          },
+          "observation": {
+            "caller_utterance": "Thank you for understanding. Let's continue.",
+            "last_agent_reply": "I hear how difficult this is. Thank you for explaining your concern. We can take this at your pace.",
+            "reply": "I hear how difficult this is. Thank you for explaining your concern. We can take this at your pace.",
+            "phase": "VERIFY_ID",
+            "verified_fields": [
+              "name"
+            ],
+            "memory_slots": {
+              "case_type_hint": "healthcare",
+              "status_hint": "denied",
+              "date_hint": "",
+              "topic_hint": "denial_reason"
+            },
+            "data_shield_active": true,
+            "active_case_id": "",
+            "action_mask": [
+              true,
+              true,
+              true,
+              false,
+              false,
+              false,
+              false,
+              false,
+              true
+            ],
+            "emotion": "neutral",
+            "privacy_concern": false,
+            "refusal": false,
+            "demands_human": false,
+            "resolution_attempts": 0,
+            "grounded_answered": false
+          },
+          "reward": -0.1,
+          "terminated": false,
+          "truncated": false,
+          "info": {
+            "turn": 5,
+            "agent_action": "ACK_EMOTION",
+            "agent_reply": "I hear how difficult this is. Thank you for explaining your concern. We can take this at your pace.",
+            "caller_utterance": "Thank you for understanding. Let's continue.",
+            "final_reply": "",
+            "phase_transition": "VERIFY_ID -> VERIFY_ID",
+            "task_success": false,
+            "appropriate_escalation": false,
+            "premature_termination": false,
+            "constraint_violation": false,
+            "structural_violations": [],
+            "reward_components": {
+              "turn_cost": -0.1,
+              "new_identity_fields": 0,
+              "ignored_distress": 0,
+              "new_memory_fields": 0,
+              "first_phase_visit": 0,
+              "grounded_answer": 0,
+              "completion": 0,
+              "escalation_reward": 0,
+              "truncation_penalty": 0,
+              "structural_violations": 0
+            },
+            "escalation_reason": null,
+            "termination_reason": "in_progress"
+          },
+          "probabilities": [
+            0.44597548246383667,
+            0.17055009305477142,
+            0.3833845555782318,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0.00008992376388050616
+          ],
+          "value_estimate": 16.111793518066406,
+          "distribution_note": "Masked policy probabilities; execution selects the largest probability."
+        },
+        {
+          "session_id": "791297a2-2731-48f3-a310-da74b33c8cc3",
+          "turn": 6,
+          "agent_action": "ACK_EMOTION",
+          "agent_reply": "I hear how difficult this is. Thank you for explaining your concern. We can take this at your pace.",
+          "caller_utterance": "Thank you for understanding. Let's continue.",
+          "final_reply": "",
+          "observation_before": {
+            "caller_utterance": "Thank you for understanding. Let's continue.",
+            "last_agent_reply": "I hear how difficult this is. Thank you for explaining your concern. We can take this at your pace.",
+            "reply": "I hear how difficult this is. Thank you for explaining your concern. We can take this at your pace.",
+            "phase": "VERIFY_ID",
+            "verified_fields": [
+              "name"
+            ],
+            "memory_slots": {
+              "case_type_hint": "healthcare",
+              "status_hint": "denied",
+              "date_hint": "",
+              "topic_hint": "denial_reason"
+            },
+            "data_shield_active": true,
+            "active_case_id": "",
+            "action_mask": [
+              true,
+              true,
+              true,
+              false,
+              false,
+              false,
+              false,
+              false,
+              true
+            ],
+            "emotion": "neutral",
+            "privacy_concern": false,
+            "refusal": false,
+            "demands_human": false,
+            "resolution_attempts": 0,
+            "grounded_answered": false
+          },
+          "observation": {
+            "caller_utterance": "Thank you for understanding. Let's continue.",
+            "last_agent_reply": "I hear how difficult this is. Thank you for explaining your concern. We can take this at your pace.",
+            "reply": "I hear how difficult this is. Thank you for explaining your concern. We can take this at your pace.",
+            "phase": "VERIFY_ID",
+            "verified_fields": [
+              "name"
+            ],
+            "memory_slots": {
+              "case_type_hint": "healthcare",
+              "status_hint": "denied",
+              "date_hint": "",
+              "topic_hint": "denial_reason"
+            },
+            "data_shield_active": true,
+            "active_case_id": "",
+            "action_mask": [
+              true,
+              true,
+              true,
+              false,
+              false,
+              false,
+              false,
+              false,
+              true
+            ],
+            "emotion": "neutral",
+            "privacy_concern": false,
+            "refusal": false,
+            "demands_human": false,
+            "resolution_attempts": 0,
+            "grounded_answered": false
+          },
+          "reward": -0.1,
+          "terminated": false,
+          "truncated": false,
+          "info": {
+            "turn": 6,
+            "agent_action": "ACK_EMOTION",
+            "agent_reply": "I hear how difficult this is. Thank you for explaining your concern. We can take this at your pace.",
+            "caller_utterance": "Thank you for understanding. Let's continue.",
+            "final_reply": "",
+            "phase_transition": "VERIFY_ID -> VERIFY_ID",
+            "task_success": false,
+            "appropriate_escalation": false,
+            "premature_termination": false,
+            "constraint_violation": false,
+            "structural_violations": [],
+            "reward_components": {
+              "turn_cost": -0.1,
+              "new_identity_fields": 0,
+              "ignored_distress": 0,
+              "new_memory_fields": 0,
+              "first_phase_visit": 0,
+              "grounded_answer": 0,
+              "completion": 0,
+              "escalation_reward": 0,
+              "truncation_penalty": 0,
+              "structural_violations": 0
+            },
+            "escalation_reason": null,
+            "termination_reason": "in_progress"
+          },
+          "probabilities": [
+            0.4239019751548767,
+            0.1647890955209732,
+            0.4112171530723572,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0.00009180834604194388
+          ],
+          "value_estimate": 16.311744689941406,
+          "distribution_note": "Masked policy probabilities; execution selects the largest probability."
+        },
+        {
+          "session_id": "791297a2-2731-48f3-a310-da74b33c8cc3",
+          "turn": 7,
+          "agent_action": "EXPLAIN_VERIFICATION_GATE",
+          "agent_reply": "To protect your claim information, we need three matching identity details. You can use phone or email instead of a government ID. Let's take one thing at a time. Please share your date of birth.",
+          "caller_utterance": "My date of birth is 03/15/1985.",
+          "final_reply": "",
+          "observation_before": {
+            "caller_utterance": "Thank you for understanding. Let's continue.",
+            "last_agent_reply": "I hear how difficult this is. Thank you for explaining your concern. We can take this at your pace.",
+            "reply": "I hear how difficult this is. Thank you for explaining your concern. We can take this at your pace.",
+            "phase": "VERIFY_ID",
+            "verified_fields": [
+              "name"
+            ],
+            "memory_slots": {
+              "case_type_hint": "healthcare",
+              "status_hint": "denied",
+              "date_hint": "",
+              "topic_hint": "denial_reason"
+            },
+            "data_shield_active": true,
+            "active_case_id": "",
+            "action_mask": [
+              true,
+              true,
+              true,
+              false,
+              false,
+              false,
+              false,
+              false,
+              true
+            ],
+            "emotion": "neutral",
+            "privacy_concern": false,
+            "refusal": false,
+            "demands_human": false,
+            "resolution_attempts": 0,
+            "grounded_answered": false
+          },
+          "observation": {
+            "caller_utterance": "My date of birth is 03/15/1985.",
+            "last_agent_reply": "To protect your claim information, we need three matching identity details. You can use phone or email instead of a government ID. Let's take one thing at a time. Please share your date of birth.",
+            "reply": "To protect your claim information, we need three matching identity details. You can use phone or email instead of a government ID. Let's take one thing at a time. Please share your date of birth.",
+            "phase": "VERIFY_ID",
+            "verified_fields": [
+              "name",
+              "dob"
+            ],
+            "memory_slots": {
+              "case_type_hint": "healthcare",
+              "status_hint": "denied",
+              "date_hint": "",
+              "topic_hint": "denial_reason"
+            },
+            "data_shield_active": true,
+            "active_case_id": "",
+            "action_mask": [
+              true,
+              true,
+              true,
+              false,
+              false,
+              false,
+              false,
+              false,
+              true
+            ],
+            "emotion": "neutral",
+            "privacy_concern": false,
+            "refusal": false,
+            "demands_human": false,
+            "resolution_attempts": 0,
+            "grounded_answered": false
+          },
+          "reward": 0.9,
+          "terminated": false,
+          "truncated": false,
+          "info": {
+            "turn": 7,
+            "agent_action": "EXPLAIN_VERIFICATION_GATE",
+            "agent_reply": "To protect your claim information, we need three matching identity details. You can use phone or email instead of a government ID. Let's take one thing at a time. Please share your date of birth.",
+            "caller_utterance": "My date of birth is 03/15/1985.",
+            "final_reply": "",
+            "phase_transition": "VERIFY_ID -> VERIFY_ID",
+            "task_success": false,
+            "appropriate_escalation": false,
+            "premature_termination": false,
+            "constraint_violation": false,
+            "structural_violations": [],
+            "reward_components": {
+              "turn_cost": -0.1,
+              "new_identity_fields": 1,
+              "ignored_distress": 0,
+              "new_memory_fields": 0,
+              "first_phase_visit": 0,
+              "grounded_answer": 0,
+              "completion": 0,
+              "escalation_reward": 0,
+              "truncation_penalty": 0,
+              "structural_violations": 0
+            },
+            "escalation_reason": null,
+            "termination_reason": "in_progress"
+          },
+          "probabilities": [
+            0.4040296971797943,
+            0.16159199178218842,
+            0.4342786967754364,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0.00009965729987015948
+          ],
+          "value_estimate": 16.372760772705078,
+          "distribution_note": "Masked policy probabilities; execution selects the largest probability."
+        },
+        {
+          "session_id": "791297a2-2731-48f3-a310-da74b33c8cc3",
+          "turn": 8,
+          "agent_action": "EXPLAIN_VERIFICATION_GATE",
+          "agent_reply": "To protect your claim information, we need three matching identity details. You can use phone or email instead of a government ID. Let's take one thing at a time. Please share your phone number.",
+          "caller_utterance": "My phone number is (650) 521-2836.",
+          "final_reply": "",
+          "observation_before": {
+            "caller_utterance": "My date of birth is 03/15/1985.",
+            "last_agent_reply": "To protect your claim information, we need three matching identity details. You can use phone or email instead of a government ID. Let's take one thing at a time. Please share your date of birth.",
+            "reply": "To protect your claim information, we need three matching identity details. You can use phone or email instead of a government ID. Let's take one thing at a time. Please share your date of birth.",
+            "phase": "VERIFY_ID",
+            "verified_fields": [
+              "name",
+              "dob"
+            ],
+            "memory_slots": {
+              "case_type_hint": "healthcare",
+              "status_hint": "denied",
+              "date_hint": "",
+              "topic_hint": "denial_reason"
+            },
+            "data_shield_active": true,
+            "active_case_id": "",
+            "action_mask": [
+              true,
+              true,
+              true,
+              false,
+              false,
+              false,
+              false,
+              false,
+              true
+            ],
+            "emotion": "neutral",
+            "privacy_concern": false,
+            "refusal": false,
+            "demands_human": false,
+            "resolution_attempts": 0,
+            "grounded_answered": false
+          },
+          "observation": {
+            "caller_utterance": "My phone number is (650) 521-2836.",
+            "last_agent_reply": "To protect your claim information, we need three matching identity details. You can use phone or email instead of a government ID. Let's take one thing at a time. Please share your phone number.",
+            "reply": "To protect your claim information, we need three matching identity details. You can use phone or email instead of a government ID. Let's take one thing at a time. Please share your phone number.",
+            "phase": "PROCESS_CASE",
+            "verified_fields": [
+              "name",
+              "dob",
+              "phone"
+            ],
+            "memory_slots": {
+              "case_type_hint": "healthcare",
+              "status_hint": "denied",
+              "date_hint": "",
+              "topic_hint": "denial_reason"
+            },
+            "data_shield_active": false,
+            "active_case_id": "CL-2048",
+            "action_mask": [
+              true,
+              false,
+              false,
+              true,
+              true,
+              true,
+              false,
+              false,
+              true
+            ],
+            "emotion": "neutral",
+            "privacy_concern": false,
+            "refusal": false,
+            "demands_human": false,
+            "resolution_attempts": 0,
+            "grounded_answered": false
+          },
+          "reward": 2.9,
+          "terminated": false,
+          "truncated": false,
+          "info": {
+            "turn": 8,
+            "agent_action": "EXPLAIN_VERIFICATION_GATE",
+            "agent_reply": "To protect your claim information, we need three matching identity details. You can use phone or email instead of a government ID. Let's take one thing at a time. Please share your phone number.",
+            "caller_utterance": "My phone number is (650) 521-2836.",
+            "final_reply": "",
+            "phase_transition": "VERIFY_ID -> PROCESS_CASE",
+            "task_success": false,
+            "appropriate_escalation": false,
+            "premature_termination": false,
+            "constraint_violation": false,
+            "structural_violations": [],
+            "reward_components": {
+              "turn_cost": -0.1,
+              "new_identity_fields": 1,
+              "ignored_distress": 0,
+              "new_memory_fields": 0,
+              "first_phase_visit": 2,
+              "grounded_answer": 0,
+              "completion": 0,
+              "escalation_reward": 0,
+              "truncation_penalty": 0,
+              "structural_violations": 0
+            },
+            "escalation_reason": null,
+            "termination_reason": "in_progress"
+          },
+          "probabilities": [
+            0.36967167258262634,
+            0.21183232963085175,
+            0.4183836579322815,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0.00011239758168812841
+          ],
+          "value_estimate": 15.354681968688965,
+          "distribution_note": "Masked policy probabilities; execution selects the largest probability."
+        },
+        {
+          "session_id": "791297a2-2731-48f3-a310-da74b33c8cc3",
+          "turn": 9,
+          "agent_action": "ANSWER_GROUNDED",
+          "agent_reply": "Identity verified. I found the claim using your earlier details.\n\nClaim CL-2048 is denied. It is a healthcare claim created on 2026-01-12.\n\nThe recorded denial reason is that the review file did not include the pathology report and the treating provider office note.\n\nThe requested documents are: pathology report, office note.\n\nThe recorded appeal deadline is 2026-03-18. That date has passed. A human claims representative must review whether any options remain; I cannot promise an extension.\n\nChoose a next step below, or ask in your own words.",
+          "caller_utterance": "Thank you for explaining the claim details. That is all the questions I have.",
+          "final_reply": "",
+          "observation_before": {
+            "caller_utterance": "My phone number is (650) 521-2836.",
+            "last_agent_reply": "To protect your claim information, we need three matching identity details. You can use phone or email instead of a government ID. Let's take one thing at a time. Please share your phone number.",
+            "reply": "To protect your claim information, we need three matching identity details. You can use phone or email instead of a government ID. Let's take one thing at a time. Please share your phone number.",
+            "phase": "PROCESS_CASE",
+            "verified_fields": [
+              "name",
+              "dob",
+              "phone"
+            ],
+            "memory_slots": {
+              "case_type_hint": "healthcare",
+              "status_hint": "denied",
+              "date_hint": "",
+              "topic_hint": "denial_reason"
+            },
+            "data_shield_active": false,
+            "active_case_id": "CL-2048",
+            "action_mask": [
+              true,
+              false,
+              false,
+              true,
+              true,
+              true,
+              false,
+              false,
+              true
+            ],
+            "emotion": "neutral",
+            "privacy_concern": false,
+            "refusal": false,
+            "demands_human": false,
+            "resolution_attempts": 0,
+            "grounded_answered": false
+          },
+          "observation": {
+            "caller_utterance": "Thank you for explaining the claim details. That is all the questions I have.",
+            "last_agent_reply": "Identity verified. I found the claim using your earlier details.\n\nClaim CL-2048 is denied. It is a healthcare claim created on 2026-01-12.\n\nThe recorded denial reason is that the review file did not include the pathology report and the treating provider office note.\n\nThe requested documents are: pathology report, office note.\n\nThe recorded appeal deadline is 2026-03-18. That date has passed. A human claims representative must review whether any options remain; I cannot promise an extension.\n\nChoose a next step below, or ask in your own words.",
+            "reply": "Identity verified. I found the claim using your earlier details.\n\nClaim CL-2048 is denied. It is a healthcare claim created on 2026-01-12.\n\nThe recorded denial reason is that the review file did not include the pathology report and the treating provider office note.\n\nThe requested documents are: pathology report, office note.\n\nThe recorded appeal deadline is 2026-03-18. That date has passed. A human claims representative must review whether any options remain; I cannot promise an extension.\n\nChoose a next step below, or ask in your own words.",
+            "phase": "POST_PROCESS",
+            "verified_fields": [
+              "name",
+              "dob",
+              "phone"
+            ],
+            "memory_slots": {
+              "case_type_hint": "healthcare",
+              "status_hint": "denied",
+              "date_hint": "",
+              "topic_hint": "denial_reason"
+            },
+            "data_shield_active": false,
+            "active_case_id": "CL-2048",
+            "action_mask": [
+              true,
+              false,
+              false,
+              false,
+              false,
+              false,
+              true,
+              false,
+              true
+            ],
+            "emotion": "neutral",
+            "privacy_concern": false,
+            "refusal": false,
+            "demands_human": false,
+            "resolution_attempts": 0,
+            "grounded_answered": true
+          },
+          "reward": 2.9,
+          "terminated": false,
+          "truncated": false,
+          "info": {
+            "turn": 9,
+            "agent_action": "ANSWER_GROUNDED",
+            "agent_reply": "Identity verified. I found the claim using your earlier details.\n\nClaim CL-2048 is denied. It is a healthcare claim created on 2026-01-12.\n\nThe recorded denial reason is that the review file did not include the pathology report and the treating provider office note.\n\nThe requested documents are: pathology report, office note.\n\nThe recorded appeal deadline is 2026-03-18. That date has passed. A human claims representative must review whether any options remain; I cannot promise an extension.\n\nChoose a next step below, or ask in your own words.",
+            "caller_utterance": "Thank you for explaining the claim details. That is all the questions I have.",
+            "final_reply": "",
+            "phase_transition": "PROCESS_CASE -> POST_PROCESS",
+            "task_success": false,
+            "appropriate_escalation": false,
+            "premature_termination": false,
+            "constraint_violation": false,
+            "structural_violations": [],
+            "reward_components": {
+              "turn_cost": -0.1,
+              "new_identity_fields": 0,
+              "ignored_distress": 0,
+              "new_memory_fields": 0,
+              "first_phase_visit": 2,
+              "grounded_answer": 1,
+              "completion": 0,
+              "escalation_reward": 0,
+              "truncation_penalty": 0,
+              "structural_violations": 0
+            },
+            "escalation_reason": null,
+            "termination_reason": "in_progress"
+          },
+          "probabilities": [
+            0.022915704175829887,
+            0,
+            0,
+            0.00401870533823967,
+            0.01136840134859085,
+            0.9615692496299744,
+            0,
+            0,
+            0.00012792044435627759
+          ],
+          "value_estimate": 12.546975135803223,
+          "distribution_note": "Masked policy probabilities; execution selects the largest probability."
+        },
+        {
+          "session_id": "791297a2-2731-48f3-a310-da74b33c8cc3",
+          "turn": 10,
+          "agent_action": "OFFER_EMAIL_SUMMARY",
+          "agent_reply": "Would you like an email summary of what we discussed, the claim outcome and next steps, or would you prefer to skip it?",
+          "caller_utterance": "Yes, please send the summary to my email.",
+          "final_reply": "The email summary was added to the demo outbox for margaret@email.com. Delivery is simulated; no real email was sent. Thank you for contacting claims support.",
+          "observation_before": {
+            "caller_utterance": "Thank you for explaining the claim details. That is all the questions I have.",
+            "last_agent_reply": "Identity verified. I found the claim using your earlier details.\n\nClaim CL-2048 is denied. It is a healthcare claim created on 2026-01-12.\n\nThe recorded denial reason is that the review file did not include the pathology report and the treating provider office note.\n\nThe requested documents are: pathology report, office note.\n\nThe recorded appeal deadline is 2026-03-18. That date has passed. A human claims representative must review whether any options remain; I cannot promise an extension.\n\nChoose a next step below, or ask in your own words.",
+            "reply": "Identity verified. I found the claim using your earlier details.\n\nClaim CL-2048 is denied. It is a healthcare claim created on 2026-01-12.\n\nThe recorded denial reason is that the review file did not include the pathology report and the treating provider office note.\n\nThe requested documents are: pathology report, office note.\n\nThe recorded appeal deadline is 2026-03-18. That date has passed. A human claims representative must review whether any options remain; I cannot promise an extension.\n\nChoose a next step below, or ask in your own words.",
+            "phase": "POST_PROCESS",
+            "verified_fields": [
+              "name",
+              "dob",
+              "phone"
+            ],
+            "memory_slots": {
+              "case_type_hint": "healthcare",
+              "status_hint": "denied",
+              "date_hint": "",
+              "topic_hint": "denial_reason"
+            },
+            "data_shield_active": false,
+            "active_case_id": "CL-2048",
+            "action_mask": [
+              true,
+              false,
+              false,
+              false,
+              false,
+              false,
+              true,
+              false,
+              true
+            ],
+            "emotion": "neutral",
+            "privacy_concern": false,
+            "refusal": false,
+            "demands_human": false,
+            "resolution_attempts": 0,
+            "grounded_answered": true
+          },
+          "observation": {
+            "caller_utterance": "Yes, please send the summary to my email.",
+            "last_agent_reply": "The email summary was added to the demo outbox for margaret@email.com. Delivery is simulated; no real email was sent. Thank you for contacting claims support.",
+            "reply": "The email summary was added to the demo outbox for margaret@email.com. Delivery is simulated; no real email was sent. Thank you for contacting claims support.",
+            "phase": "CONCLUDED",
+            "verified_fields": [
+              "name",
+              "dob",
+              "phone"
+            ],
+            "memory_slots": {
+              "case_type_hint": "healthcare",
+              "status_hint": "denied",
+              "date_hint": "",
+              "topic_hint": "denial_reason"
+            },
+            "data_shield_active": false,
+            "active_case_id": "CL-2048",
+            "action_mask": [
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false
+            ],
+            "emotion": "neutral",
+            "privacy_concern": false,
+            "refusal": false,
+            "demands_human": false,
+            "resolution_attempts": 0,
+            "grounded_answered": true
+          },
+          "reward": 9.9,
+          "terminated": true,
+          "truncated": false,
+          "info": {
+            "turn": 10,
+            "agent_action": "OFFER_EMAIL_SUMMARY",
+            "agent_reply": "Would you like an email summary of what we discussed, the claim outcome and next steps, or would you prefer to skip it?",
+            "caller_utterance": "Yes, please send the summary to my email.",
+            "final_reply": "The email summary was added to the demo outbox for margaret@email.com. Delivery is simulated; no real email was sent. Thank you for contacting claims support.",
+            "phase_transition": "POST_PROCESS -> CONCLUDED",
+            "task_success": true,
+            "appropriate_escalation": false,
+            "premature_termination": false,
+            "constraint_violation": false,
+            "structural_violations": [],
+            "reward_components": {
+              "turn_cost": -0.1,
+              "new_identity_fields": 0,
+              "ignored_distress": 0,
+              "new_memory_fields": 0,
+              "first_phase_visit": 0,
+              "grounded_answer": 0,
+              "completion": 10,
+              "escalation_reward": 0,
+              "truncation_penalty": 0,
+              "structural_violations": 0
+            },
+            "escalation_reason": null,
+            "termination_reason": "concluded"
+          },
+          "probabilities": [
+            0.025604460388422012,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0.9743325710296631,
+            0,
+            0.00006295774801401421
+          ],
+          "value_estimate": 9.606579780578613,
+          "distribution_note": "Masked policy probabilities; execution selects the largest probability."
+        }
+      ],
+      "metrics": {
+        "outcome": "case_completed",
+        "final_phase": "CONCLUDED",
+        "turn_count": 10,
+        "return": 16,
+        "violations": 0,
+        "verified_fields": 3
+      }
+    }
+  ]
+}

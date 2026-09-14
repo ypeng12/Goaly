@@ -29,3 +29,19 @@ ablation runs and browser evidence were recovered directly as readable files.
 Use `artifacts/rl_audit.json` for current acceptance. Historical observations do
 not substitute for rerunning the delivered checkpoints, and a failed run is not
 removed merely because it misses an acceptance gate.
+
+
+## Customer runtime, September 14
+
+Customer chat now executes a trained dialogue-act controller. The original
+version-3 checkpoints and lab remain available. A separate version-4 environment
+uses the real customer mask/executor with multiple follow-up questions.
+
+Both seeds received 20k + 20k + 20k requested steps (60,288 actual). The first two
+segments did not cover frustration and some missing-information combinations
+adequately; the third expands those training scenarios. Initial checkpoints and
+validation failures are retained, with exact source overlays. The final two
+policies match rules on seven development scenarios, not an independent human
+holdout. Read [the experiment record](../artifacts/customer_policy/README.md)
+and [comparison](../artifacts/customer_policy/comparison.json). PPO action
+learning, shared language fixes and fact correctness are evaluated separately.

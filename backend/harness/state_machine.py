@@ -421,7 +421,8 @@ class SOPStateMachine:
         res["agent_reply"] = reply_msg
         return res
 
-    def evaluate_turn(self, user_text: str, semantic: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+    def evaluate_turn(self, user_text: str, semantic: Optional[Dict[str, Any]] = None,
+                      *, conversation_context: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         phase_before = self.state.phase
         if phase_before in self.TERMINAL_PHASES:
             return self._result(phase_before, note="This session is terminal. Start a new session to continue.")
@@ -434,7 +435,11 @@ class SOPStateMachine:
         if semantic.get("emotion") in {"frustration", "anxiety", "anger", "confusion", "refusal"}:
             emotions["emotion"] = semantic["emotion"]
             emotions["is_frustrated"] = True
-        is_oos = self.extractor.is_out_of_scope(user_text) or semantic.get("is_out_of_scope") is True
+        # Context may resolve a short follow-up, but cannot contribute identity,
+        # claim selection or consent evidence. Recheck it against the live gate.
+        from .conversation_context import is_safe_contextual_followup
+        contextual = is_safe_contextual_followup(self, user_text, conversation_context)
+        is_oos = not contextual and (self.extractor.is_out_of_scope(user_text) or semantic.get("is_out_of_scope") is True)
 
         # A third-party disclosure remains blocked in EVERY phase. A roster
         # lookup cannot substitute for verified representative credentials.

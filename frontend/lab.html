@@ -11,17 +11,45 @@
     <header class="header"><a class="brand" href="/"><span class="brand-name">aegis</span></a>
       <nav class="header-actions" aria-label="Workspace"><a class="btn btn-secondary" href="/">Customer demo</a><a class="btn btn-primary" href="/lab" aria-current="page">RL Lab</a></nav></header>
     <main class="lab-main">
-      <p class="eyebrow">DEVELOPER LAB / A GUIDE TO THE RESULTS</p><h1>Did the agent help the caller?</h1>
-      <p class="lab-intro">Choose a caller, compare the strategies, then replay their decisions. PPO is the strategy learned through practice; the rule baseline follows hand-written choices.</p>
+      <p class="eyebrow">DEVELOPER LAB / FROM TRAINING TO A REAL CONVERSATION</p><h1>Did the agent help the caller?</h1>
+      <p class="lab-intro">The goal is a useful conversation that follows the rules: remember what the customer said, answer the actual follow-up, and finish with the right outcome. RL learns which allowed action to take next; it does not write the answer.</p>
+      <div class="lab-entrypoints">
+        <article class="lab-entrypoint"><span class="eyebrow">1 · CURRENT CUSTOMER EXPERIENCE</span><h2>Talk to the trained strategy</h2><p>Type your own questions. In Settings, switch between PPO and rules. Expand “This response” to see the action and checkpoint actually used for that turn.</p><a class="btn btn-primary" href="/?controller=ppo42" id="lab-open-chat">Chat with PPO →</a><a class="text-button" href="/?controller=rule">Try the rule baseline</a><p class="lab-small">Customer conversation training uses environment v4. Each turn identifies its model; any fallback to an earlier checkpoint is shown. The language engine is a separate setting.</p></article>
+        <article class="lab-entrypoint"><span class="eyebrow">2 · ORIGINAL SIMULATOR EXPERIMENT</span><h2>Replay the earlier training setup</h2><p>Run the same synthetic caller through rules, random legal actions, and the original simulator-trained PPO checkpoints. Compare the outcomes and inspect each decision.</p><a class="btn btn-secondary" href="#lab-form">Open original experiment ↓</a><p class="lab-small">This is environment v3. Its checkpoints are separate from the v4 customer conversation models, even when their training seeds have the same number.</p></article>
+      </div>
       <div class="lab-guide" aria-label="What good performance means">
         <article><span>1 · Protect the caller</span><p>No claim access before verification. No email without consent. Any violation needs investigation.</p></article>
         <article><span>2 · Reach the right outcome</span><p>Answer the claim question and respect the follow-up choice, or request a human when needed. An early exit is a failure.</p></article>
-        <article><span>3 · Reduce effort</span><p>Compare turns only after checking safety and outcome. A shorter call alone is not a better call.</p></article>
+        <article><span>3 · Reduce customer effort</span><p>Understand follow-ups without making the caller repeat themselves. Compare turns only after checking safety and outcome. A shorter call alone is not a better call.</p></article>
       </div>
-      <p class="lab-boundary">This page runs trained PPO in a synthetic caller simulator. Customer chat runs the SOP with optional model interpretation; PPO does not choose its actions. Both use the same verification and consent authority.</p>
+      <section class="lab-card customer-evidence" aria-labelledby="customer-evidence-heading">
+        <p class="eyebrow">CURRENT CUSTOMER POLICY / ENVIRONMENT V4</p><h2 id="customer-evidence-heading">What does the customer strategy achieve?</h2>
+        <p id="customer-evidence-status" class="lab-small" role="status">Loading the saved customer conversation evaluation…</p>
+        <div id="customer-evidence-results" hidden>
+          <label class="customer-policy-picker" for="customer-result-policy">Inspect a strategy<select id="customer-result-policy"></select></label>
+          <div class="customer-metric-grid">
+            <article><span>Cases completed</span><strong id="customer-completion">Not reported</strong><p>Answered the scripted questions and completed the follow-up choice.</p></article>
+            <article><span>Distressed turns ignored</span><strong id="customer-ignored">Not reported</strong><p>Lower is better. Measures missed empathy when the scripted caller expressed distress.</p></article>
+            <article><span>Unnecessary verification explanations</span><strong id="customer-repetition">Not reported</strong><p>Total in this evaluation. Lower means less unneeded repetition.</p></article>
+            <article><span>Safety violations</span><strong id="customer-safety">Not reported</strong><p>Target: zero. SOP gates enforce the boundary; this is not proof of learned safety.</p></article>
+          </div>
+          <p id="customer-evidence-takeaway" class="lab-takeaway"></p>
+          <details class="customer-comparison"><summary>Compare all strategies and inspect the measurements</summary>
+            <div class="lab-table-wrap"><table class="lab-table"><caption>All checkpoints evaluated on the same v4 customer scenarios</caption><thead><tr><th>Strategy</th><th>Completed</th><th>Appropriate handoffs</th><th>Unresolved handoffs</th><th>Distress ignored</th><th>Unneeded explanations</th><th>Violations</th><th>Mean policy decisions</th></tr></thead><tbody id="customer-comparison-rows"></tbody></table></div>
+            <p class="lab-small">A necessary handoff is counted separately from a caller asking for a person because the agent did not help. Policy decisions count action selections; they are not a count of all customer and assistant messages.</p>
+            <p class="lab-small" id="customer-evidence-checkpoint"></p><p class="lab-small" id="customer-evidence-other-metrics"></p>
+          </details>
+          <a class="text-button" id="customer-report-download" href="/api/lab/customer-report" download="aegis-customer-policy-report.json">Download the customer evaluation JSON ↓</a>
+        </div>
+        <p id="customer-evidence-scope" class="lab-small">Scripted development scenarios; not a blind test or customer satisfaction study.</p>
+        <details id="customer-limits"><summary>Limits of this evaluation</summary><p id="customer-evidence-limitations" class="lab-small">This is a finite development evaluation with synthetic callers, not a blind test or customer satisfaction score. Shared language and follow-up improvements apply to every controller and must not be credited to PPO alone.</p></details>
+      </section>
+      <details class="lab-explainer"><summary>Where does RL fit in the conversation?</summary><ol><li><strong>Understand:</strong> interpret the customer’s message in the context of earlier turns.</li><li><strong>Constrain:</strong> the SOP determines which actions and claim data are allowed.</li><li><strong>Choose:</strong> PPO uses its trained weights to select an allowed action. Required steps remain under SOP control.</li><li><strong>Respond:</strong> answer from authorized records, then wait for the customer’s next message.</li></ol><p class="lab-small">A trained action policy is not a fine-tuned language model. Better language interpretation and better action choices need separate tests.</p></details>
+      <h2 class="lab-section-title">Original simulator experiment · v3</h2>
+      <p class="lab-boundary">This experiment loads the original v3 simulator checkpoints, not the v4 weights trained for customer conversations. “Seed 42” and “seed 7” identify training randomness within each model family; matching seed numbers do not mean matching models. The outcomes and rewards below belong only to these synthetic simulator runs.</p>
       <form id="lab-form" class="lab-controls">
         <label>Caller scenario<select id="lab-profile" required aria-label="Caller scenario"></select></label>
-        <label>Policy<select id="lab-policy"><option value="compare">Compare all four</option><option value="ppo42">PPO · seed 42</option><option value="ppo7">PPO · seed 7</option><option value="rule">Rule baseline</option><option value="random">Random legal actions</option></select></label>
+        <label>Original simulator policy<select id="lab-policy"><option value="compare">Compare all four</option><option value="ppo42">Simulator v3 PPO · seed 42</option><option value="ppo7">Simulator v3 PPO · seed 7</option><option value="rule">Rule baseline</option><option value="random">Random legal actions</option></select></label>
         <details class="lab-settings"><summary>Run settings</summary><label>Random seed<input id="lab-seed" type="number" min="0" max="2147483647" value="42" required></label><p class="lab-small">Keeps the caller’s random variations repeatable. PPO seed 42 and 7 identify two separate training runs.</p></details>
         <button id="lab-run" class="btn btn-primary" type="submit">Run experiment</button>
       </form>
@@ -45,8 +73,9 @@
           </section>
         </div>
       </section>
-      <section class="lab-card evidence-card"><h2>What have we actually demonstrated?</h2><p id="lab-evidence">Loading saved experiment reports…</p>
-        <p class="lab-small">The saved main runs match the rule baseline’s task and safety outcomes. They do not establish that PPO is better than rules. Generalization to real callers still needs evaluation.</p>
+      <section class="lab-card evidence-card"><h2>Evidence from the original simulator</h2><p id="lab-evidence">Loading saved v3 experiment reports…</p>
+        <p class="lab-small">The original v3 main runs match the rule baseline’s task and safety outcomes. They do not establish that PPO is better than rules, and they are not the evaluation of the v4 customer conversation policy.</p>
+        <p class="lab-small">Before claiming improvement, use held-out conversations to measure correct follow-up answers, repeated information requests, unnecessary handoffs, task completion and violations. A passing simulator run does not measure all of these.</p>
         <p class="lab-small">The saved audit repeats finite synthetic profiles. The emotion ablation uses fresh paired training runs and changes only five emotion inputs. DPO artifacts are preference data; no DPO model has been trained.</p>
         <details><summary>Saved audit and experiment metadata</summary><pre id="lab-evidence-json"></pre></details>
       </section>
