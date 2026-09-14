@@ -1,5 +1,15 @@
 # Constrained dialogue policy: implementation walkthrough
 
+Customer chat now executes a rule or trained PPO controller on the human's
+actual input. The version-4 training environment reuses that customer mask and
+response executor. Model-assisted interpretation and grounded fact planning
+are separate from the action policy. See [the current runtime contract and
+acceptance results](docs/CUSTOMER_RUNTIME.md) and [customer training history](artifacts/customer_policy/README.md).
+
+The sections below preserve the original version-3 `AgentPolicyEnv` experiment
+and its action/reward semantics. Its historical checkpoints remain in the lab;
+they must not be confused with the new customer checkpoints.
+
 ## 1. Authority and interaction
 
 The insurance SOP is the authority for identity, ownership, claim access and
@@ -17,8 +27,8 @@ flowchart LR
     S --> E["Outcome, reward and causal trace"]
 ~~~
 
-The runtime customer UI uses model-assisted interpretation plus the SOP.
-The PPO simulation is a separate experiment that shares the same SOP authority.
+This original PPO simulation remains a separate experiment. Customer version 4
+shares the SOP authority and connects a newly trained policy to actual chat.
 
 ## 2. Environment contract
 
