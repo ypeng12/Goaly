@@ -41,20 +41,25 @@ class MockEngine(BaseEngine):
             return empathy + reason + 'I have recorded a request to connect you with a human claims representative. This demo simulates the handoff; no live transfer takes place. Verification is still required before protected details can be shared.'
         if state_result.get('is_out_of_scope') or 'REJECT_OUT_OF_SCOPE' in actions:
             return empathy + 'I can help with insurance claims, policy questions, and verification, but I am unable to answer that unrelated request. We can continue with your claim, or you can ask for a human representative.'
+        if UtteranceExtractor.support_orientation(user_text):
+            next_step = ('Before we open your claim, we need 3 matching identity details. You can use the verification form.'
+                         if ctx.get('data_shield_active', True) else
+                         'Choose a topic below, or describe what happened in your own words.')
+            return (empathy + 'A claim is a request for your insurer to pay for a loss or expense. '
+                    'I can help you check its progress, understand a rejection, or find out which documents are needed.\n\n' + next_step)
         if ctx.get('data_shield_active', True):
             if state_result.get('proxy_consent_status') == 'unauthorized':
                 return empathy + 'To protect privacy, I cannot disclose claim information to unauthorized third parties. We must verify a representative’s own identity and the policyholder’s authorization. Please ask the policyholder to contact support, or request a human representative.'
             fields = ctx.get('collected_fields', [])
-            acknowledgement = 'I have noted the identity details you shared. ' if fields else ''
             memory = ctx.get('memory', {})
-            remembered = 'I have also saved your claim question for after verification. ' if any(memory.get(k) for k in ['case_type_hint', 'status_hint', 'case_id_hint', 'topic_hint']) else ''
+            remembered = 'I’ve saved your claim question for after verification. ' if any(memory.get(k) for k in ['case_type_hint', 'status_hint', 'case_id_hint', 'topic_hint']) else ''
             missing = [LABELS[k] for k in LABELS if k not in fields]
             if len(fields) >= 3:
-                request = 'I could not verify those details together. Please double-check what you supplied, or use another of the five allowed identity fields. '
+                request = 'Those details did not match together. Use the verification form to correct them, or share an explicit correction in chat. '
             else:
                 request = f"Please share {max(1, 3 - len(fields))} more item{'s' if 3 - len(fields) != 1 else ''}, choosing from " + ', '.join(missing) + '. '
-            return (empathy + acknowledgement + remembered + 'To protect your private claim information, I need to verify 3 matching items before opening a claim. '
-                    + request + 'You can use phone or email instead of SSN, or ask for a human representative.')
+            return (empathy + remembered + 'To protect your privacy, we must verify 3 matching identity details.\n\n'
+                    + request + 'Phone or email can replace SSN. A human representative can also help.')
         if phase == Phase.RESOLVE_INTENT:
             candidates = state_result.get('candidate_claims', [])
             resolution = state_result.get('resolution_status', '')
@@ -105,13 +110,13 @@ class MockEngine(BaseEngine):
         state_result['grounded_topics'] = used
         if state and hasattr(state, 'discussion_topics'):
             state.discussion_topics = list(dict.fromkeys(state.discussion_topics + used))
-        intro = 'Your identity is verified. I used the claim details you shared earlier to find your case.\n\n' if newly_opened else ''
+        intro = 'Identity verified. I found the claim using your earlier details.\n\n' if newly_opened else ''
         style = state_result.get('response_style', 'concise')
         if style == 'step_by_step' and len(pieces) > 1:
             body = '\n'.join(f'{i}. {p}' for i, p in enumerate(pieces, 1))
         else:
             body = '\n\n'.join(pieces)
-        ending = "\n\nWhat else would help? You can ask for more detail, or say 'That's all' for an optional email summary."
+        ending = "\n\nChoose a next step below, or ask in your own words."
         return empathy + intro + body + ending
 
     @staticmethod

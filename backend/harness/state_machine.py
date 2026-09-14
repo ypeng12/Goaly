@@ -239,7 +239,8 @@ class SOPStateMachine:
                     value = calendar.month_name[month]
                     if value not in memory.hint_history.setdefault("date_hint", []):
                         memory.hint_history["date_hint"].append(value)
-            for value in re.findall(r"\b20\d{2}(?:-\d{2}(?:-\d{2})?)?\b", business):
+            dates = re.sub(r'\b(?:CL|POL)-\d+\b', '', business, flags=re.IGNORECASE)
+            for value in re.findall(r"\b20\d{2}(?:-\d{2}(?:-\d{2})?)?\b", dates):
                 if value not in memory.hint_history.setdefault("date_hint", []):
                     memory.hint_history["date_hint"].append(value)
         for value in re.findall(r"\bCL-\d+\b", business, re.IGNORECASE):
@@ -344,24 +345,52 @@ class SOPStateMachine:
     def verify_card_data(self, form_data: Dict[str, str]) -> Dict[str, Any]:
         """Direct deterministic card form verification bypassing LLM extraction."""
         phase_before = self.state.phase
-        if phase_before in self.TERMINAL_PHASES:
-            return self._result(phase_before, note="This session is terminal. Start a new session to continue.")
+        if phase_before != Phase.VERIFY_ID or self.state.is_proxy_caller:
+            res = self._result(phase_before)
+            res['agent_reply'] = 'This form cannot change the identity for this call. A human representative can help.'
+            return res
 
-        for field in ("name", "dob", "phone", "email", "id_last4", "id_type"):
-            val = form_data.get(field, "").strip()
-            if val:
-                setattr(self.state.accumulated_pii, field, val)
+        supplied = {k: form_data.get(k, '').strip() for k in (*self.PII_NAMES, 'id_type')}
+        errors = {}
+        if supplied['dob']:
+            for fmt in ('%Y-%m-%d', '%m/%d/%Y'):
+                try:
+                    birthday = datetime.datetime.strptime(supplied['dob'], fmt).date()
+                    if birthday > datetime.datetime.now(datetime.timezone.utc).date():
+                        raise ValueError('Future birthday')
+                    supplied['dob'] = birthday.isoformat()
+                    break
+                except ValueError:
+                    continue
+            else:
+                errors['dob'] = 'Choose a valid birth date, or use YYYY-MM-DD or MM/DD/YYYY.'
+        if supplied['email'] and not re.fullmatch(r'[^\s@]+@[^\s@]+\.[^\s@]+', supplied['email']):
+            errors['email'] = 'Use a complete email address, such as name@example.com.'
+        digits = re.sub(r'\D', '', supplied['phone'])
+        if supplied['phone'] and (not re.fullmatch(r'[+\d().\s-]+', supplied['phone']) or
+                                  not (len(digits) == 10 or (len(digits) == 11 and digits.startswith('1')))):
+            errors['phone'] = 'Use a 10-digit US phone number, with an optional +1 country code.'
+        if supplied['id_last4'] and not re.fullmatch(r'\d{4}', supplied['id_last4']):
+            errors['id_last4'] = 'Enter exactly 4 digits.'
+        if supplied['id_type'] and supplied['id_type'] not in ('ssn_last4', 'national_id_last4'):
+            errors['id_type'] = 'Choose SSN or National ID.'
+        if errors:
+            res = self._result(phase_before)
+            res.update(agent_reply='Please correct the highlighted fields. Your claim remains protected.', field_errors=errors)
+            return res
 
-        dob_val = form_data.get("dob", "").strip()
-        if dob_val:
-            m = re.match(r"^(\d{1,2})/(\d{1,2})/(\d{4})$", dob_val)
-            if m:
-                month, day, year = int(m.group(1)), int(m.group(2)), int(m.group(3))
-                iso_dob = f"{year:04d}-{month:02d}-{day:02d}"
-                self.state.accumulated_pii.dob = iso_dob
+        # Submitting an edited form is an explicit correction of supplied fields.
+        # Keep unrelated conflicts; never silently guess or drop contradictory PII.
+        for field, value in supplied.items():
+            if not value or (field == 'id_type' and not supplied['id_last4']):
+                continue
+            setattr(self.state.accumulated_pii, field, value)
+            if field in self.state.pii_conflicts:
+                self.state.pii_conflicts.remove(field)
 
         verified, ph, matched = grounded_data.verify_identity(self.state.accumulated_pii)
-        if verified and ph and len(matched) >= 3:
+        self.state.verified_fields = list(matched) if not self.state.pii_conflicts else []
+        if verified and ph and len(matched) >= 3 and not self.state.pii_conflicts:
             self.state.identity_verified = True
             self.state.verified_party_id = ph.party_id
             self.state.verified_fields = list(matched)
@@ -373,16 +402,19 @@ class SOPStateMachine:
                     Phase.VERIFY_ID
                 )
                 self._resolve()
-            reply_msg = f"Thank you, {ph.name}. Your security verification card has been verified. How can Aegis support help with your claim today?"
+            reply_msg = f"Thank you, {ph.name}. Your identity is verified. " + (
+                'I kept your earlier claim details and found your case.' if self.state.phase == Phase.PROCESS_CASE
+                else 'Choose what you need help with, or tell me in your own words.')
         else:
-            num_matched = len(matched) if matched else 0
+            num_matched = len(self.state.verified_fields)
             self._add_trace(
                 "VERIFY_ID_GATE", False,
                 f"Security card form submitted ({num_matched}/3 fields matched). Gate remains locked.",
                 phase_before
             )
             needed = max(0, 3 - num_matched)
-            reply_msg = f"Thank you for submitting the verification card. We currently have {num_matched} matching field(s). We need {needed} more matching field(s) to verify your identity."
+            reply_msg = (f"We need {needed} more matching field(s) to verify your identity. " if num_matched else
+                         'Those details did not match together. ') + 'Check your entries and correct any mistakes. You can use phone or email instead of SSN, or ask for a human representative.'
 
         self.record_snapshot("[Submitted Security Verification Card]", reply_msg)
         res = self._result(phase_before, note=f"Card verification: {phase_before.value} -> {self.state.phase.value}")

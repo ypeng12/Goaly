@@ -1,0 +1,37 @@
+{
+  "passed": true,
+  "checks": [
+    {
+      "viewport": 1440,
+      "customer_finish": "passed",
+      "consent_skip": "passed",
+      "beginner_choices": "passed",
+      "form_error_recovery": "passed",
+      "remembered_typo_hint": "passed",
+      "native_date_and_phone_preservation": "passed",
+      "plain_language_lab": "passed",
+      "name_only_remains_locked": "passed",
+      "composer_not_clipped": "passed",
+      "rl_comparison": "passed",
+      "replay": "passed",
+      "download": "passed",
+      "page_errors": []
+    },
+    {
+      "viewport": 390,
+      "customer_finish": "passed",
+      "consent_skip": "passed",
+      "beginner_choices": "passed",
+      "form_error_recovery": "passed",
+      "remembered_typo_hint": "passed",
+      "native_date_and_phone_preservation": "passed",
+      "plain_language_lab": "passed",
+      "name_only_remains_locked": "passed",
+      "composer_not_clipped": "passed",
+      "rl_comparison": "passed",
+      "replay": "passed",
+      "download": "passed",
+      "page_errors": []
+    }
+  ]
+}

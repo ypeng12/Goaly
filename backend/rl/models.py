@@ -71,6 +71,10 @@ class ActorCriticPolicy(nn.Module):
         value = self.critic(features).squeeze(-1)
 
         if mask is not None:
+            # A terminal state's all-false mask must not become a uniform
+            # distribution over forbidden actions after softmax.
+            if not torch.all(mask.any(dim=-1)):
+                raise ValueError('No legal actions: do not evaluate a policy after the episode ends.')
             # Set masked action logits to very large negative number
             masked_logits = torch.where(mask, logits, torch.full_like(logits, -1e9))
         else:

@@ -17,7 +17,7 @@ const SCENARIOS = {
   "scenario-oos": "What is RL?",
   "scenario-proxy": "I am David Chen calling on behalf of my mother Margaret Chen, policy POL-9921. Her DOB is 1985-03-15 and her SSN last four is 4472. I’m calling about her denied healthcare claim from January."
 };
-const WELCOME = "Hello, I’m Aegis support. I can help you understand your claim and clear next steps.\n\nTo protect your privacy, claim details stay locked until identity is verified. You can fill out the Security Verification Card below or share your details in chat.\n\nWhat brings you in today?";
+const WELCOME = "Hi, I’m Aegis. I can help with a claim — a request for your insurer to pay for a loss or expense.\n\nPick a topic below, or tell me what happened. We’ll verify your identity before opening your claim.";
 let sessionId = null;
 let config = {};
 let busy = false;
@@ -61,6 +61,10 @@ function syncControls() {
   $("user-input").disabled = unavailable;
   $("btn-send").disabled = unavailable;
   for (const id of [...Object.keys(SCENARIOS), "btn-accept-email", "btn-decline-email", "btn-wrap-up"]) $(id).disabled = unavailable;
+  document.querySelectorAll('#customer-options button').forEach(button => { button.disabled = unavailable; });
+  document.querySelectorAll('#security-card-el input, #security-card-el select, #security-card-el button').forEach(el => {
+    el.disabled = unavailable || liveData.current_phase !== 'VERIFY_ID';
+  });
   $("btn-reset").disabled = busy;
   $("btn-config").disabled = busy || replaying || !sessionId;
   $("time-travel-slider").disabled = busy || snapshots.length < 2;
@@ -78,8 +82,10 @@ function renderMessage(message) {
   const bubble = node("div", "msg-bubble");
   const meta = node("div", "msg-meta");
   meta.append(node("span", "msg-sender", role === "assistant" ? "Aegis support" : role === "user" ? "You" : "Connection notice"));
-  if (message.phase) meta.append(node("span", "msg-phase", message.phase));
-  bubble.append(meta, node("div", "msg-text", message.text));
+  if (message.phase) meta.append(node("span", "msg-phase", PHASE_LABELS[message.phase] || message.phase));
+  const body = node("div", "msg-text");
+  String(message.text).split(/\n\n+/).forEach(paragraph => body.append(node('p', '', paragraph)));
+  bubble.append(meta, body);
   row.append(avatar, bubble);
   $("chat-window").append(row);
   $("chat-window").scrollTop = $("chat-window").scrollHeight;
@@ -101,6 +107,7 @@ function showTyping() {
 async function sendMessage(text) {
   if (busy || replaying || !sessionId || isTerminal() || !text.trim()) return;
   const message = text.trim();
+  const restoreComposerFocus = [$("user-input"), $("btn-send")].includes(document.activeElement);
   if (message.length > 6000) { notice("Please keep each message under 6,000 characters."); return; }
   busy = true;
   notice("");
@@ -126,7 +133,7 @@ async function sendMessage(text) {
   } finally {
     busy = false;
     syncControls();
-    if (!isTerminal()) $("user-input").focus();
+    if (!isTerminal() && restoreComposerFocus) $("user-input").focus();
   }
 }
 function renderReplayStatus(index) {
@@ -196,6 +203,46 @@ function renderInspector(data) {
   renderAudit(state.trace_log || data.trace || []);
   $("process-actions").hidden = data.current_phase !== "PROCESS_CASE";
   $("post-process-actions").hidden = data.current_phase !== "POST_PROCESS" || ["accepted", "declined"].includes(state.post_process?.user_decision);
+  renderChoices(data);
+}
+
+function renderChoices(data) {
+  const phase = data.current_phase;
+  const terminal = ['CONCLUDED', 'ESCALATED'].includes(phase);
+  $('customer-options').hidden = terminal;
+  $('btn-open-verification').hidden = phase !== 'VERIFY_ID';
+  $('verification-progress').hidden = phase !== 'VERIFY_ID';
+  const matched = new Set(data.sop_state?.verified_fields || []).size;
+  $('verification-progress').textContent = `Not verified · ${matched} of 3 details matched. Claim details are locked.`;
+  $('btn-correct').hidden = phase !== 'VERIFY_ID' && phase !== 'RESOLVE_INTENT';
+  const choices = $('topic-choices');
+  choices.replaceChildren();
+  let items = [];
+  if (phase === 'VERIFY_ID' || phase === 'RESOLVE_INTENT') {
+    items = [['Check progress', 'I want to check my claim status.'],
+      ['Understand a rejection', 'Why was my claim denied?'],
+      ['Help with documents', 'What documents does my claim need?'],
+      ['Not sure where to start', "I don’t know where to start. What can I ask?"]];
+    if (phase === 'RESOLVE_INTENT' && data.claim_choices?.length) {
+      items = data.claim_choices.map(c => [`${c.case_type} · ${c.created_at} · ${c.case_id}`, `I mean claim ${c.case_id}.`]);
+    }
+  } else if (phase === 'PROCESS_CASE') {
+    items = [['Check progress', 'What is my claim status?']];
+    if (data.active_case?.denial_reason) items.push(['Why was it rejected?', 'Why was my claim denied?']);
+    if (data.active_case?.documents_needed?.length) items.push(
+      ['How to send documents', 'How do I submit the documents?'],
+      ['I can’t get a document', 'I cannot get the documents. What alternatives are available?']);
+    else items.push(['Understand the payment', 'What payment amounts are recorded for my claim?']);
+  }
+  $('choices-label').textContent = phase === 'RESOLVE_INTENT' && data.claim_choices?.length ? 'Which claim do you mean?' : phase === 'PROCESS_CASE' ? 'What would help next?' : 'What would you like help with?';
+  $('choices-label').hidden = !items.length;
+  items.forEach(([label, message]) => {
+    const button = node('button', 'chip', label);
+    button.type = 'button'; button.addEventListener('click', () => sendMessage(message)); choices.append(button);
+  });
+  if (phase !== 'VERIFY_ID' && $('verification-modal').open) $('verification-modal').close();
+  if (phase !== 'VERIFY_ID' && !replaying) $('security-card-el')?.remove();
+  syncControls();
 }
 function renderMemory(memory) {
   $("memory-chips-container").replaceChildren();
@@ -277,6 +324,8 @@ async function resetSession() {
     if (!sessionId) throw new Error("The server did not create a session. Please try New call again.");
     liveData = initialState();
     replaying = false;
+    $('verification-modal').close();
+    $('security-card-el')?.remove();
     liveMessages = [{role: "assistant", text: WELCOME, phase: "VERIFY_ID"}];
     snapshots = [{data: clone(liveData), messages: clone(liveMessages)}];
     $("user-input").value = "";
@@ -327,170 +376,80 @@ async function saveConfig(event) {
 }
 
 function renderVerificationCard() {
-  const existing = $("security-card-el");
-  if (existing) existing.remove();
-  if (liveData.current_phase !== "VERIFY_ID" || liveData.sop_state?.identity_verified || replaying) return;
-
-  const card = node("div", "security-card");
-  card.id = "security-card-el";
+  if ($('security-card-el') || liveData.current_phase !== 'VERIFY_ID' || replaying) return;
+  const card = node('form', 'security-card');
+  card.id = 'security-card-el';
+  card.noValidate = true;
   card.innerHTML = `
-    <div class="security-card-header">
-      <div class="security-card-title"><span>🛡️</span> Secure Verification</div>
-      <span class="security-card-badge">Verified-First Gate</span>
-    </div>
-    <div class="security-card-desc">
-      Enter any 3 details. They must match your policy record.
-    </div>
-
     <div class="security-card-grid">
-      <div class="security-card-field">
-        <label for="card-name">Full name <span class="field-tag">Match field</span></label>
-        <input type="text" id="card-name" placeholder="e.g. Margaret Chen" autocomplete="name" aria-label="Full name">
-      </div>
-      <div class="security-card-field">
-        <label for="card-dob">Date of birth <span class="field-tag">MM/DD/YYYY or YYYY-MM-DD</span></label>
-        <div class="dob-input-wrapper">
-          <input type="text" id="card-dob" placeholder="e.g. 03/15/1985 or 1985-03-15" aria-label="Date of birth">
-          <button type="button" class="dob-picker-btn" id="btn-dob-calendar" aria-label="Select date of birth from calendar">📅</button>
-          <input type="date" id="card-dob-picker" class="dob-native-picker" aria-label="Birth date calendar picker">
-        </div>
-      </div>
-      <div class="security-card-field">
-        <label for="card-phone">Phone number <span class="field-tag">Auto-formatted</span></label>
-        <input type="tel" id="card-phone" placeholder="e.g. (650) 521-2836" aria-label="Phone number">
-      </div>
-      <div class="security-card-field">
-        <label for="card-email">Email address <span class="field-tag">Email</span></label>
-        <input type="email" id="card-email" placeholder="e.g. margaret@email.com" aria-label="Email address">
-      </div>
-      <div class="security-card-field">
-        <label for="card-id4">Government ID / SSN last 4 <span class="field-tag">Optional</span></label>
-        <div class="id-input-wrapper" style="display:flex; gap:6px;">
-          <select id="card-id-type" style="background:var(--paper); border:1px solid #cad8d3; border-radius:6px; font-size:11px; padding:4px 6px; color:var(--ink);" aria-label="Select ID type">
-            <option value="ssn_last4">SSN</option>
-            <option value="national_id_last4">National ID</option>
-          </select>
-          <input type="text" id="card-id4" maxlength="4" placeholder="e.g. 4472" style="flex:1;" aria-label="Government ID or SSN last 4 digits">
-        </div>
-      </div>
+      <div class="security-card-field"><label for="card-name">Full name</label><input id="card-name" autocomplete="off" maxlength="200" placeholder="Name on the policy"><span class="field-error" id="error-name" role="alert"></span></div>
+      <div class="security-card-field"><label for="card-dob">Date of birth</label><input type="date" id="card-dob" aria-describedby="error-dob"><span class="field-error" id="error-dob" role="alert"></span></div>
+      <div class="security-card-field"><label for="card-phone">Phone number</label><input type="tel" id="card-phone" autocomplete="off" maxlength="50" placeholder="10 digits, with optional +1" aria-describedby="error-phone"><span class="field-error" id="error-phone" role="alert"></span></div>
+      <div class="security-card-field"><label for="card-email">Email address</label><input type="email" id="card-email" autocomplete="off" maxlength="200" placeholder="name@example.com" aria-describedby="error-email"><span class="field-error" id="error-email" role="alert"></span></div>
+      <div class="security-card-field"><label for="card-id4">Last 4 digits of ID (optional)</label><div class="id-input-wrapper"><select id="card-id-type" aria-label="ID type"><option value="ssn_last4">SSN</option><option value="national_id_last4">National ID</option></select><input id="card-id4" inputmode="numeric" maxlength="4" pattern="[0-9]{4}" placeholder="4 digits" aria-label="Last four digits" aria-describedby="error-id_last4"></div><span class="field-error" id="error-id_last4" role="alert"></span></div>
     </div>
-
-    <div class="demo-tools-tray" style="background:var(--paper); border:1px dashed #b2d5cb; border-radius:8px; padding:10px 12px; margin-top:14px;">
-      <div style="font-size:11px; font-weight:600; color:var(--muted); margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;">
-        <span>🧪 DEMO TOOLS (TESTING ONLY)</span>
-        <span>Select persona to prefill</span>
-      </div>
-      <div class="experiment-preset-chips">
-        <button type="button" class="preset-chip" id="preset-margaret">🟢 Margaret Chen</button>
-        <button type="button" class="preset-chip" id="preset-ava">🔵 Ava Lopez</button>
-        <button type="button" class="preset-chip" id="preset-matian">🟡 Ma Tian</button>
-        <button type="button" class="preset-chip" id="preset-yawen">🟣 Ya Wen Li</button>
-      </div>
-    </div>
-
-    <div class="security-card-actions">
-      <button type="button" class="security-card-instant-submit" id="btn-card-fill">Fill sample data</button>
-      <button type="button" class="security-card-submit" id="btn-card-submit">Verify identity</button>
-    </div>
-  `;
-
-  $("chat-window").append(card);
-
+    <p class="field-help">You can leave unused fields blank. A National ID is an extra check; it does not replace the 3 required details.</p>
+    <details class="demo-tools-tray"><summary>Demo identities — fill a sample</summary><div class="experiment-preset-chips">
+      <button type="button" class="preset-chip" id="preset-margaret">Margaret Chen</button><button type="button" class="preset-chip" id="preset-ava">Ava Lopez</button><button type="button" class="preset-chip" id="preset-matian">Ma Tian</button><button type="button" class="preset-chip" id="preset-yawen">Ya Wen Li</button>
+    </div><p class="field-help">Fills the form only. You review and submit it.</p></details>
+    <p id="card-feedback" class="form-error" role="status" hidden></p>
+    <div class="security-card-actions"><button type="button" class="btn btn-secondary" id="btn-card-fill">Fill sample data</button><button type="submit" class="btn btn-primary" id="btn-card-submit">Verify identity</button></div>`;
+  $('verification-fields').append(card);
+  $('card-dob').max = new Date().toISOString().slice(0, 10);
   const presets = {
-    margaret: { name: "Margaret Chen", dob: "1985-03-15", phone: "(650) 521-2836", email: "margaret@email.com", id_last4: "4472", id_type: "ssn_last4" },
-    ava: { name: "Ava Lopez", dob: "1990-08-21", phone: "(650) 388-2920", email: "ava.lopez@email.com", id_last4: "9180", id_type: "ssn_last4" },
-    matian: { name: "Ma Tian", dob: "1964-09-10", phone: "(650) 208-8799", email: "matian@example.com", id_last4: "6688", id_type: "national_id_last4" },
-    yawen: { name: "Ya Wen Li", dob: "1989-12-03", phone: "(650) 521-2830", email: "yawen.li@gmail.com", id_last4: "5317", id_type: "national_id_last4" }
+    margaret: ['Margaret Chen', '1985-03-15', '+16505212836', 'margaret@email.com', '4472', 'ssn_last4'],
+    ava: ['Ava Lopez', '1990-08-21', '+16503882920', 'ava.lopez@email.com', '9180', 'ssn_last4'],
+    matian: ['Ma Tian', '1964-09-10', '+16502088799', 'matian@example.com', '6688', 'national_id_last4'],
+    yawen: ['Ya Wen Li', '1989-12-03', '+16505212830', 'yawen.li@gmail.com', '5317', 'national_id_last4']
   };
-
   function fillPreset(key) {
-    const p = presets[key];
-    if (!p) return;
-    card.querySelector("#card-name").value = p.name;
-    card.querySelector("#card-dob").value = p.dob;
-    card.querySelector("#card-phone").value = p.phone;
-    card.querySelector("#card-email").value = p.email;
-    card.querySelector("#card-id4").value = p.id_last4;
-    card.querySelector("#card-id-type").value = p.id_type || "ssn_last4";
-    card.querySelectorAll(".preset-chip").forEach(btn => btn.classList.remove("active"));
-    const activeBtn = card.querySelector(`#preset-${key}`);
-    if (activeBtn) activeBtn.classList.add("active");
+    ['name', 'dob', 'phone', 'email', 'id4', 'id-type'].forEach((field, i) => { $(`card-${field}`).value = presets[key][i]; });
+    clearCardErrors();
   }
-
-  Object.keys(presets).forEach(key => {
-    const btn = card.querySelector(`#preset-${key}`);
-    if (btn) btn.addEventListener("click", () => fillPreset(key));
+  Object.keys(presets).forEach(key => $(`preset-${key}`).addEventListener('click', () => fillPreset(key)));
+  $('btn-card-fill').addEventListener('click', () => fillPreset('margaret'));
+  card.addEventListener('input', clearCardErrors);
+  card.addEventListener('submit', event => {
+    event.preventDefault();
+    clearCardErrors();
+    const form = {name: $('card-name').value.trim(), dob: $('card-dob').value,
+      phone: $('card-phone').value.trim(), email: $('card-email').value.trim(),
+      id_last4: $('card-id4').value.trim(), id_type: $('card-id-type').value};
+    const errors = {};
+    if (!$('card-dob').validity.valid) errors.dob = 'Choose a valid birth date.';
+    if (!$('card-email').validity.valid) errors.email = 'Use a complete email address, such as name@example.com.';
+    if (!$('card-id4').validity.valid) errors.id_last4 = 'Enter exactly 4 digits.';
+    const digits = form.phone.replace(/\D/g, '');
+    if (form.phone && !/^(?:1)?[0-9]{10}$/.test(digits)) errors.phone = 'Use a 10-digit US phone number, with optional +1.';
+    if (Object.keys(errors).length) { showCardErrors(errors); return; }
+    if (!['name', 'dob', 'phone', 'email', 'id_last4'].some(key => form[key])) {
+      $('card-feedback').textContent = 'Add an identity detail, or fill a sample to try the demo.';
+      $('card-feedback').hidden = false; $('card-name').focus(); return;
+    }
+    submitVerificationCard(form);
   });
-
-  const dobBtn = card.querySelector("#btn-dob-calendar");
-  const dobPicker = card.querySelector("#card-dob-picker");
-  const dobInput = card.querySelector("#card-dob");
-  if (dobBtn && dobPicker) {
-    dobBtn.addEventListener("click", () => {
-      if (typeof dobPicker.showPicker === "function") {
-        dobPicker.showPicker();
-      } else {
-        dobPicker.focus();
-        dobPicker.click();
-      }
-    });
-  }
-
-  if (dobPicker && dobInput) {
-    dobPicker.addEventListener("change", (e) => {
-      if (e.target.value) dobInput.value = e.target.value;
-    });
-    dobInput.addEventListener("input", (e) => {
-      const digits = e.target.value.replace(/\D/g, "");
-      if (digits.length === 8) {
-        if (digits.startsWith("19") || digits.startsWith("20")) {
-          e.target.value = `${digits.slice(0, 4)}-${digits.slice(4, 6)}-${digits.slice(6, 8)}`;
-        } else {
-          e.target.value = `${digits.slice(0, 2)}/${digits.slice(2, 4)}/${digits.slice(4, 8)}`;
-        }
-      }
-    });
-  }
-
-  const phoneInput = card.querySelector("#card-phone");
-  if (phoneInput) {
-    phoneInput.addEventListener("input", (e) => {
-      const digits = e.target.value.replace(/\D/g, "");
-      if (digits.length <= 3) e.target.value = digits;
-      else if (digits.length <= 6) e.target.value = `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
-      else e.target.value = `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6, 10)}`;
-    });
-  }
-
-  // Fill sample data button populates form fields without submitting
-  const fillBtn = card.querySelector("#btn-card-fill");
-  if (fillBtn) {
-    fillBtn.addEventListener("click", () => {
-      fillPreset("margaret");
-    });
-  }
-
-  const submitBtn = card.querySelector("#btn-card-submit");
-  if (submitBtn) {
-    submitBtn.addEventListener("click", () => {
-      const form = {
-        name: card.querySelector("#card-name").value.trim(),
-        dob: card.querySelector("#card-dob").value.trim(),
-        phone: card.querySelector("#card-phone").value.trim(),
-        email: card.querySelector("#card-email").value.trim(),
-        id_last4: card.querySelector("#card-id4").value.trim(),
-        id_type: card.querySelector("#card-id-type").value,
-      };
-      submitVerificationCard(form);
-    });
-  }
+  syncControls();
+}
+function clearCardErrors() {
+  document.querySelectorAll('#security-card-el .field-error').forEach(el => { el.textContent = ''; });
+  document.querySelectorAll('#security-card-el [aria-invalid]').forEach(el => el.removeAttribute('aria-invalid'));
+  if ($('card-feedback')) $('card-feedback').hidden = true;
+}
+function showCardErrors(errors) {
+  Object.entries(errors).forEach(([field, message]) => {
+    const el = $(`card-${field === 'id_last4' ? 'id4' : field === 'id_type' ? 'id-type' : field}`);
+    if (el) el.setAttribute('aria-invalid', 'true');
+    if ($(`error-${field}`)) $(`error-${field}`).textContent = message;
+  });
+  document.querySelector('#security-card-el [aria-invalid]')?.focus();
+}
+function openVerification() {
+  if (busy || replaying || !sessionId || liveData.current_phase !== 'VERIFY_ID') return;
+  renderVerificationCard(); $('verification-modal').showModal();
 }
 
-
-
-
 async function submitVerificationCard(form) {
-  if (busy || replaying || !sessionId || isTerminal()) return;
+  if (busy || replaying || !sessionId || liveData.current_phase !== 'VERIFY_ID') return;
   busy = true;
   notice("");
   syncControls();
@@ -502,6 +461,7 @@ async function submitVerificationCard(form) {
     });
     typing.remove();
     if (!data.sop_state || typeof data.reply !== "string") throw new Error("Verification card submission failed.");
+    if (data.field_errors) { showCardErrors(data.field_errors); return; }
     liveData = data;
     appendLive({ role: "user", text: "[Submitted Security Verification Card]" });
     appendLive({ role: "assistant", text: data.reply, phase: data.current_phase });
@@ -509,10 +469,15 @@ async function submitVerificationCard(form) {
     renderInspector(data);
     renderEngine(data);
     renderReplayStatus(snapshots.length - 1);
+    if (!data.sop_state.identity_verified && $('card-feedback')) {
+      $('card-feedback').textContent = data.reply;
+      $('card-feedback').hidden = false;
+    }
     $("chat-window").scrollTop = $("chat-window").scrollHeight;
   } catch (error) {
     typing.remove();
     notice(error.message);
+    if ($('card-feedback')) { $('card-feedback').textContent = error.message; $('card-feedback').hidden = false; }
   } finally {
     busy = false;
     syncControls();
@@ -529,6 +494,7 @@ if (toggleInspectorBtn) {
       if (layout) layout.classList.toggle("full-width-conversation", isHidden);
       toggleInspectorBtn.setAttribute("aria-expanded", String(!isHidden));
       toggleInspectorBtn.classList.toggle("active", !isHidden);
+      document.querySelector('.replay-bar').hidden = isHidden;
     }
   });
 }
@@ -539,6 +505,13 @@ $("user-input").addEventListener("keydown", event => {
 });
 Object.entries(SCENARIOS).forEach(([id, text]) => $(id).addEventListener("click", () => sendMessage(text)));
 $("btn-reset").addEventListener("click", resetSession);
+$('btn-open-verification').addEventListener('click', openVerification);
+$('verification-close').addEventListener('click', () => $('verification-modal').close());
+$('btn-human').addEventListener('click', () => sendMessage('I would like a human representative.'));
+$('btn-correct').addEventListener('click', () => {
+  if (liveData.current_phase === 'VERIFY_ID') openVerification();
+  else { $('user-input').value = 'Correction: '; $('user-input').focus(); notice('Add the correct claim reference, type or date after “Correction:”. Review it before sending.'); }
+});
 $("btn-wrap-up").addEventListener("click", () => sendMessage("That answers my question. I’m ready to wrap up."));
 $("btn-accept-email").addEventListener("click", () => sendMessage("Yes, please send the email summary."));
 $("btn-decline-email").addEventListener("click", () => sendMessage("No thanks, please skip the email summary."));
@@ -552,4 +525,3 @@ $("cfg-engine-mode").addEventListener("change", () => { $("llm-config-fields").h
 $("config-form").addEventListener("submit", saveConfig);
 renderInspector(liveData);
 resetSession();
-

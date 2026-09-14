@@ -11,35 +11,42 @@
     <header class="header"><a class="brand" href="/"><span class="brand-name">aegis</span></a>
       <nav class="header-actions" aria-label="Workspace"><a class="btn btn-secondary" href="/">Customer demo</a><a class="btn btn-primary" href="/lab" aria-current="page">RL Lab</a></nav></header>
     <main class="lab-main">
-      <p class="eyebrow">POLICY LEARNING / INSIDE THE SOP</p><h1>Watch a policy make its choices.</h1>
-      <p class="lab-intro">Run a synthetic caller against rules, random actions and trained PPO. Inspect the actual words, legal choices and reward at every turn.</p>
-      <p class="lab-boundary">PPO controls this simulator. Customer chat uses a separate SOP runtime with optional model interpretation. Both share the same identity, claim and consent authority. No external model calls run here.</p>
+      <p class="eyebrow">DEVELOPER LAB / A GUIDE TO THE RESULTS</p><h1>Did the agent help the caller?</h1>
+      <p class="lab-intro">Choose a caller, compare the strategies, then replay their decisions. PPO is the strategy learned through practice; the rule baseline follows hand-written choices.</p>
+      <div class="lab-guide" aria-label="What good performance means">
+        <article><span>1 · Protect the caller</span><p>No claim access before verification. No email without consent. Any violation needs investigation.</p></article>
+        <article><span>2 · Reach the right outcome</span><p>Answer the claim question and respect the follow-up choice, or request a human when needed. An early exit is a failure.</p></article>
+        <article><span>3 · Reduce effort</span><p>Compare turns only after checking safety and outcome. A shorter call alone is not a better call.</p></article>
+      </div>
+      <p class="lab-boundary">This page runs trained PPO in a synthetic caller simulator. Customer chat runs the SOP with optional model interpretation; PPO does not choose its actions. Both use the same verification and consent authority.</p>
       <form id="lab-form" class="lab-controls">
         <label>Caller scenario<select id="lab-profile" required aria-label="Caller scenario"></select></label>
         <label>Policy<select id="lab-policy"><option value="compare">Compare all four</option><option value="ppo42">PPO · seed 42</option><option value="ppo7">PPO · seed 7</option><option value="rule">Rule baseline</option><option value="random">Random legal actions</option></select></label>
-        <label>Episode seed<input id="lab-seed" type="number" min="0" max="2147483647" value="42" required></label>
+        <details class="lab-settings"><summary>Run settings</summary><label>Random seed<input id="lab-seed" type="number" min="0" max="2147483647" value="42" required></label><p class="lab-small">Keeps the caller’s random variations repeatable. PPO seed 42 and 7 identify two separate training runs.</p></details>
         <button id="lab-run" class="btn btn-primary" type="submit">Run experiment</button>
       </form>
       <p id="lab-status" role="status" aria-live="polite">Loading caller profiles…</p>
       <section id="lab-results" hidden aria-label="Experiment results">
-        <div class="lab-table-wrap"><table class="lab-table"><caption>Measured outcomes — choose a policy to inspect</caption><thead><tr><th>Policy</th><th>Outcome</th><th>Turns</th><th>Return</th><th>Violations</th><th></th></tr></thead><tbody id="lab-summary"></tbody></table></div>
+        <p id="lab-takeaway" class="lab-takeaway" role="status"></p>
+        <div class="lab-table-wrap"><table class="lab-table"><caption>This run’s results — choose a strategy to replay</caption><thead><tr><th>Strategy</th><th>Outcome</th><th>Turns</th><th>Training score</th><th>Rule violations</th><th></th></tr></thead><tbody id="lab-summary"></tbody></table></div>
         <p class="lab-small">A human handoff is reported separately from case completion. Zero violations here reflect the active SOP mask; they are not proof of learned safety.</p>
         <div class="lab-replay"><label for="lab-turn" id="lab-turn-label">Turn 1</label><input type="range" id="lab-turn" min="0" max="0" value="0"><button id="lab-download" class="btn btn-secondary" type="button">Download run JSON</button></div>
         <div class="lab-columns">
           <section class="lab-card"><div class="lab-heading"><h2 id="lab-policy-title">Policy</h2><span class="tag" id="lab-phase"></span></div>
-            <p id="lab-checkpoint" class="lab-small"></p>
+            <details><summary>Model and training record</summary><p id="lab-checkpoint" class="lab-small"></p></details>
             <div class="lab-message"><span class="eyebrow">CALLER CONTEXT</span><p id="lab-caller-before"></p></div>
             <div class="lab-message agent"><span class="eyebrow" id="lab-action"></span><p id="lab-agent"></p></div>
             <div class="lab-message"><span class="eyebrow">CALLER RESPONSE</span><p id="lab-caller-after"></p></div>
             <div class="lab-message agent" id="lab-final-box" hidden><span class="eyebrow">SOP CLOSING RESPONSE</span><p id="lab-final"></p></div>
           </section>
-          <section class="lab-card"><h2>Choices at this turn</h2><p id="lab-distribution" class="lab-small"></p><div id="lab-actions"></div>
-            <h3 class="lab-reward-heading">Reward breakdown</h3><dl id="lab-reward" class="lab-rewards"></dl>
+          <section class="lab-card"><h2>What could the agent do?</h2><p class="lab-small">The percentage shows the strategy’s preference for an action, not the chance that its answer is correct. Blocked actions are forbidden by the workflow.</p><p id="lab-distribution" class="lab-small"></p><div id="lab-actions"></div>
+            <details><summary>Why this turn earned its training score</summary><p class="lab-small">Reward is a score we designed for training, not a customer satisfaction rating. Only nonzero components are shown. Check the outcome before comparing scores.</p><dl id="lab-reward" class="lab-rewards"></dl></details>
             <details><summary>Observation before the action</summary><pre id="lab-observation"></pre></details>
           </section>
         </div>
       </section>
-      <section class="lab-card evidence-card"><h2>Evidence, including the limitations</h2><p id="lab-evidence">Loading saved experiment reports…</p>
+      <section class="lab-card evidence-card"><h2>What have we actually demonstrated?</h2><p id="lab-evidence">Loading saved experiment reports…</p>
+        <p class="lab-small">The saved main runs match the rule baseline’s task and safety outcomes. They do not establish that PPO is better than rules. Generalization to real callers still needs evaluation.</p>
         <p class="lab-small">The saved audit repeats finite synthetic profiles. The emotion ablation uses fresh paired training runs and changes only five emotion inputs. DPO artifacts are preference data; no DPO model has been trained.</p>
         <details><summary>Saved audit and experiment metadata</summary><pre id="lab-evidence-json"></pre></details>
       </section>

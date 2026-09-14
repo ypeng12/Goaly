@@ -29,7 +29,7 @@ pip install -r requirements.txt
 ~~~
 
 Open <http://127.0.0.1:8080>. Offline mode works without credentials.
-Open **RL Lab** in the header, or <http://127.0.0.1:8080/lab>, to run the actual
+Open **Developer lab** in the header, or <http://127.0.0.1:8080/lab>, to run the actual
 rule, random and two trained PPO policies against the same synthetic caller.
 The lab exposes checkpoint hashes, legal action probabilities, dialogue replay,
 reward components and JSON downloads. Customer sessions and lab runs are separate.
@@ -46,15 +46,24 @@ Compose uses the same address. Set optional AI_API_KEY, AI_BASE_URL, AI_MODEL an
 PORT in .env. The image includes training scripts and checked-in RL artifacts.
 All identities are synthetic; email and human transfer are simulated.
 
-Try **Margaret’s January claim**, ask about missing documents, then select
+Start with a plain-language topic button, or **Not sure where to start** for an
+explanation. **Verify using a form** opens a blank form with a native date picker,
+field feedback and explicit sample filling. Submitted corrections are reverified;
+one or two matching details never advance the SOP. Common business spelling
+errors are tolerated without fuzzy-matching identity or interpreting misspelled
+consent as approval. Available claim choices come only from the verified owner.
+
+Under **Testing the demo?**, try **Margaret’s January claim**, ask about missing documents, then select
 **That answers my question** and choose **send** or **skip**. The inspector shows
 verification, remembered hints, claim access, consent and replay. You can also
 enter three identity fields in the verification card.
 
 Free-text endings such as **That answers my question** also open the summary
-choice. An accompanying follow-up question keeps the conversation open. Grounded
+choice. **How this works** opens the inspector and replay. An accompanying follow-up question keeps the conversation open. Grounded
 answers start concise and retain required document conditions; ask for details
 to expand them. See the [five-minute reviewer guide](docs/REVIEWER_GUIDE.md).
+For a plain-language explanation of the UI and current technical checks, see
+[the customer usability and technical review](docs/UX_AND_TECHNICAL_REVIEW.md).
 
 ## Reproduce the RL experiment
 

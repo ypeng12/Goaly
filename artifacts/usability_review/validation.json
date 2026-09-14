@@ -1,0 +1,98 @@
+{
+  "checked_at_utc": "2026-09-14T01:57:20.950887+00:00",
+  "pytest": {
+    "passed": 189,
+    "failed": 0
+  },
+  "sop_benchmark": {
+    "scenarios_passed": 33,
+    "assertions_passed": 650
+  },
+  "rl_audit": {
+    "passed": true,
+    "training_seeds": [
+      42,
+      7
+    ],
+    "splits": [
+      "train",
+      "val",
+      "test",
+      "all"
+    ],
+    "main_policies_retrained": false
+  },
+  "browser_acceptance": {
+    "passed": true,
+    "checks": [
+      {
+        "viewport": 1440,
+        "customer_finish": "passed",
+        "consent_skip": "passed",
+        "beginner_choices": "passed",
+        "form_error_recovery": "passed",
+        "remembered_typo_hint": "passed",
+        "native_date_and_phone_preservation": "passed",
+        "plain_language_lab": "passed",
+        "name_only_remains_locked": "passed",
+        "composer_not_clipped": "passed",
+        "rl_comparison": "passed",
+        "replay": "passed",
+        "download": "passed",
+        "page_errors": []
+      },
+      {
+        "viewport": 390,
+        "customer_finish": "passed",
+        "consent_skip": "passed",
+        "beginner_choices": "passed",
+        "form_error_recovery": "passed",
+        "remembered_typo_hint": "passed",
+        "native_date_and_phone_preservation": "passed",
+        "plain_language_lab": "passed",
+        "name_only_remains_locked": "passed",
+        "composer_not_clipped": "passed",
+        "rl_comparison": "passed",
+        "replay": "passed",
+        "download": "passed",
+        "page_errors": []
+      }
+    ]
+  },
+  "dpo": {
+    "total": 50,
+    "train": 32,
+    "val": 10,
+    "test": 8,
+    "unique_prompts": 50,
+    "distinct_reply_pairs": 50,
+    "positive_delta_pct": 100.0,
+    "minimum_return_margin": 0.19899999999999984,
+    "required_return_margin": 0.1,
+    "environment_version": 3,
+    "rejected_action_counts": {
+      "ACK_EMOTION": 16,
+      "ANSWER_GROUNDED": 2,
+      "ASK_CLAIM_CLARIFICATION": 4,
+      "ASK_IDENTITY_FIELD": 4,
+      "ESCALATE_HUMAN": 23,
+      "RESOLVE_INTENT": 1
+    },
+    "split_unit": "identity/style group",
+    "training_performed": false
+  },
+  "live_model_acceptance": "not_run_no_token",
+  "source_sha256": {
+    "backend/app.py": "058b145792103b2c74c717af688229cb146809d0a86bafbc13ec8b3438af97fa",
+    "backend/harness/extractor.py": "d4573faf6c81f312f769126557b2fcf13e7fc0050fe038c9680ec312d22ac294",
+    "backend/harness/state_machine.py": "bc7ff4c9e8d63ec96beca5882470a13a20d263cf748bc2b36ff59f83041b9eed",
+    "backend/engine/mock_engine.py": "5eb43f9d85cfb71d1b1b04cf62ec3bef647da34d47db66d81768e94d61bf15a0",
+    "backend/rl/models.py": "e364494e71f88d1ff5f55cdf138e3d1c25b0599f9a1be12ae19b8a448ee86a2c",
+    "frontend/index.html": "28452bfbc4586c179b0e4ef20486ad802b529dc29f8c09ffda726fb7308facc1",
+    "frontend/app.js": "7b3f25ec72d93b3c31485dd880a7b2c5aa1cfd044cecf58868bb25dfe9c4d949",
+    "frontend/style.css": "8764bdea0f22c3253be0383603b8b606117e42a70d85357db10a6fa2e7755732",
+    "frontend/lab.html": "033054b5b30024b8bdc3d370815aae423b1eaa920c13dcf7798b23b7d48a924a",
+    "frontend/lab.js": "5f7745994785e4583d6b605c0877ddf59b3dcef0ba1f7387a778fbbf91477b07",
+    "frontend/lab.css": "63cf9ec7f3d26ea5e7d68bbf29b1946fbc324abfa8c35f913a549a0afea268b7"
+  }
+}

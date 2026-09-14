@@ -148,7 +148,14 @@ def public_state(sm):
 def reply_payload(sid, item, reply=None):
     public = public_state(item.machine)
     claim = item.machine.get_active_claim()
+    choices = []
+    owner = item.machine.get_verified_policyholder()
+    if owner and item.machine.state.phase == Phase.RESOLVE_INTENT:
+        _, candidates = grounded_data.find_claim(owner.party_id, item.machine.state.cross_phase_memory)
+        choices = [{'case_id': c.case_id, 'case_type': c.case_type, 'created_at': c.created_at}
+                   for c in candidates[:6]]
     return {'session_id': sid, 'reply': reply, 'current_phase': public['phase'],
+            'claim_choices': choices,
             'sop_state': public, 'trace': public['trace_log'],
             'active_case': claim.model_dump(mode='json', exclude={'party_id'}) if claim else None,
             'verified_policyholder': None, 'engine_mode': item.engine.last_mode,
@@ -279,6 +286,8 @@ async def chat(req: ChatRequest):
 async def verify_card(req: VerifyCardRequest):
     item = get_session(req.session_id)
     async with item.lock:
+        if item.machine.state.phase != Phase.VERIFY_ID:
+            raise HTTPException(409, 'Identity verification is already closed for this call. Start a new call to use a different identity.')
         if len(item.history) // 2 >= MAX_TURNS:
             raise HTTPException(429, 'Demo turn limit reached. Start a new call.')
         form_data = {
@@ -291,6 +300,14 @@ async def verify_card(req: VerifyCardRequest):
         }
         res = item.machine.verify_card_data(form_data)
         reply = res["agent_reply"]
+        if res.get('field_errors'):
+            return {**reply_payload(req.session_id, item, reply), 'field_errors': res['field_errors']}
+        if item.machine.get_verified_policyholder():
+            # Reuse the guarded composer so remembered intent opens the case now.
+            # No second caller message, model request or fabricated claim facts.
+            reply = res['agent_reply'].split('. ', 1)[0] + '. ' + MockEngine().generate_response('', res, item.history)
+            if item.machine.state.history_snapshots:
+                item.machine.state.history_snapshots[-1].agent_reply = reply
         item.history.extend([
             {'role': 'user', 'content': '[Submitted Security Verification Card]'},
             {'role': 'assistant', 'content': reply}

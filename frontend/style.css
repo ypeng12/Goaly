@@ -316,6 +316,39 @@ h1 {
   letter-spacing:.3px;
 }
 
+/* Customer view: one next step at a time; technical evidence is opt-in. */
+.stepper .step-code,.stepper .step-type {display:none}
+.stepper .step-item {padding-top:16px;padding-bottom:16px}
+.customer-options {padding:14px 24px;border-top:1px solid var(--line);background:#f7faf7;flex-shrink:0}
+.customer-options > p {font-size:12px;font-weight:600;margin:0 0 10px}
+.customer-options .chip {min-height:40px;font-size:12px;white-space:normal;text-align:left}
+.support-tools {display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:12px}
+.support-tools .text-button {font-size:12px;min-height:36px}
+.scenario-tray > summary {cursor:pointer;font-size:12px;color:var(--muted)}
+.scenario-tray[open] .scenario-chips {margin-top:12px}
+.msg-text p {margin:0 0 12px;white-space:pre-wrap}
+.msg-text p:last-child {margin-bottom:0}
+#verification-modal {width:min(620px,calc(100vw - 28px));max-height:90dvh;overflow-y:auto}
+#verification-modal .security-card {padding:0;border:0;box-shadow:none;animation:none}
+#verification-modal input,#verification-modal select {min-height:44px;font-size:16px;min-width:0;width:100%}
+#verification-modal .security-card-field label {font-size:12px;text-transform:none;letter-spacing:0}
+.id-input-wrapper {display:flex;gap:8px}
+.id-input-wrapper select {flex:1.2}
+.id-input-wrapper input {flex:1}
+.demo-tools-tray {padding:12px;border:1px dashed var(--line);border-radius:8px;margin-top:12px}
+.demo-tools-tray summary {cursor:pointer;font-size:12px}
+.demo-tools-tray[open] .experiment-preset-chips {margin-top:10px}
+.field-error {color:#9b342d;font-size:12px;line-height:1.5}
+[aria-invalid="true"] {border-color:#9b342d!important}
+#card-feedback {line-height:1.6;font-size:13px}
+@media(max-width:768px) {
+  .customer-options {padding:12px 16px}
+  .customer-options .scenario-chips {display:grid;grid-template-columns:1fr 1fr}
+  .support-tools {gap:6px 12px}
+  .support-tools .btn {width:100%}
+  #verification-modal .security-card-grid {grid-template-columns:1fr}
+}
+
 .step-type {
   position:absolute;
   bottom:12px;
@@ -1688,3 +1721,14 @@ dialog::backdrop {
 
 
 
+/* Keep the composer reachable when choices wrap on a narrow screen. */
+.conversation-panel {height:auto;min-height:0;max-height:none}
+.chat-window {flex:none;height:clamp(180px,30vh,340px);min-height:0}
+.input-container,.quick-actions,.scenario-tray {flex-shrink:0}
+.full-width-conversation .chat-msg {max-width:min(100%,780px)}
+@media(max-width:768px) {
+  .chat-window {height:220px;padding:20px 16px}
+  .stepper {margin-bottom:16px}
+  .page-heading {margin-bottom:20px}
+}
+.customer-options .verification-progress {font-size:12px;font-weight:400;color:#6c552a;margin-bottom:12px}

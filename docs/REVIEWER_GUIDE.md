@@ -27,12 +27,16 @@ Start the application using the root README, then open
    and the human handoff path.
 
 The verification card is an optional alternative to conversational collection.
-It opens blank; sample identities require an explicit Demo Tools action.
+Click **Verify using a form**. It opens blank; sample identities require explicit
+filling and submission. Try a name alone: the call stays in VERIFY_ID and claim
+details remain locked. An invalid date or email gets field-level feedback;
+correcting a field retains the original claim hint. **How this works** opens the
+inspector and replay; technical panels are hidden by default in customer chat.
 Email delivery and human transfer are simulated.
 
 ## 2. Show what the learned policy actually does
 
-Open **RL Lab** in the header or <http://127.0.0.1:8080/lab>.
+Open **Developer lab** in the header or <http://127.0.0.1:8080/lab>.
 
 1. Select a frustrated caller and compare all policies using the same environment
    seed: RuleBased, Random, PPO seed 42 and PPO seed 7.
@@ -44,6 +48,11 @@ Open **RL Lab** in the header or <http://127.0.0.1:8080/lab>.
 4. Show the checkpoint hash and training step count, then download the complete
    JSON trace. Probabilities are calculated from the loaded model; they are not
    decorative numbers.
+
+The lab introduces the criteria before the numbers: protect the caller, reach
+the appropriate outcome, then reduce effort. The selected run's takeaway is
+computed from its actual result. Reward is labelled **Training score**, action
+names are translated into plain language, and raw metadata stays expandable.
 
 Customer chat uses the shared SOP runtime with either the mock or configured
 language-model engine. The PPO checkpoint controls the synthetic policy lab;

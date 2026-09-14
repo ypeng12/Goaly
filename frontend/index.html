@@ -18,9 +18,9 @@
         <span class="brand-name">aegis<span class="brand-divider"></span><span class="brand-subtitle">Claims help</span></span>
       </a>
       <div class="header-actions">
-        <a class="btn btn-secondary" href="/lab">RL Lab ↗</a>
+        <a class="btn btn-secondary" href="/lab">Developer lab ↗</a>
         <span class="engine-badge" id="engine-badge"><span class="status-dot"></span><span id="engine-label">Connecting</span></span>
-        <button id="btn-toggle-inspector" class="btn btn-secondary" type="button" aria-expanded="false"><span aria-hidden="true">🛡️</span> <span class="btn-text">Safety trace / SOP audit</span></button>
+        <button id="btn-toggle-inspector" class="btn btn-secondary" type="button" aria-expanded="false" aria-label="Show how this call works"><span aria-hidden="true">🛡️</span> <span class="btn-text">How this works</span></button>
         <button id="btn-config" class="btn btn-secondary" type="button"><span class="btn-text">API settings</span></button>
         <button id="btn-reset" class="btn btn-primary" type="button"><span aria-hidden="true">＋</span> <span class="btn-text">New call</span></button>
       </div>
@@ -28,7 +28,7 @@
 
     <main>
       <div class="page-heading">
-        <div><p class="eyebrow">VERIFIED-FIRST CLAIMS SUPPORT</p><h1>Claims help</h1><p class="page-description">Claim help with a privacy boundary. Natural conversation or secure verification card, with privacy enforced at the data layer before claim details are accessed.</p></div>
+        <div><p class="eyebrow">ONE STEP AT A TIME</p><h1>Let’s sort out your claim.</h1><p class="page-description">Check progress, understand a rejection, or get help with documents. Choose an option or tell us what happened.</p></div>
         <div class="sandbox-note"><span class="sandbox-pill">DEMO WORKSPACE</span><p>Synthetic records · Simulated email &amp; handoff</p></div>
       </div>
 
@@ -40,18 +40,23 @@
       </ol>
 
       <div id="service-notice" class="service-notice" role="status" hidden></div>
-      <div class="main-layout">
+      <div class="main-layout full-width-conversation">
         <section class="conversation-panel" aria-labelledby="conversation-heading">
           <div class="panel-heading"><div class="panel-title"><span class="live-dot" aria-hidden="true"></span><h2 id="conversation-heading">Your conversation</h2></div><span class="quiet-label" id="call-status">Identity verification</span></div>
-          <div class="scenario-tray"><span class="eyebrow">TRY A TEST CALL</span><div class="scenario-chips" aria-label="Send a sample caller message">
+          <details class="scenario-tray"><summary>Testing the demo? Try a sample call</summary><div class="scenario-chips" aria-label="Send a sample caller message">
             <button class="chip featured" id="scenario-margaret" type="button">Margaret’s January claim <span aria-hidden="true">↗</span></button>
             <button class="chip" id="scenario-partial" type="button">One detail at a time</button>
             <button class="chip" id="scenario-frustrated" type="button">Frustrated caller</button>
             <button class="chip" id="scenario-oos" type="button">Outside scope</button>
             <button class="chip" id="scenario-proxy" type="button">Representative</button>
-          </div><p class="scenario-hint">Each chip sends one message in this call. Use New call to start a separate scenario.</p></div>
+          </div><p class="scenario-hint">Each chip sends one message in this call. Use New call to start a separate scenario.</p></details>
 
           <div class="chat-window" id="chat-window" role="log" aria-label="Conversation messages" aria-live="polite" aria-relevant="additions text" tabindex="0"></div>
+          <div class="customer-options" id="customer-options" aria-label="Suggested next steps">
+            <p id="verification-progress" class="verification-progress" role="status">Not verified · 0 of 3 details matched. Claim details are locked.</p>
+            <p id="choices-label">What would you like help with?</p><div id="topic-choices" class="scenario-chips"></div>
+            <div class="support-tools"><button class="btn btn-primary" id="btn-open-verification" type="button">Verify using a form</button><button class="text-button" id="btn-correct" type="button">Correct something I typed</button><button class="text-button" id="btn-human" type="button">Ask for a person</button></div>
+          </div>
           <div class="quick-actions" id="process-actions" hidden><span>Ready to wrap up?</span><button class="chip" id="btn-wrap-up" type="button">That answers my question</button></div>
           <div class="quick-actions consent-actions" id="post-process-actions" hidden><span>Would you like a summary?</span><button class="btn btn-primary" id="btn-accept-email" type="button">Yes, send summary</button><button class="btn btn-secondary" id="btn-decline-email" type="button">No thanks, skip</button></div>
           <div class="replay-notice" id="replay-notice" hidden>Viewing a saved turn. Return to live to continue the conversation.</div>
@@ -61,8 +66,9 @@
           </div>
         </section>
 
-        <aside class="inspector-panel" aria-label="Workflow inspector">
+        <aside class="inspector-panel hidden-drawer" aria-label="Workflow inspector">
           <div class="inspector-heading"><div><p class="eyebrow">BEHIND THE CONVERSATION</p><h2>Workflow inspector</h2></div><span class="tag" id="inspector-mode">LIVE</span></div>
+          <p class="card-note">This is a record of this call, not a score. Check that details stayed locked before verification, your earlier request was remembered, and email waited for your choice.</p>
           <section class="inspector-card" aria-labelledby="identity-heading">
             <div class="card-heading"><h3 id="identity-heading">Identity gate</h3><span class="tag pending" id="verify-status-badge">0 / 3 matched</span></div>
             <div class="progress-track" role="progressbar" id="pii-progress" aria-label="Matching identity fields" aria-valuemin="0" aria-valuemax="3" aria-valuenow="0"><div id="pii-progress-fill"></div></div>
@@ -86,10 +92,17 @@
         </aside>
       </div>
 
-      <div class="replay-bar"><div><span class="replay-icon" aria-hidden="true">↶</span><strong>Session replay</strong><span class="quiet-label">Read-only snapshots</span></div><div class="replay-controls"><label for="time-travel-slider" id="time-travel-badge">Live · Turn 0</label><input type="range" id="time-travel-slider" min="0" max="0" value="0" disabled aria-label="Replay a completed conversation turn"><button id="btn-revert-live" class="text-button" type="button" hidden>Return to live →</button></div></div>
+      <div class="replay-bar" hidden><div><span class="replay-icon" aria-hidden="true">↶</span><strong>Session replay</strong><span class="quiet-label">Read-only snapshots</span></div><div class="replay-controls"><label for="time-travel-slider" id="time-travel-badge">Live · Turn 0</label><input type="range" id="time-travel-slider" min="0" max="0" value="0" disabled aria-label="Replay a completed conversation turn"><button id="btn-revert-live" class="text-button" type="button" hidden>Return to live →</button></div></div>
       <footer class="page-footer"><span>AEGIS / SOP HARNESS</span><span>Fixed phase order. Flexible conversation. Customer-controlled follow-up.</span></footer>
     </main>
   </div>
+
+  <dialog id="verification-modal" aria-labelledby="verification-title">
+    <div class="modal-heading"><h2 id="verification-title">Verify your identity</h2><button type="button" class="close-button" id="verification-close" aria-label="Close verification form">×</button></div>
+    <p class="modal-description">Fill any 3 matching details. Phone or email can replace SSN. Entries you submit correct those fields from earlier in this call.</p>
+    <div id="verification-fields"></div>
+    <p class="field-help">Demo only: use a sample identity, not your personal information. Claim details stay locked until verification passes.</p>
+  </dialog>
 
   <dialog id="config-modal" aria-labelledby="config-title">
     <div class="modal-heading"><div><p class="eyebrow">MODEL CONNECTION</p><h2 id="config-title">API settings</h2></div><button class="close-button" id="modal-close" aria-label="Close settings" type="button">×</button></div>

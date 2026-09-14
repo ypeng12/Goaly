@@ -65,6 +65,20 @@ def test_model_action_masking():
         assert not torch.isinf(log_prob)
 
 
+@pytest.mark.parametrize('batched', [False, True])
+def test_policy_rejects_all_false_masks_instead_of_sampling_illegal_actions(batched):
+    from backend.rl.models import ActorCriticPolicy
+    policy = ActorCriticPolicy()
+    state = torch.zeros((2, 30) if batched else (30,))
+    mask = torch.ones((2, 9) if batched else (9,), dtype=torch.bool)
+    if batched:
+        mask[1] = False
+    else:
+        mask[:] = False
+    with pytest.raises(ValueError, match='No legal actions'):
+        policy.get_action_and_value(state, mask)
+
+
 def test_rollout_buffer_gae_analytical():
     """Exact hand-calculated GAE test verifying non-bleeding across terminal transitions.
     

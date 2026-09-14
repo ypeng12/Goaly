@@ -1,0 +1,22 @@
+{
+  "total": 50,
+  "train": 32,
+  "val": 10,
+  "test": 8,
+  "unique_prompts": 50,
+  "distinct_reply_pairs": 50,
+  "positive_delta_pct": 100.0,
+  "minimum_return_margin": 0.19899999999999984,
+  "required_return_margin": 0.1,
+  "environment_version": 3,
+  "rejected_action_counts": {
+    "ACK_EMOTION": 16,
+    "ANSWER_GROUNDED": 2,
+    "ASK_CLAIM_CLARIFICATION": 4,
+    "ASK_IDENTITY_FIELD": 4,
+    "ESCALATE_HUMAN": 23,
+    "RESOLVE_INTENT": 1
+  },
+  "split_unit": "identity/style group",
+  "training_performed": false
+}

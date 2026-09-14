@@ -33,7 +33,30 @@ def normalize(text: str) -> str:
     return text.replace('’', "'").replace('‘', "'").strip()
 
 
+def business_text(text: str) -> str:
+    """A small spelling allowlist for topic routing only, never identity or consent.
+
+    Keep the original message for PII extraction, audit and consent evaluation.
+    Avoid editing identifiers and addresses even in this routing-only copy.
+    """
+    corrections = {'cliam': 'claim', 'cliams': 'claims', 'calim': 'claim',
+                   'staus': 'status', 'stauts': 'status', 'deneid': 'denied',
+                   'denyed': 'denied', 'documnts': 'documents',
+                   'documnets': 'documents', 'insurence': 'insurance',
+                   'reimbursment': 'reimbursement', 'paymnt': 'payment'}
+    return re.sub(r'(?<![\w@.+-])[a-z]+(?![\w@.+-])',
+                  lambda m: corrections.get(m.group(), m.group()), normalize(text).lower())
+
+
 class UtteranceExtractor:
+    @staticmethod
+    def support_orientation(text: str) -> bool:
+        return bool(re.search(
+            r"\b(?:what (?:is|does) (?:a |an insurance )?claim(?: mean)?\b|"
+            r"what can i (?:ask|say)|what can you (?:help|do)|"
+            r"(?:not sure|don't know|do not know) (?:where|how) to (?:start|begin)|"
+            r"help me (?:get started|choose)|what does claim mean)", business_text(text)))
+
     @staticmethod
     def extract_pii(text: str) -> PIIFields:
         text = normalize(text)
@@ -81,7 +104,7 @@ class UtteranceExtractor:
 
     @staticmethod
     def extract_topics(text: str):
-        text = normalize(text).lower()
+        text = business_text(text)
         topics = [topic for topic, pattern in TOPIC_PATTERNS.items() if re.search(pattern, text)]
         document_context = re.search(r'\b(?:report|note|copy|photocopy|scan|lab|laboratory|clinic|hospital)\b', text)
         unavailable_or_alternative = re.search(r'\b(?:other (?:way|options?)|shut down|closed permanently)\b', text)
@@ -92,7 +115,7 @@ class UtteranceExtractor:
     @staticmethod
     def extract_cross_phase_hints(text: str) -> CrossPhaseMemory:
         text = normalize(text)
-        low = text.lower()
+        low = business_text(text)
         # Remove identity dates so birthdays cannot override an earlier claim month.
         low = re.sub(r'\b(?:dob|date of birth|birthday|born)\s*(?:is|on|was|:)?\s*(?:[a-z]+\s+\d{1,2}(?:st|nd|rd|th)?,?\s+\d{4}|\d{4}[-/]\d{1,2}[-/]\d{1,2}|\d{1,2}[-/]\d{1,2}[-/]\d{4})', '', low)
         hints = CrossPhaseMemory()
@@ -108,7 +131,9 @@ class UtteranceExtractor:
         if months:
             hints.date_hint = months[0].capitalize()
         bare_dob = UtteranceExtractor.extract_pii(text).dob and re.fullmatch(r'[\w ,/.-]+', text) and not re.search(r'\b(?:claim|from|in|on|denied|closed)\b', low)
-        year = None if bare_dob else re.search(r'\b(20\d{2}(?:-\d{2}-\d{2})?)\b', low)
+        # CL-2048 is a claim reference, not the year 2048.
+        dates = re.sub(r'\b(?:cl|pol)-\d+\b', '', low)
+        year = None if bare_dob else re.search(r'\b(20\d{2}(?:-\d{2}-\d{2})?)\b', dates)
         if year:
             hints.date_hint = f'{hints.date_hint} {year.group()}' if hints.date_hint else year.group()
         case = re.search(r'\bCL-\d+\b', text, re.I)
@@ -143,9 +168,11 @@ class UtteranceExtractor:
 
     @staticmethod
     def is_out_of_scope(text: str) -> bool:
-        low = normalize(text).lower()
+        low = business_text(text)
         if any(re.search(p, low) for p in OUT_OF_SCOPE_PATTERNS):
             return True
+        if UtteranceExtractor.support_orientation(text):
+            return False
         # Unknown questions are declined unless they concern the service or its workflow.
         question = bool(re.search(r'\b(?:what|why|how|who|where|when|explain|teach|tell me about)\b', low))
         service = bool(re.search(r'\b(?:claim|claims|policy|coverage|insurance|verify|verification|identity|info|information|name|dob|phone|email|ssn|id|documents?|reports?|notes?|appeal|denied|denial|submit|send|upload|payment|pay|paid|amount|fee|reimbursement|portal|healthcare|dental|auto|human|representative|consent|summary|privacy|status|format|scan|pdf|receipt|confirmation|review|processing|original|copy|alternative|substitute|long|soon|deadline|that|it|this|them|those)\b', low))
