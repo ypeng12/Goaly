@@ -164,7 +164,7 @@ class UtteranceExtractor:
             'confusion': ['confused', "don't understand", 'makes no sense', 'what does that mean'],
             'anxiety': ['anxious', 'worried', 'scared', 'afraid', 'panicking', 'terrified', "can't afford"],
             'frustration': ['already told you', 'ridiculous', 'frustrat', 'annoying', 'waste of time', 'just tell me', 'why do you need', 'tired of this', 'stop asking', 'why is this so hard', 'sick and tired', 'jumping through hoops'],
-            'anger': ['furious', 'angry', 'outrageous', 'unacceptable', 'hate this', 'damn'],
+            'anger': ['furious', 'angry', 'outrageous', 'unacceptable', 'hate this', 'hate you', 'damn'],
         }
         for label, phrases in groups.items():
             if any(p in low for p in phrases):

@@ -25,6 +25,12 @@ const ACTION_LABELS = {
   OFFER_EMAIL_SUMMARY: 'offer an optional summary', SEND_EMAIL: 'send the agreed summary',
   ESCALATE_HUMAN: 'request a human representative'
 };
+const INTENT_CHOICES = [
+  ['Check claim status', 'I want to check my claim status.'],
+  ['Understand a denial', 'Why was my claim denied?'],
+  ['Ask about payment', 'I need help with claim payment.'],
+  ['Help with documents', 'What documents does my claim need?']
+];
 const WELCOME = "Hi, I’m Aegis. Tell me what happened with your claim — your request for insurance payment. You can ask follow-up questions in your own words.\n\nWe’ll verify your identity before opening your record. Use the form if that’s easier than typing your details.";
 let requestedController = new URLSearchParams(window.location.search).get('controller');
 if (!Object.hasOwn(CONTROLLER_LABELS, requestedController) || requestedController === 'sop') requestedController = null;
@@ -108,6 +114,18 @@ function renderMessage(message) {
     formAction.addEventListener('click', openVerification);
     body.append(formAction);
   }
+  if (role === 'assistant') document.querySelectorAll('#chat-window .chat-intent-actions').forEach(actions => actions.remove());
+  if (role === 'assistant' && message.intentPicker) {
+    const actions = node('div', 'chat-intent-actions');
+    actions.setAttribute('aria-label', 'Choose what you need help with');
+    INTENT_CHOICES.forEach(([label, text]) => {
+      const action = node('button', 'chip', label);
+      action.type = 'button';
+      action.addEventListener('click', () => sendMessage(text));
+      actions.append(action);
+    });
+    body.append(actions);
+  }
   bubble.append(meta, body);
   row.append(avatar, bubble);
   $("chat-window").append(row);
@@ -119,6 +137,9 @@ function renderMessages(messages) {
   renderVerificationCard();
 }
 
+function needsIntentPicker(data) {
+  return data.current_phase === 'RESOLVE_INTENT' && data.sop_state?.resolution_status === 'needs_intent';
+}
 function appendLive(message) { liveMessages.push(message); renderMessage(message); }
 function showTyping() {
   const row = node("div", "chat-msg assistant typing");
@@ -143,7 +164,7 @@ async function sendMessage(text) {
     typing.remove();
     if (!data.sop_state || typeof data.reply !== "string") throw new Error("The server returned an incomplete turn. Please start a new call.");
     liveData = data;
-    appendLive({role: "assistant", text: data.reply, phase: data.current_phase});
+    appendLive({role: "assistant", text: data.reply, phase: data.current_phase, intentPicker: needsIntentPicker(data)});
     snapshots.push({data: clone(data), messages: clone(liveMessages)});
     renderInspector(data);
     renderEngine(data);
@@ -550,7 +571,7 @@ async function submitVerificationCard(form) {
     if (data.field_errors) { showCardErrors(data.field_errors); return; }
     liveData = data;
     appendLive({ role: "user", text: "[Submitted Security Verification Card]" });
-    appendLive({ role: "assistant", text: data.reply, phase: data.current_phase });
+    appendLive({ role: "assistant", text: data.reply, phase: data.current_phase, intentPicker: needsIntentPicker(data) });
     snapshots.push({ data: clone(data), messages: clone(liveMessages) });
     renderInspector(data);
     renderEngine(data);

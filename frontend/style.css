@@ -564,6 +564,18 @@ h1 {
   font-size:12px;
 }
 
+.chat-intent-actions {
+  display:flex;
+  flex-wrap:wrap;
+  gap:7px;
+  margin-top:14px;
+}
+
+.chat-intent-actions .chip {
+  min-height:34px;
+  font-size:12px;
+}
+
 .user .msg-bubble {
   background:#eef3ed;
   border:1px solid #e0e8dd;

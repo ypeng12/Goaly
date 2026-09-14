@@ -19,7 +19,13 @@ def render_policy_reply(machine, message, result, conversation_context, decision
     result['conversation_context'] = context
     result['policy_action'] = action_name
     if action is not None:
-        result['policy_empathy'] = action == AgentAction.ACK_EMOTION
+        # During intent resolution, acknowledge clear distress before offering
+        # choices. This is a service-recovery requirement, not a permission to
+        # bypass the gate or disclose a claim.
+        result['policy_empathy'] = action == AgentAction.ACK_EMOTION or (
+            machine.state.phase == Phase.RESOLVE_INTENT
+            and result.get('emotion') in {'frustration', 'anger', 'anxiety', 'confusion'}
+        )
     result['enable_response_planning'] = enable_response_planning
     result['grounded_answer_delivered'] = False
 

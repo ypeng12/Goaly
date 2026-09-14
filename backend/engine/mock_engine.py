@@ -65,6 +65,10 @@ class MockEngine(BaseEngine):
             candidates = state_result.get('candidate_claims', [])
             resolution = state_result.get('resolution_status', '')
             memory = ctx.get('memory', {})
+            if resolution == 'needs_intent':
+                return (empathy + "That's okay—you don't need to know the insurance terms. "
+                        'Choose one of the options below: check claim status, understand a denial, ask about payment, or get help with documents. '
+                        'You can also type a claim reference if you have one.')
             if candidates and len(candidates) > 1:
                 choices = '; '.join(f'{c.case_id}: {c.case_type}, {c.created_at}, {c.status}' for c in candidates)
                 return empathy + 'Your identity is verified. I kept the details you mentioned, but more than one claim matches: ' + choices + '. Which claim reference or year did you mean?'

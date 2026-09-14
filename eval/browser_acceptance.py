@@ -243,6 +243,27 @@ def run(url, output_dir, require_customer_report=False):
             assert response.value.json()['current_phase'] == 'PROCESS_CASE'
             page.screenshot(path=str(out / f'guided-chat-{width}.png'), full_page=True)
 
+            # A verified customer who is unsure sees choices inside the agent
+            # response, rather than being asked to rephrase "claim" repeatedly.
+            new_call()
+            page.locator('#btn-open-verification').click()
+            page.locator('#card-name').fill('Ya Wen Li')
+            page.locator('#card-dob').fill('1989-12-03')
+            page.locator('#card-phone').fill('+16505212830')
+            page.locator('#card-id-type').select_option('national_id_last4')
+            page.locator('#card-id4').fill('5317')
+            with page.expect_response(lambda r: '/api/verify-card' in r.url) as response:
+                page.locator('#btn-card-submit').click()
+            data = response.value.json()
+            assert data['current_phase'] == 'RESOLVE_INTENT'
+            expect(page.locator('#chat-window .chat-intent-actions')).to_have_count(1)
+            expect(page.locator('#chat-window .chat-intent-actions button')).to_have_count(4)
+            with page.expect_response(lambda r: '/api/chat' in r.url) as response:
+                page.get_by_role('button', name='Check claim status', exact=True).click()
+            data = response.value.json()
+            assert data['current_phase'] == 'PROCESS_CASE' and data['active_case']['case_id'] == 'CL-7742'
+            page.screenshot(path=str(out / f'intent-choices-{width}.png'), full_page=True)
+
             # Simulator metrics stay separate from the actual customer transcript.
             with page.expect_response(lambda r: '/api/lab/evidence' in r.url) as saved_evidence:
                 page.goto(url.rstrip('/') + '/lab', wait_until='networkidle')
