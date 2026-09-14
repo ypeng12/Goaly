@@ -66,9 +66,7 @@ class MockEngine(BaseEngine):
             resolution = state_result.get('resolution_status', '')
             memory = ctx.get('memory', {})
             if resolution == 'needs_intent':
-                return (empathy + "That's okay—you don't need to know the insurance terms. "
-                        'Choose one of the options below: check claim status, understand a denial, ask about payment, or get help with documents. '
-                        'You can also type a claim reference if you have one.')
+                return empathy + 'Your identity is verified. What happened that you’d like help with?'
             if candidates and len(candidates) > 1:
                 choices = '; '.join(f'{c.case_id}: {c.case_type}, {c.created_at}, {c.status}' for c in candidates)
                 return empathy + 'Your identity is verified. I kept the details you mentioned, but more than one claim matches: ' + choices + '. Which claim reference or year did you mean?'
@@ -113,9 +111,13 @@ class MockEngine(BaseEngine):
         if not topics and ctx.get('memory', {}).get('topic_hint'):
             topics = [ctx['memory']['topic_hint']]
         newly_opened = any(t.gate_evaluated == 'RESOLVE_INTENT_GATE' and t.gate_passed for t in (state.trace_log[-1:] if state else []))
+        accepted_offer = newly_opened and any(t.gate_evaluated == 'CONVERSATIONAL_SELECTION'
+                                              for t in (state.trace_log[-2:] if state else []))
         if not topics:
             topics = ['status'] if newly_opened else ['unknown']
-        if newly_opened:
+        if accepted_offer:
+            topics = ['status']  # Answer the status check we offered, not an unsolicited full dossier.
+        elif newly_opened:
             topics = list(dict.fromkeys(['status', 'denial_reason', 'documents', 'appeal_deadline'] + topics))
         guidance = grounded_data.get_document_guidance_for_claim(claim)
         pieces = []
@@ -125,10 +127,12 @@ class MockEngine(BaseEngine):
             if piece and piece not in pieces:
                 pieces.append(piece)
                 used.append(topic)
+        if accepted_offer and claim.summary:
+            pieces.append('The record says: ' + claim.summary.rstrip('.') + '.')
         state_result['grounded_topics'] = used
         if state and hasattr(state, 'discussion_topics'):
             state.discussion_topics = list(dict.fromkeys(state.discussion_topics + used))
-        intro = 'Identity verified. I found the claim using your earlier details.\n\n' if newly_opened else ''
+        intro = 'Identity verified. I found the claim using your earlier details.\n\n' if newly_opened and not accepted_offer else ''
         style = (conversation['response_style'] if conversation.get('response_style') in {'plain_language', 'step_by_step'}
                  else state_result.get('response_style', 'concise'))
         if style == 'step_by_step' and len(pieces) > 1:
@@ -137,7 +141,7 @@ class MockEngine(BaseEngine):
             body = '\n\n'.join(pieces)
         # Keep the next step available without repeating the same invitation on
         # every follow-up. Contextual turns answer the current question directly.
-        ending = "\n\nChoose a next step below, or ask in your own words." if newly_opened else ''
+        ending = "\n\nChoose a next step below, or ask in your own words." if newly_opened and not accepted_offer else ''
         state_result['_response_envelope'] = {'prefix': empathy + intro, 'facts': pieces,
                                                'topics': used, 'ending': ending}
         return empathy + intro + body + ending
@@ -170,7 +174,9 @@ class MockEngine(BaseEngine):
     def _fact(topic, claim, guidance, user_text):
         docs = ', '.join(claim.documents_needed)
         if topic == 'status':
-            return f'Claim {claim.case_id} is {claim.status}. It is a {claim.case_type} claim created on {claim.created_at}.'
+            status = {'in_review': 'under review'}.get(claim.status, claim.status.replace('_', ' '))
+            article = 'an' if claim.case_type[:1].lower() in 'aeiou' else 'a'
+            return f'Claim {claim.case_id} is {status}. It is {article} {claim.case_type} claim created on {claim.created_at}.'
         if topic == 'denial_reason':
             return f'The recorded denial reason is that {claim.denial_reason}.' if claim.denial_reason else ''
         if topic == 'documents':

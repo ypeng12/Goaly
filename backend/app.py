@@ -11,6 +11,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Literal, Optional
 from dotenv import load_dotenv
+from .harness.intent_dialogue import public_guidance
 
 load_dotenv()
 
@@ -158,7 +159,7 @@ def redact_tree(data):
 def public_state(sm, *, force_shield=False):
     state = sm.state
     authorized = not force_shield and sm.get_verified_policyholder() is not None
-    output = state.model_dump(mode='json', exclude={'accumulated_pii', 'history_snapshots', 'mock_outbox'})
+    output = state.model_dump(mode='json', exclude={'accumulated_pii', 'history_snapshots', 'mock_outbox', 'intent_dialogue'})
     output['identity_verified'] = authorized
     output['data_shield_active'] = not authorized
     output['collected_fields'] = [k for k in ['name', 'dob', 'phone', 'email', 'id_last4'] if getattr(state.accumulated_pii, k)]
@@ -186,7 +187,7 @@ def reply_payload(sid, item, reply=None):
                    for c in candidates[:6]]
     return {'session_id': sid, 'reply': reply, 'current_phase': public['phase'],
             'controller': item.controller, 'policy_decision': public_policy_decision(item),
-            'claim_choices': choices,
+            'claim_choices': choices, 'dialogue_guidance': public_guidance(item.machine),
             'sop_state': public, 'trace': public['trace_log'],
             'active_case': claim.model_dump(mode='json', exclude={'party_id'}) if claim else None,
             'verified_policyholder': None, 'engine_mode': item.engine.last_mode,
@@ -317,7 +318,7 @@ def complete_customer_response(item, message, result, context, semantic=None):
     semantic = semantic or {}
     # A bounded emotion proposal may influence conversational action choice,
     # never identity evidence, claim permissions or consent.
-    context = {**context, 'emotion': result.get('emotion')}
+    context = {**context, 'emotion': result.get('emotion'), 'dialogue_act': semantic.get('dialogue_act')}
     proposed = [t for t in semantic.get('response_topics', []) or [] if t != 'unknown']
     contextual_topics = context.get('response_topics', [])
     result['response_topics'] = (contextual_topics if context.get('is_contextual_followup') or context.get('document_focus')

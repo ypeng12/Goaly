@@ -6,6 +6,7 @@ still owns claim access, phase transitions and side effects.
 """
 from ..engine.mock_engine import EMPATHY, MockEngine
 from .types import AgentAction, Phase
+from .intent_dialogue import render_intent_reply
 
 
 def render_policy_reply(machine, message, result, conversation_context, decision,
@@ -28,6 +29,16 @@ def render_policy_reply(machine, message, result, conversation_context, decision
         )
     result['enable_response_planning'] = enable_response_planning
     result['grounded_answer_delivered'] = False
+    # A legal intent action uses the previous server question to repair the
+    # conversation. The learned policy still selects the bounded action; these
+    # contextual words and explicit-reply bindings are harness behavior.
+    if action is not None and action.value not in decision.get('allowed_actions', []):
+        raise ValueError('Cannot execute an action outside the customer SOP mask')
+    if action != AgentAction.ESCALATE_HUMAN:
+        intent_reply = render_intent_reply(machine, message, context)
+        if intent_reply is not None:
+            result['response_generation'] = 'contextual_intent_dialogue'
+            return intent_reply
 
     def compose():
         reply = engine.generate_response(message, result, history)
@@ -86,7 +97,9 @@ def render_policy_reply(machine, message, result, conversation_context, decision
     if action == AgentAction.ESCALATE_HUMAN:
         # The mask permits this only after resolution attempts are exhausted;
         # recheck the state as a second boundary before applying the side effect.
-        if machine.state.phase != Phase.RESOLVE_INTENT or execution.get('escalation_reason') != 'case_resolution_exhausted':
+        if (machine.state.phase != Phase.RESOLVE_INTENT
+                or machine.state.resolution_status not in {'no_match', 'ambiguous'}
+                or execution.get('escalation_reason') != 'case_resolution_exhausted'):
             raise ValueError('This policy handoff is not authorized at this phase')
         before = machine.state.phase
         machine.state.phase = Phase.ESCALATED

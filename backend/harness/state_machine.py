@@ -427,6 +427,11 @@ class SOPStateMachine:
         if phase_before in self.TERMINAL_PHASES:
             return self._result(phase_before, note="This session is terminal. Start a new session to continue.")
         semantic = semantic if isinstance(semantic, dict) else {}
+        from .intent_dialogue import is_short_acknowledgement
+        if self.state.phase == Phase.RESOLVE_INTENT and is_short_acknowledgement(user_text):
+            # An LLM cannot invent a topic from 'yes'. Only the server-issued
+            # offer below may bind that current reply to an owned record.
+            semantic = {**semantic, 'hints': {}}
         # Preserve useful information even when the message is refused by scope.
         self._accumulate(user_text, semantic)
         emotions = self.extractor.detect_emotion_and_intent(user_text)
@@ -438,7 +443,9 @@ class SOPStateMachine:
         # Context may resolve a short follow-up, but cannot contribute identity,
         # claim selection or consent evidence. Recheck it against the live gate.
         from .conversation_context import is_safe_contextual_followup
-        contextual = is_safe_contextual_followup(self, user_text, conversation_context)
+        from .intent_dialogue import is_service_repair, accept_status_offer
+        contextual = (is_safe_contextual_followup(self, user_text, conversation_context)
+                      or is_service_repair(self, user_text))
         is_oos = not contextual and (self.extractor.is_out_of_scope(user_text) or semantic.get("is_out_of_scope") is True)
 
         # A third-party disclosure remains blocked in EVERY phase. A roster
@@ -498,6 +505,7 @@ class SOPStateMachine:
                         self.state.phase = Phase.ESCALATED
                 self._add_trace("VERIFY_ID_GATE", False, "Three distinct matching allowed PII fields are required with no contradictory values. Explain privacy and offer alternative fields." if self.state.phase != Phase.ESCALATED else "Three verification refusals reached; recorded a demo human handoff without disclosing claim data.", phase_before)
         elif self.state.phase == Phase.RESOLVE_INTENT:
+            accept_status_offer(self, user_text)
             self._resolve()
         elif self.state.phase == Phase.PROCESS_CASE:
             if self.get_active_claim() is None:

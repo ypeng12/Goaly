@@ -243,8 +243,8 @@ def run(url, output_dir, require_customer_report=False):
             assert response.value.json()['current_phase'] == 'PROCESS_CASE'
             page.screenshot(path=str(out / f'guided-chat-{width}.png'), full_page=True)
 
-            # A verified customer who is unsure sees choices inside the agent
-            # response, rather than being asked to rephrase "claim" repeatedly.
+            # Guidance belongs to this question, rather than a fixed four-item
+            # menu repeated whenever the customer has not yet stated an intent.
             new_call()
             page.locator('#btn-open-verification').click()
             page.locator('#card-name').fill('Ya Wen Li')
@@ -256,13 +256,83 @@ def run(url, output_dir, require_customer_report=False):
                 page.locator('#btn-card-submit').click()
             data = response.value.json()
             assert data['current_phase'] == 'RESOLVE_INTENT'
-            expect(page.locator('#chat-window .chat-intent-actions')).to_have_count(1)
-            expect(page.locator('#chat-window .chat-intent-actions button')).to_have_count(4)
+            def check_guidance(data):
+                guidance = data['dialogue_guidance']
+                choices = guidance['choices'] if data['current_phase'] == 'RESOLVE_INTENT' and guidance else []
+                buttons = page.locator('#chat-window .chat-guidance-action')
+                expect(buttons).to_have_count(len(choices))
+                for index, choice in enumerate(choices):
+                    expect(buttons.nth(index)).to_have_text(choice['label'])
+                    expect(buttons.nth(index)).to_be_enabled()
+                expect(page.locator('#user-input')).to_be_enabled()
+                return choices
+            check_guidance(data)
+            assert data['dialogue_guidance']['question'] == 'ask_reason'
+            assert data['dialogue_guidance']['choices'] == []
+            assert page.locator('#suggested-topics').get_attribute('open') is None
+            data = send("i don't know")
+            assert data['current_phase'] == 'RESOLVE_INTENT'
+            check_guidance(data)
+            assert data['dialogue_guidance']['question'] == 'describe_problem'
+            assert data['dialogue_guidance']['choices'] == []
+            data = send('claim')
+            assert data['current_phase'] == 'RESOLVE_INTENT'
+            choices = check_guidance(data)
+            assert data['dialogue_guidance']['question'] == 'offer_status'
+            assert [choice['label'] for choice in choices] == ['Check its progress', 'Something else']
+            data = send('I hate you')
+            assert data['current_phase'] == 'RESOLVE_INTENT'
+            choices = check_guidance(data)
+            assert data['dialogue_guidance']['question'] == 'offer_status'
+            assert [choice['label'] for choice in choices] == ['Check its progress', 'Something else']
+            status_choice = choices[0]
+            assert status_choice['message'] == 'Yes, check its progress.'
             with page.expect_response(lambda r: '/api/chat' in r.url) as response:
-                page.get_by_role('button', name='Check claim status', exact=True).click()
+                page.get_by_role('button', name='Check its progress', exact=True).click()
+            assert response.value.request.post_data_json['message'] == status_choice['message']
             data = response.value.json()
             assert data['current_phase'] == 'PROCESS_CASE' and data['active_case']['case_id'] == 'CL-7742'
+            expect(page.locator('#chat-window .chat-guidance-action')).to_have_count(0)
             page.screenshot(path=str(out / f'intent-choices-{width}.png'), full_page=True)
+
+            # Valid resets keep server-owned settings. An expired session gets
+            # exactly one replacement attempt; server/network failures do not.
+            configure('rule')
+            new_call()
+            expect(page.locator('#controller-label')).to_contain_text(CONTROLLERS['rule'])
+            reset_requests = []
+            def expired_session_once(route):
+                reset_requests.append(route.request.post_data_json)
+                if len(reset_requests) == 1:
+                    route.fulfill(status=404, json={'detail': 'Start a new call'})
+                else:
+                    route.continue_()
+            page.route('**/api/reset', expired_session_once)
+            with page.expect_response(lambda r: '/api/reset' in r.url and r.request.post_data_json == {}) as fresh_response:
+                page.locator('#btn-reset').click()
+            ready()
+            assert len(reset_requests) == 2 and reset_requests[0].get('session_id') and reset_requests[1] == {}
+            assert fresh_response.value.json()['session_id'] != reset_requests[0]['session_id']
+            expect(page.locator('#service-notice')).to_contain_text('previous call is no longer available')
+            expect(page.locator('#service-notice')).to_contain_text('Review Settings')
+            expect(page.locator('#verification-progress')).to_contain_text('0 of 3')
+            expect(page.locator('#user-input')).to_be_enabled()
+            page.unroute('**/api/reset', expired_session_once)
+            for failure in ('server', 'network'):
+                attempts = []
+                def reset_failure(route):
+                    attempts.append(route.request.post_data_json)
+                    if failure == 'network':
+                        route.abort('failed')
+                    else:
+                        route.fulfill(status=500, json={'detail': 'Temporary reset failure'})
+                page.route('**/api/reset', reset_failure)
+                page.locator('#btn-reset').click()
+                expected_notice = 'Could not reach the server' if failure == 'network' else 'Temporary reset failure'
+                expect(page.locator('#service-notice')).to_contain_text(expected_notice)
+                ready()
+                assert len(attempts) == 1
+                page.unroute('**/api/reset', reset_failure)
 
             # Simulator metrics stay separate from the actual customer transcript.
             with page.expect_response(lambda r: '/api/lab/evidence' in r.url) as saved_evidence:
@@ -327,6 +397,8 @@ def run(url, output_dir, require_customer_report=False):
                 'native_date_and_phone_preservation': 'passed', 'plain_language_lab': 'passed',
                 'customer_report_matches_live_checkpoints': 'passed' if customer_report else 'not generated',
                 'name_only_remains_locked': 'passed', 'composer_visible_on_first_load': 'passed',
+                'question_specific_dialogue_guidance': 'passed', 'expired_session_new_call': 'passed',
+                'no_reset_retry_on_server_or_network_error': 'passed',
                 'rl_comparison': 'passed', 'replay': 'passed', 'download': 'passed', 'page_errors': errors,
             })
             page.close()

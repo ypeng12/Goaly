@@ -156,7 +156,7 @@ def test_runtime_records_executed_resolutions_and_grounded_answers_only():
     decision = decide(machine, IDENTITY, [], "rule", runtime)
     assert runtime == before
     record_execution(runtime, decision)
-    assert runtime["resolution_attempts"] == 1
+    assert runtime["resolution_attempts"] == 0
     assert runtime["grounded_answered"] is False
     machine.evaluate_turn("My denied healthcare claim from January")
     decision = decide(machine, "My denied healthcare claim from January", [], "rule", runtime)

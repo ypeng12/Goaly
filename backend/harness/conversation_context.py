@@ -8,6 +8,7 @@ import re
 
 from .extractor import OUT_OF_SCOPE_PATTERNS, UtteranceExtractor, business_text
 from .types import Phase
+from .intent_dialogue import dialogue_context
 
 DOCUMENT_TOPICS = {'documents', 'document_alternatives', 'file_format',
                    'submission_method', 'submission_timing', 'receipt_confirmation'}
@@ -73,7 +74,7 @@ def prepare_conversation_turn(machine, message, history=None):
               'document_focus': [], 'needs_clarification': False,
               'response_style': 'concise', 'context_claim_id': None,
               'is_contextual_followup': False, 'document_explanation': False,
-              'displayed_documents': []}
+              'displayed_documents': [], 'intent_dialogue': dialogue_context(machine)}
     claim = machine.get_active_claim()
     if not claim or machine.state.phase not in {Phase.PROCESS_CASE, Phase.POST_PROCESS}:
         return result

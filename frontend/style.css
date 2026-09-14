@@ -572,8 +572,12 @@ h1 {
 }
 
 .chat-intent-actions .chip {
-  min-height:34px;
+  min-height:40px;
   font-size:12px;
+  max-width:100%;
+  white-space:normal;
+  text-align:left;
+  line-height:1.5;
 }
 
 .user .msg-bubble {

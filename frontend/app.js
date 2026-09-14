@@ -25,12 +25,6 @@ const ACTION_LABELS = {
   OFFER_EMAIL_SUMMARY: 'offer an optional summary', SEND_EMAIL: 'send the agreed summary',
   ESCALATE_HUMAN: 'request a human representative'
 };
-const INTENT_CHOICES = [
-  ['Check claim status', 'I want to check my claim status.'],
-  ['Understand a denial', 'Why was my claim denied?'],
-  ['Ask about payment', 'I need help with claim payment.'],
-  ['Help with documents', 'What documents does my claim need?']
-];
 const WELCOME = "Hi, I’m Aegis. Tell me what happened with your claim — your request for insurance payment. You can ask follow-up questions in your own words.\n\nWe’ll verify your identity before opening your record. Use the form if that’s easier than typing your details.";
 let requestedController = new URLSearchParams(window.location.search).get('controller');
 if (!Object.hasOwn(CONTROLLER_LABELS, requestedController) || requestedController === 'sop') requestedController = null;
@@ -63,7 +57,11 @@ async function request(path, options = {}) {
     const response = await fetch(path, {...options, signal: controller.signal, headers: {"Content-Type": "application/json", ...options.headers}});
     let data;
     try { data = await response.json(); } catch (_) { throw new Error("The server returned an unreadable response. Please try again."); }
-    if (!response.ok) throw new Error(typeof data.detail === "string" ? data.detail : "The server could not complete this request. Please try again.");
+    if (!response.ok) {
+      const error = new Error(typeof data.detail === "string" ? data.detail : "The server could not complete this request. Please try again.");
+      error.status = response.status;
+      throw error;
+    }
     return data;
   } catch (error) {
     if (error.name === "AbortError") throw new Error("The response took too long. Check the connection before trying again.");
@@ -80,6 +78,9 @@ function syncControls() {
   document.querySelectorAll('#customer-options button').forEach(button => { button.disabled = unavailable; });
   document.querySelectorAll('.chat-form-action').forEach(button => {
     button.disabled = unavailable || liveData.current_phase !== 'VERIFY_ID';
+  });
+  document.querySelectorAll('.chat-guidance-action').forEach(button => {
+    button.disabled = unavailable || liveData.current_phase !== 'RESOLVE_INTENT';
   });
   document.querySelectorAll('#security-card-el input, #security-card-el select, #security-card-el button').forEach(el => {
     el.disabled = unavailable || liveData.current_phase !== 'VERIFY_ID';
@@ -115,13 +116,15 @@ function renderMessage(message) {
     body.append(formAction);
   }
   if (role === 'assistant') document.querySelectorAll('#chat-window .chat-intent-actions').forEach(actions => actions.remove());
-  if (role === 'assistant' && message.intentPicker) {
+  if (role === 'assistant' && message.phase === 'RESOLVE_INTENT' && message.dialogueGuidance?.choices.length) {
     const actions = node('div', 'chat-intent-actions');
-    actions.setAttribute('aria-label', 'Choose what you need help with');
-    INTENT_CHOICES.forEach(([label, text]) => {
-      const action = node('button', 'chip', label);
+    actions.setAttribute('role', 'group');
+    actions.setAttribute('aria-label', 'Suggested answers to the current question');
+    actions.dataset.question = message.dialogueGuidance.question || '';
+    message.dialogueGuidance.choices.forEach(({label, message: answer}) => {
+      const action = node('button', 'chip chat-guidance-action', label);
       action.type = 'button';
-      action.addEventListener('click', () => sendMessage(text));
+      action.addEventListener('click', () => sendMessage(answer));
       actions.append(action);
     });
     body.append(actions);
@@ -137,8 +140,13 @@ function renderMessages(messages) {
   renderVerificationCard();
 }
 
-function needsIntentPicker(data) {
-  return data.current_phase === 'RESOLVE_INTENT' && data.sop_state?.resolution_status === 'needs_intent';
+function dialogueGuidance(data) {
+  if (data.current_phase !== 'RESOLVE_INTENT' || !data.dialogue_guidance) return null;
+  const guidance = data.dialogue_guidance;
+  return {question: guidance.question, choices: Array.isArray(guidance.choices)
+    ? guidance.choices.filter(choice => typeof choice?.label === 'string' && choice.label.trim()
+      && typeof choice.message === 'string' && choice.message.trim() && choice.message.length <= 6000)
+    : []};
 }
 function appendLive(message) { liveMessages.push(message); renderMessage(message); }
 function showTyping() {
@@ -164,7 +172,7 @@ async function sendMessage(text) {
     typing.remove();
     if (!data.sop_state || typeof data.reply !== "string") throw new Error("The server returned an incomplete turn. Please start a new call.");
     liveData = data;
-    appendLive({role: "assistant", text: data.reply, phase: data.current_phase, intentPicker: needsIntentPicker(data)});
+    appendLive({role: "assistant", text: data.reply, phase: data.current_phase, dialogueGuidance: dialogueGuidance(data)});
     snapshots.push({data: clone(data), messages: clone(liveMessages)});
     renderInspector(data);
     renderEngine(data);
@@ -262,13 +270,16 @@ function renderChoices(data) {
   $('btn-correct').hidden = phase !== 'VERIFY_ID' && phase !== 'RESOLVE_INTENT';
   const choices = $('topic-choices');
   choices.replaceChildren();
+  const chooseClaim = phase === 'RESOLVE_INTENT' && data.claim_choices?.length
+    && (data.dialogue_guidance?.question === 'identify_claim'
+      || ['ambiguous', 'no_match'].includes(data.sop_state?.resolution_status));
   let items = [];
   if (phase === 'VERIFY_ID' || phase === 'RESOLVE_INTENT') {
     items = [['Check progress', 'I want to check my claim status.'],
       ['Understand a rejection', 'Why was my claim denied?'],
       ['Help with documents', 'What documents does my claim need?'],
       ['Not sure where to start', "I don’t know where to start. What can I ask?"]];
-    if (phase === 'RESOLVE_INTENT' && data.claim_choices?.length) {
+    if (chooseClaim) {
       items = data.claim_choices.map(c => [`${c.case_type} · ${c.created_at} · ${c.case_id}`, `I mean claim ${c.case_id}.`]);
     }
   } else if (phase === 'PROCESS_CASE') {
@@ -279,7 +290,6 @@ function renderChoices(data) {
       ['I can’t get a document', 'I cannot get the documents. What alternatives are available?']);
     else items.push(['Understand the payment', 'What payment amounts are recorded for my claim?']);
   }
-  const chooseClaim = phase === 'RESOLVE_INTENT' && data.claim_choices?.length;
   $('choices-label').textContent = chooseClaim ? 'Choose the claim you mean' : 'Need an idea? See suggested questions';
   $('suggested-topics').hidden = !items.length;
   if (chooseClaim) $('suggested-topics').open = true;
@@ -376,9 +386,10 @@ function renderPolicyDecision(data) {
   if (activity) {
     const interpretation = Number(activity.interpretation_requests || 0), planning = Number(activity.planning_requests || 0);
     const generation = {deterministic: 'local grounded reply', deterministic_grounded: 'local grounded reply',
+      contextual_intent_dialogue: 'context-aware local wording',
       live_fact_plan: 'model-selected grounded facts', grounded_plan_fallback: 'local grounded fallback'}[decision.response_generation];
     $('policy-decision-language').textContent = interpretation + planning === 0
-      ? 'No language-model request was sent for this turn. The reply used local grounding.'
+      ? `No language-model request was sent for this turn. Response: ${generation || 'local grounding'}.`
       : `Language-model activity: ${activity.interpretation_succeeded || 0}/${interpretation} interpretation requests and ${activity.planning_succeeded || 0}/${planning} fact-planning requests succeeded.${generation ? ` Response: ${generation}.` : ''}`;
   }
   $('policy-decision-boundary').textContent = decision.forced
@@ -414,10 +425,20 @@ async function resetSession() {
   syncControls();
   notice("");
   try {
-    const data = await request("/api/reset", {method: "POST", body: JSON.stringify(sessionId ? {session_id: sessionId} : {})});
+    let data, replacedExpiredSession = false;
+    try {
+      data = await request("/api/reset", {method: "POST", body: JSON.stringify(sessionId ? {session_id: sessionId} : {})});
+    } catch (error) {
+      // Only a missing server-side session permits creating a replacement.
+      // Network errors and other HTTP failures must not silently start calls.
+      if (error.status !== 404 || !sessionId) throw error;
+      data = await request('/api/reset', {method: 'POST', body: '{}'});
+      replacedExpiredSession = true;
+    }
     sessionId = data.session_id;
     if (!sessionId) throw new Error("The server did not create a session. Please try New call again.");
     liveData = initialState();
+    $('suggested-topics').open = false;
     replaying = false;
     $('verification-modal').close();
     $('security-card-el')?.remove();
@@ -433,6 +454,7 @@ async function resetSession() {
       requestedController = null;
     }
     applyConfig(sessionConfig);
+    if (replacedExpiredSession) notice('Your previous call is no longer available. A new call is ready with the server’s current settings. Review Settings if you used a custom model or strategy.');
   } catch (error) {
     notice(error.message);
   } finally { busy = false; syncControls(); }
@@ -571,7 +593,7 @@ async function submitVerificationCard(form) {
     if (data.field_errors) { showCardErrors(data.field_errors); return; }
     liveData = data;
     appendLive({ role: "user", text: "[Submitted Security Verification Card]" });
-    appendLive({ role: "assistant", text: data.reply, phase: data.current_phase, intentPicker: needsIntentPicker(data) });
+    appendLive({ role: "assistant", text: data.reply, phase: data.current_phase, dialogueGuidance: dialogueGuidance(data) });
     snapshots.push({ data: clone(data), messages: clone(liveMessages) });
     renderInspector(data);
     renderEngine(data);

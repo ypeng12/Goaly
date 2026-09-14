@@ -70,6 +70,8 @@ def fake_provider(monkeypatch, *, topics=('documents',), emotion='neutral', refe
                        'topics': list(topics), 'style': 'concise', 'slots': []}
             if 'document_reference' in format_['schema']['properties']:
                 content['document_reference'] = reference
+            if 'dialogue_act' in format_['schema']['properties']:
+                content['dialogue_act'] = 'unsure'
         return httpx.Response(200, json={'choices': [{'finish_reason': 'stop', 'message': {'content': json.dumps(content)}}]})
 
     transport = httpx.MockTransport(handler)
@@ -114,6 +116,30 @@ def test_http_uses_interpretation_then_validated_fact_plan(client, monkeypatch):
     for identity_value in ['1985-03-15', '4472', 'margaret@email.com', 'fake-contract-token']:
         assert identity_value not in json.dumps(captures)
         assert identity_value not in json.dumps(data)
+
+
+def test_intent_model_receives_the_question_asked_without_replaying_old_pii(client, monkeypatch):
+    sid = start(client, verified=False)
+    client.post('/api/verify-card', json={'session_id': sid, 'name': 'Ya Wen Li',
+                                        'dob': '1989-12-03', 'phone': '+16505212830'})
+    before = say(client, sid, "I don't know")
+    enable_provider(client, sid)
+    captures = fake_provider(monkeypatch, topics=())
+    # A paraphrase outside the small local uncertainty grammar is interpreted
+    # against the pending question, not a naked current-message prompt.
+    data = say(client, sid, 'Choosing any of those descriptions is difficult for me.')
+    assert data['engine_mode'] == 'live'
+    assert data['dialogue_guidance']['question'] == 'offer_status'
+    assert data['current_phase'] == 'RESOLVE_INTENT' and data['active_case'] is None
+    assert data['policy_decision']['response_generation'] == 'contextual_intent_dialogue'
+    assert len(captures) == 1  # No free-form factual reply request.
+    system = captures[0]['messages'][0]['content']
+    workflow = json.loads(system.split('\nWorkflow context: ', 1)[1])
+    assert before['reply'] == workflow['dialogue_context']['last_question']
+    assert 'describe_problem' in system and 'recent_caller_acts' in system
+    for identity in ['Ya Wen Li', '1989-12-03', '+16505212830', 'fake-contract-token']:
+        assert identity not in system
+    assert [m['role'] for m in captures[0]['messages']] == ['system', 'user']
 
 
 def test_http_model_reference_applies_before_policy_and_fact_composition(client, monkeypatch):

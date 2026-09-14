@@ -114,6 +114,21 @@ send photos? → And the deadline?** The answer keeps the currently discussed
 document in context and clarifies when the reference is ambiguous. Unconfirmed
 photo formats are identified as unconfirmed, not promised acceptable.
 
+Intent resolution also remembers the question actually asked. After verifying
+Ya Wen Li with the form, try **I don't know → claim → I hate you → yes**.
+The agent first asks about the situation, then offers to check the owned car
+claim, acknowledges friction in the conversation, and binds **yes** to that
+specific preceding offer. It does not treat uncertainty as a failed claim
+lookup or repeat the four-topic menu. These changes come from the dialogue
+harness; the PPO weights are unchanged. The live interpreter receives the
+server-issued question and recent speech-act labels, without replaying old PII.
+
+No account registration or login is required for this demo. The visitor's API
+token authenticates model calls; the separate three-field identity gate protects
+claim access. **New call** clears customer identity and conversation state. A
+valid session keeps its model settings; an expired session starts afresh and
+requires the visitor's model settings again.
+
 Under **Testing the demo?**, try **Margaret’s January claim**, ask about missing documents, then select
 **That answers my question** and choose **send** or **skip**. The inspector shows
 verification, remembered hints, claim access, consent and replay. You can also

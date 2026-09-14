@@ -24,6 +24,7 @@ CHECKPOINTS = {
 }
 LEGACY_CHECKPOINTS = {"ppo42": ROOT / "artifacts/ppo_policy.pt", "ppo7": ROOT / "artifacts/seed7/ppo_policy.pt"}
 CONTROLLER_MODES = ("rule", "ppo42", "ppo7")
+UNRESOLVED_CASE_STATUSES = {"no_match", "ambiguous"}
 MEMORY_KEYS = ("case_type_hint", "status_hint", "date_hint", "topic_hint")
 IDENTITY_LABELS = {
     "name": "full name", "dob": "date of birth", "phone": "phone number",
@@ -161,6 +162,10 @@ def decide(machine, message, history, controller_mode="ppo42", runtime_state=Non
     signals = _signals(message, context)
     policy_phase = runtime.get("last_phase")
     attempts = runtime.get("resolution_attempts", 0) if policy_phase in {None, phase.value} else 0
+    if phase == Phase.RESOLVE_INTENT and state.resolution_status == "needs_intent":
+        # Asking what the caller needs is not a failed case lookup. Recheck
+        # this even for sessions that retain an older retry counter.
+        attempts = 0
     runtime = {**runtime, "resolution_attempts": attempts}
     legal, restrictions = set(), []
     mandatory = None
@@ -177,8 +182,10 @@ def decide(machine, message, history, controller_mode="ppo42", runtime_state=Non
         legal = {AgentAction.ASK_IDENTITY_FIELD, AgentAction.EXPLAIN_VERIFICATION_GATE}
     elif phase == Phase.RESOLVE_INTENT and verified:
         legal = {AgentAction.RESOLVE_INTENT, AgentAction.ASK_CLAIM_CLARIFICATION}
-        if attempts >= 2 and state.resolution_status in {"no_match", "ambiguous", "needs_intent"}:
+        if attempts >= 2 and state.resolution_status in UNRESOLVED_CASE_STATUSES:
             legal.add(AgentAction.ESCALATE_HUMAN)
+        if state.resolution_status == "needs_intent":
+            restrictions.append("Helping the caller describe their need does not exhaust case lookup attempts or authorize an automatic handoff.")
     elif phase == Phase.PROCESS_CASE and active:
         legal = {AgentAction.ASK_CLAIM_CLARIFICATION} if context.get("needs_clarification") else {AgentAction.ANSWER_GROUNDED}
         restrictions.append("Email is offered only after the customer explicitly finishes claim questions.")
@@ -209,6 +216,8 @@ def decide(machine, message, history, controller_mode="ppo42", runtime_state=Non
         "mask_source": "customer_sop_v1",
         "mask_restrictions": restrictions,
         "observation": obs,
+        # Audit metadata only; the checkpoint feature contract is unchanged.
+        "resolution_status": state.resolution_status,
         "turn_index": runtime.get("turn_count", 0),
         "execution": {"kind": "sop_response"},
         "fallback_reason": None,
@@ -295,12 +304,17 @@ def record_execution(runtime_state, decision, *, grounded_answered=False):
     """Commit response memory only after the actual selected response is sent."""
     observation = decision["observation"]
     phase = observation["phase"]
-    if runtime_state.get("last_phase") != phase:
+    resolution_status = decision.get("resolution_status")
+    if (runtime_state.get("last_phase") != phase
+            or (phase == Phase.RESOLVE_INTENT.value and resolution_status == "needs_intent")):
         runtime_state["resolution_attempts"] = 0
     action = decision["selected_action"]
-    if phase == Phase.RESOLVE_INTENT.value and action in {
+    lookup_response = action in {
         AgentAction.RESOLVE_INTENT.value, AgentAction.ASK_CLAIM_CLARIFICATION.value,
-    }:
+    } or (action == AgentAction.ACK_EMOTION.value
+          and decision["execution"].get("followup_kind") in {"resolve_intent", "ask_claim_clarification"})
+    if (phase == Phase.RESOLVE_INTENT.value and resolution_status in UNRESOLVED_CASE_STATUSES
+            and lookup_response):
         runtime_state["resolution_attempts"] = runtime_state.get("resolution_attempts", 0) + 1
     runtime_state["grounded_answered"] = bool(runtime_state.get("grounded_answered") or grounded_answered)
     runtime_state["last_phase"] = phase

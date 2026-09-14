@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import List, Dict, Optional, Any
+from typing import List, Dict, Optional, Any, Literal
 from pydantic import BaseModel, Field
 
 class Phase(str, Enum):
@@ -111,6 +111,15 @@ class StateSnapshot(BaseModel):
     state_dump: Dict[str, Any]
     timestamp: str
 
+class IntentDialogueState(BaseModel):
+    """Server-issued questions, separate from caller evidence and email consent."""
+    party_id: Optional[str] = None
+    question: Optional[Literal['ask_reason', 'describe_problem', 'offer_status', 'identify_claim', 'ask_goal']] = None
+    prompt: str = ''
+    offered_case_id: Optional[str] = None
+    issued_turn: int = -1
+    recent_acts: List[str] = Field(default_factory=list)
+
 class SOPState(BaseModel):
     session_id: str
     phase: Phase = Phase.VERIFY_ID
@@ -127,6 +136,7 @@ class SOPState(BaseModel):
     discussion_topics: List[str] = Field(default_factory=list)
     mock_outbox: List[Dict[str, Any]] = Field(default_factory=list)
     resolution_status: Optional[str] = None
+    intent_dialogue: IntentDialogueState = Field(default_factory=IntentDialogueState)
     pii_conflicts: List[str] = Field(default_factory=list)
     # Proxy / Authorized Representative fields
     is_proxy_caller: bool = False

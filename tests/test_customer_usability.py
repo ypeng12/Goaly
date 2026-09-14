@@ -67,7 +67,7 @@ def test_unconfirmed_name_directs_customer_to_the_exact_name_form():
         assert 'middle name or suffix' in result['reply']
 
 
-def test_verified_customer_who_is_unsure_gets_plain_language_intent_choices():
+def test_verified_customer_gets_a_contextual_next_question_instead_of_a_repeated_menu():
     with TestClient(app) as client:
         sid = begin(client)
         verified = client.post('/api/verify-card', json={
@@ -76,15 +76,23 @@ def test_verified_customer_who_is_unsure_gets_plain_language_intent_choices():
         }).json()
         assert verified['current_phase'] == 'RESOLVE_INTENT'
         assert verified['sop_state']['resolution_status'] == 'needs_intent'
-        assert "don't need to know the insurance terms" in verified['reply']
+        assert verified['dialogue_guidance'] == {'question': 'ask_reason', 'choices': []}
+        assert "That's okay" not in verified['reply']
         unsure = chat(client, sid, "i don't know")
         one_word = chat(client, sid, 'claim')
         angry = chat(client, sid, 'I hate you')
         for result in (unsure, one_word, angry):
             assert result['current_phase'] == 'RESOLVE_INTENT'
             assert result['sop_state']['resolution_status'] == 'needs_intent'
-            assert 'Choose one of the options below' in result['reply']
-        assert 'upsetting' in angry['reply'].lower()
+            assert 'Choose one of the options below' not in result['reply']
+        assert unsure['dialogue_guidance']['question'] == 'describe_problem'
+        assert one_word['dialogue_guidance']['question'] == 'offer_status'
+        assert len(set(r['reply'] for r in (verified, unsure, one_word, angry))) == 4
+        assert 'asking you to choose' in angry['reply']
+        chosen = chat(client, sid, 'yes')
+        assert chosen['active_case']['case_id'] == 'CL-7742'
+        assert chosen['current_phase'] == 'PROCESS_CASE'
+        assert chosen['sop_state']['post_process']['user_decision'] is None
 
 
 @pytest.mark.parametrize('text, expected', [

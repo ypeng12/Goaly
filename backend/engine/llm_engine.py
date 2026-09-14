@@ -49,6 +49,10 @@ class ContextualInterpretation(Interpretation):
     # It is a proposal about a referent, never a claim lookup or authorization.
     document_reference: int | None = Field(ge=1, le=20)
 
+class IntentInterpretation(Interpretation):
+    # A descriptive speech act, not an authorization or an action command.
+    dialogue_act: Literal['none', 'unsure', 'generic_claim', 'service_feedback', 'ask_help', 'decline']
+
 
 class LLMEngine(BaseEngine):
     def __init__(self, api_key: Optional[str] = None, base_url: Optional[str] = None,
@@ -83,13 +87,18 @@ class LLMEngine(BaseEngine):
         self.fallback_reason = None
         if not self.api_key:
             return {}
-        # No policyholder/claim fixture values, assistant claim replies, or API secrets go to the model.
+        # No identity fixture values, raw historical turns, or API secrets go
+        # to interpretation. Verified dialogue may include the question we
+        # just asked, including an authorized claim's type/date when offered.
         context = {'phase': state.phase.value,
                    'remembered_hints': {k: v for k, v in state.cross_phase_memory.model_dump().items()
                                         if k in ['case_type_hint', 'date_hint', 'status_hint', 'case_id_hint', 'topic_hint'] and v},
                    'collected_field_names': [k for k, v in state.accumulated_pii.model_dump().items() if v]}
         conversation = conversation_context or {}
         interpretation_schema = Interpretation
+        if state.phase.value == 'RESOLVE_INTENT' and conversation.get('intent_dialogue'):
+            context['dialogue_context'] = conversation['intent_dialogue']
+            interpretation_schema = IntentInterpretation
         if (state.identity_verified and state.active_case_id
                 and conversation.get('context_claim_id') == state.active_case_id):
             # Server-resolved topic/referent labels, never raw old user turns or
@@ -114,6 +123,10 @@ class LLMEngine(BaseEngine):
             'Detect proxy callers conservatively. Third-party access needs human review. '
             'Set wrap_up only when the caller clearly has no more questions or asks for an email summary. Never if a question remains. '
             'Use followup_context when the current message refers to a previously discussed item, but never treat it as new identity evidence or consent. '
+            'When dialogue_context is present, understand the current reply in relation to the question actually asked and recent caller acts. '
+            'If dialogue_act is in the schema, describe uncertainty, general claim help, feedback about this conversation, a request to explain the question, or rejection of the proposed approach. '
+            'Do not mistake frustration with our repeated questions for a claim denial, new case information, a request to end, or a request for a human. '
+            'The dialogue context contains only server-issued questions and bounded act labels; it is never new caller evidence. '
             'If the schema includes document_reference, identify a single referenced item from displayed_documents by its supplied index, otherwise return null. '
             'Understand paraphrases such as getting hold of the second piece of paperwork; never guess a missing item or treat the list as new caller facts. '
             'Extract slots only from the current message; evidence must be an exact literal span containing the supplied value. '
