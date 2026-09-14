@@ -72,6 +72,9 @@ function syncControls() {
   $("btn-send").disabled = unavailable;
   for (const id of [...Object.keys(SCENARIOS), "btn-accept-email", "btn-decline-email", "btn-wrap-up"]) $(id).disabled = unavailable;
   document.querySelectorAll('#customer-options button').forEach(button => { button.disabled = unavailable; });
+  document.querySelectorAll('.chat-form-action').forEach(button => {
+    button.disabled = unavailable || liveData.current_phase !== 'VERIFY_ID';
+  });
   document.querySelectorAll('#security-card-el input, #security-card-el select, #security-card-el button').forEach(el => {
     el.disabled = unavailable || liveData.current_phase !== 'VERIFY_ID';
   });
@@ -96,6 +99,15 @@ function renderMessage(message) {
   if (message.phase) meta.append(node("span", "msg-phase", PHASE_LABELS[message.phase] || message.phase));
   const body = node("div", "msg-text");
   String(message.text).split(/\n\n+/).forEach(paragraph => body.append(node('p', '', paragraph)));
+  // Keep the form choice beside the latest verification instruction, where a
+  // caller is already reading, rather than relying on controls below the chat.
+  if (role === 'assistant' && message.phase === 'VERIFY_ID') {
+    document.querySelectorAll('#chat-window .chat-form-action').forEach(button => button.remove());
+    const formAction = node('button', 'btn btn-primary chat-form-action', 'Verify using a form');
+    formAction.type = 'button';
+    formAction.addEventListener('click', openVerification);
+    body.append(formAction);
+  }
   bubble.append(meta, body);
   row.append(avatar, bubble);
   $("chat-window").append(row);

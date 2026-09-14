@@ -558,6 +558,12 @@ h1 {
   color:#40564a;
 }
 
+.chat-form-action {
+  margin-top:14px;
+  min-height:36px;
+  font-size:12px;
+}
+
 .user .msg-bubble {
   background:#eef3ed;
   border:1px solid #e0e8dd;

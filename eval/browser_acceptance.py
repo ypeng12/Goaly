@@ -112,6 +112,14 @@ def run(url, output_dir, require_customer_report=False):
             ready()
             no_overflow()
             composer_in_view()
+            # The verification form is available where the agent asks for it,
+            # not only in the controls below the conversation.
+            expect(page.locator('#chat-window .chat-form-action')).to_have_count(1)
+            expect(page.locator('#chat-window .chat-form-action')).to_be_enabled()
+            page.locator('#chat-window .chat-form-action').click()
+            expect(page.locator('#verification-modal')).to_be_visible()
+            expect(page.locator('#card-name')).to_have_attribute('placeholder', 'Include middle name or suffix if shown')
+            page.locator('#verification-close').click()
             assert page.locator('.inspector-panel').is_hidden()
             assert page.locator('#topic-choices button').count() == 4
             assert page.locator('#suggested-topics').get_attribute('open') is None
@@ -123,6 +131,7 @@ def run(url, output_dir, require_customer_report=False):
             assert data['current_phase'] == 'VERIFY_ID' and data['active_case'] is None
             assert data['sop_state']['cross_phase_memory']['date_hint'] == 'January'
             assert data['sop_state']['verified_fields'] == ['name']
+            expect(page.locator('#chat-window .chat-form-action')).to_have_count(1)
             check_decision(data, 'ppo42')
             data = send('DOB 1985-03-15, SSN last four 4472.')
             assert data['active_case']['case_id'] == 'CL-2048'
