@@ -376,13 +376,15 @@ function renderPolicyDecision(data) {
 }
 function applyConfig(data) {
   config = data;
+  const ownerManaged = data.api_key_source === 'server';
   $('cfg-controller').value = data.controller || 'ppo42';
   $("cfg-engine-mode").value = data.has_api_key && !data.use_mock_only ? "llm" : "mock";
   $("cfg-base-url").value = data.base_url || "https://api.openai.com/v1";
   $("cfg-model").value = data.model || "gpt-4o-mini";
   $("cfg-api-key").value = "";
   $("cfg-api-key").placeholder = data.has_api_key ? "Leave blank to keep this session’s token" : "Paste your API token";
-  $("llm-config-fields").hidden = $("cfg-engine-mode").value !== "llm";
+  $("llm-config-fields").hidden = $("cfg-engine-mode").value !== "llm" || ownerManaged;
+  $('server-api-note').hidden = $("cfg-engine-mode").value !== "llm" || !ownerManaged;
   renderEngine();
 }
 async function resetSession() {
@@ -436,7 +438,14 @@ async function saveConfig(event) {
   $("config-save").textContent = "Saving…";
   syncControls();
   try {
-    const data = await request("/api/config", {method: "POST", body: JSON.stringify({session_id: sessionId, controller: $('cfg-controller').value, use_mock: mock, api_key: token || undefined, base_url: $("cfg-base-url").value.trim() || undefined, model: $("cfg-model").value.trim() || undefined})});
+    const ownerManaged = config.api_key_source === 'server';
+    const payload = {session_id: sessionId, controller: $('cfg-controller').value, use_mock: mock};
+    if (!ownerManaged) {
+      payload.api_key = token || undefined;
+      payload.base_url = $("cfg-base-url").value.trim() || undefined;
+      payload.model = $("cfg-model").value.trim() || undefined;
+    }
+    const data = await request("/api/config", {method: "POST", body: JSON.stringify(payload)});
     applyConfig(data);
     notice(`${CONTROLLER_LABELS[data.controller] || data.controller || 'Strategy'} configured for the next turn. ${mock ? 'Language engine: offline.' : 'Live model configured; each response shows the engine actually used.'}`);
     closeConfig();
@@ -599,7 +608,12 @@ $('btn-conversation-settings').addEventListener('click', () => $('btn-config').c
 $("modal-close").addEventListener("click", closeConfig);
 $("modal-cancel").addEventListener("click", closeConfig);
 $("config-modal").addEventListener("cancel", () => { $("cfg-api-key").value = ""; });
-$("cfg-engine-mode").addEventListener("change", () => { $("llm-config-fields").hidden = $("cfg-engine-mode").value !== "llm"; });
+$("cfg-engine-mode").addEventListener("change", () => {
+  const live = $("cfg-engine-mode").value === "llm";
+  const ownerManaged = config.api_key_source === 'server';
+  $("llm-config-fields").hidden = !live || ownerManaged;
+  $('server-api-note').hidden = !live || !ownerManaged;
+});
 $("config-form").addEventListener("submit", saveConfig);
 renderInspector(liveData);
 resetSession();

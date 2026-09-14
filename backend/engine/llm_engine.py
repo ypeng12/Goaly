@@ -53,7 +53,9 @@ class ContextualInterpretation(Interpretation):
 class LLMEngine(BaseEngine):
     def __init__(self, api_key: Optional[str] = None, base_url: Optional[str] = None,
                  model: Optional[str] = None, fallback_engine=None):
-        self.api_key = api_key if api_key is not None else os.getenv('AI_API_KEY', os.getenv('OPENAI_API_KEY', ''))
+        self.server_api_key = os.getenv('AI_API_KEY', os.getenv('OPENAI_API_KEY', ''))
+        self.api_key = api_key if api_key is not None else self.server_api_key
+        self.api_key_source = ('session' if api_key else 'server' if self.server_api_key else 'none')
         self.base_url = (base_url or os.getenv('AI_BASE_URL') or 'https://api.openai.com/v1').rstrip('/')
         self.model = model or os.getenv('AI_MODEL') or 'gpt-4o-mini'
         self.fallback_engine = fallback_engine or MockEngine()
@@ -69,6 +71,7 @@ class LLMEngine(BaseEngine):
     def update_config(self, api_key=None, base_url=None, model=None):
         if api_key is not None:
             self.api_key = api_key
+            self.api_key_source = 'session' if api_key else 'none'
         if base_url is not None:
             self.base_url = base_url.rstrip('/')
         if model is not None:

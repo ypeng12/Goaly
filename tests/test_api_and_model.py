@@ -84,6 +84,26 @@ def test_config_and_state_are_session_scoped_and_token_never_returned(client):
     assert 'test-private-token' not in client.get('/api/state/' + one).text
 
 
+def test_owner_managed_server_key_is_reused_but_cannot_be_redirected(monkeypatch):
+    monkeypatch.setenv('AI_API_KEY', 'owner-managed-test-key')
+    monkeypatch.setenv('AI_BASE_URL', 'https://api.example.test/v1')
+    monkeypatch.setenv('AI_MODEL', 'owner-managed-model')
+    sessions.clear()
+    with TestClient(app) as managed_client:
+        sid = start(managed_client)
+        config = managed_client.get('/api/config', params={'session_id': sid}).json()
+        assert config['has_api_key'] and config['api_key_source'] == 'server'
+        assert config['base_url'] == 'https://api.example.test/v1'
+        assert config['model'] == 'owner-managed-model'
+        assert 'owner-managed-test-key' not in json.dumps(config)
+        blocked = managed_client.post('/api/config', json={
+            'session_id': sid, 'base_url': 'https://attacker.example/v1', 'model': 'expensive-model'})
+        assert blocked.status_code == 403
+        allowed = managed_client.post('/api/config', json={'session_id': sid, 'use_mock': True, 'controller': 'rule'})
+        assert allowed.status_code == 200 and allowed.json()['controller'] == 'rule'
+    sessions.clear()
+
+
 def test_skip_decision_cannot_be_reversed_or_false_send_claimed(client):
     sid = start(client)
     chat(client, sid, DEMO)

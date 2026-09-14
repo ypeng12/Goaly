@@ -119,6 +119,7 @@
         <label for="cfg-base-url">API base URL</label><input type="url" id="cfg-base-url" placeholder="https://api.openai.com/v1" spellcheck="false"><p class="field-help">Your token and conversation are sent to this provider. Use a trusted endpoint.</p>
         <label for="cfg-model">Model name</label><input type="text" id="cfg-model" placeholder="gpt-4o-mini" spellcheck="false">
       </div>
+      <p class="field-help server-api-note" id="server-api-note" hidden>Live model access is configured by the demo owner. The API key is stored only as a server secret and is never shown in this browser. Messages sent in Live mode go to the owner-selected provider.</p>
       <p id="config-error" class="form-error" role="alert" hidden></p>
       <div class="modal-actions"><button type="button" class="btn btn-secondary" id="modal-cancel">Cancel</button><button type="submit" class="btn btn-primary" id="config-save">Save settings</button></div>
     </form>

@@ -113,6 +113,7 @@ def get_session(sid):
 def config_view(item):
     return {'model': item.engine.model, 'base_url': item.engine.base_url,
             'has_api_key': bool(item.engine.api_key), 'use_mock_only': item.use_mock,
+            'api_key_source': item.engine.api_key_source,
             'engine_mode': 'mock' if item.use_mock or not item.engine.api_key else 'live',
             'controller': item.controller}
 
@@ -267,6 +268,8 @@ def validate_endpoint(value):
 async def update_config(req: ConfigRequest):
     item = get_session(req.session_id)
     async with item.lock:
+        if item.engine.api_key_source == 'server' and any(value is not None for value in (req.api_key, req.base_url, req.model)):
+            raise HTTPException(403, 'This demo uses owner-managed live-model settings. Provider and model changes are disabled for this session.')
         if req.base_url and req.base_url.rstrip('/') != item.engine.base_url:
             # Never redirect an existing secret to a newly chosen host.
             if not req.api_key:

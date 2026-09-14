@@ -40,11 +40,15 @@ required to host them. CPU Basic has no hourly charge, but creating a Docker
 Space requires an eligible paid account plan under the current
 [Spaces requirements](https://huggingface.co/docs/hub/spaces-overview).
 
-Do not set a shared `AI_API_KEY` or `OPENAI_API_KEY` in this public Space:
-new sessions would inherit it. Visitors configure their own model credentials.
-Keep `AI_ALLOW_LOCAL_ENDPOINT` unset. Hugging Face’s `SPACE_ID` runtime variable
-enables embedding by `https://huggingface.co`; API writes still require the
-app’s own origin. Local deployments retain the default no-embedding policy.
+To run an owner-managed live model, add `AI_API_KEY` as a Hugging Face **Secret**
+(never a public variable or checked-in `.env`). New sessions inherit the server
+configuration, but the browser never receives the key. The app marks this mode
+as owner-managed and rejects visitor attempts to change the provider or model.
+Set `AI_BASE_URL` and `AI_MODEL` as Secrets too when the defaults are not the
+provider and model you intend to fund. Keep `AI_ALLOW_LOCAL_ENDPOINT` unset.
+Hugging Face’s `SPACE_ID` runtime variable enables embedding by
+`https://huggingface.co`; API writes still require the app’s own origin. Local
+deployments retain the default no-embedding policy.
 
 Sessions are held in one server process, with a two-hour inactivity expiry,
 256-session capacity and 120-turn limit. A restart, sleep or rebuild loses

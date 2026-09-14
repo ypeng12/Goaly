@@ -86,6 +86,11 @@ For a live model, open **API settings**, select **Live model**, and enter an
 OpenAI-compatible API token, base URL and model name. Tokens stay in session
 server memory; they are not saved in browser storage.
 
+For an owner-operated deployment, set `AI_API_KEY` as a server secret once.
+New calls will then use the owner-managed provider automatically; the browser
+never receives the key and visitors cannot change its provider or model. Set
+`AI_BASE_URL` and `AI_MODEL` alongside it when the defaults are not suitable.
+
 ~~~bash
 cp .env.example .env
 docker compose up --build
