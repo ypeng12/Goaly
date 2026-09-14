@@ -57,6 +57,16 @@ def test_typo_tolerance_never_fuzzy_matches_a_name():
     assert pii.name == 'Deneid Calim' and pii.email == 'deneid@cliam.com'
 
 
+def test_unconfirmed_name_directs_customer_to_the_exact_name_form():
+    with TestClient(app) as client:
+        sid = begin(client)
+        result = chat(client, sid, 'mokey d luffy')
+        assert result['current_phase'] == 'VERIFY_ID'
+        assert result['active_case'] is None
+        assert 'Verify using a form' in result['reply']
+        assert 'middle name or suffix' in result['reply']
+
+
 @pytest.mark.parametrize('text, expected', [
     ('1985 3 15', '1985-03-15'),
     ('DOB: 1985 3 15', '1985-03-15'),

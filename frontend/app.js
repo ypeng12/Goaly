@@ -447,7 +447,7 @@ function renderVerificationCard() {
   card.noValidate = true;
   card.innerHTML = `
     <div class="security-card-grid">
-      <div class="security-card-field"><label for="card-name">Full name</label><input id="card-name" autocomplete="off" maxlength="200" placeholder="Name on the policy"><span class="field-error" id="error-name" role="alert"></span></div>
+      <div class="security-card-field"><label for="card-name">Full name <span class="field-tag">exactly as on policy</span></label><input id="card-name" autocomplete="off" maxlength="200" placeholder="Include middle name or suffix if shown"><span class="field-error" id="error-name" role="alert"></span></div>
       <div class="security-card-field"><label for="card-dob">Date of birth <span class="field-tag">YYYY-MM-DD</span></label><input type="date" id="card-dob" aria-describedby="dob-help error-dob"><span id="dob-help" class="field-help">Use the calendar or type 1985-03-15.</span><span class="field-error" id="error-dob" role="alert"></span></div>
       <div class="security-card-field"><label for="card-phone">Phone number</label><input type="tel" id="card-phone" autocomplete="off" maxlength="50" placeholder="10 digits, with optional +1" aria-describedby="error-phone"><span class="field-error" id="error-phone" role="alert"></span></div>
       <div class="security-card-field"><label for="card-email">Email address</label><input type="email" id="card-email" autocomplete="off" maxlength="200" placeholder="name@example.com" aria-describedby="error-email"><span class="field-error" id="error-email" role="alert"></span></div>

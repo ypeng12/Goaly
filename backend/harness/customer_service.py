@@ -41,7 +41,10 @@ def render_policy_reply(machine, message, result, conversation_context, decision
         if machine.state.phase != Phase.VERIFY_ID:
             raise ValueError('Identity requests are only permitted during verification')
         label = execution.get('identity_label', 'one identity detail')
-        if execution.get('correction_needed'):
+        if label == 'full name':
+            question = ('Please use Verify using a form to enter your full name exactly as it appears '
+                        'on your policy. Include a middle name or suffix if it appears there.')
+        elif execution.get('correction_needed'):
             question = f'Please correct your {label}, or use the verification form to review the details you provided.'
         elif label == 'date of birth':
             question = ('Please share your date of birth. You can type 1985 3 15, '
