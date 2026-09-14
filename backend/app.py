@@ -204,7 +204,12 @@ async def response_headers(request: Request, call_next):
     response.headers['Cache-Control'] = 'no-store'
     response.headers['X-Content-Type-Options'] = 'nosniff'
     response.headers['Referrer-Policy'] = 'no-referrer'
-    response.headers['Content-Security-Policy'] = "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
+    # Hugging Face renders a Space inside its own iframe. Only the runtime's
+    # explicit Space identifier enables that parent; request headers never do.
+    space_id = os.getenv('SPACE_ID', '')
+    is_space = re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9_.-]{0,95}/[A-Za-z0-9][A-Za-z0-9_.-]{0,95}', space_id)
+    ancestors = 'https://huggingface.co' if is_space else "'none'"
+    response.headers['Content-Security-Policy'] = f"default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; frame-ancestors {ancestors}; base-uri 'self'; form-action 'self'"
     return response
 
 

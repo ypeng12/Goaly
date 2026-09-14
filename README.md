@@ -1,3 +1,20 @@
+---
+title: Goaly SOP RL Agent
+emoji: 🛡️
+colorFrom: green
+colorTo: blue
+sdk: docker
+app_port: 8080
+fullWidth: true
+short_description: Conversational SOP agent with trained PPO and policy audits
+tags:
+  - reinforcement-learning
+  - ppo
+  - conversational-ai
+  - insurance
+  - agent-evaluation
+---
+
 # Goaly — constrained agent RL harness
 
 An insurance claims scenario for studying how a learned dialogue policy behaves
@@ -37,6 +54,12 @@ respect send or skip. A short call or high training reward alone is insufficient
 See [the customer runtime and policy evidence](docs/CUSTOMER_RUNTIME.md).
 
 ## Run the demo
+
+Open the [hosted Hugging Face Space](https://huggingface.co/spaces/Ypeng12/goaly-sop-rl)
+or its [full-screen demo](https://ypeng12-goaly-sop-rl.hf.space).
+The public demo starts in offline mode and uses synthetic records. For natural
+language from an API model, enter your own token in **API settings** for that
+session. See [Space setup and verification](docs/HUGGING_FACE_SPACE.md).
 
 Python 3.11 is recommended.
 
