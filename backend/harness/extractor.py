@@ -5,6 +5,12 @@ from typing import Any, Dict, Optional
 from .types import PIIFields, CrossPhaseMemory
 
 MONTHS = ['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december']
+# A year-first date is unambiguous even when a caller separates its parts with
+# spaces (for example, "1985 3 15").  Month-first space-separated numbers are
+# deliberately excluded: "3 2 2001" is ambiguous without a locale convention.
+DOB_VALUE = (r'(?:[A-Za-z]+\s+\d{1,2}(?:st|nd|rd|th)?,?\s+\d{4}|'
+             r'\d{4}(?:[-/.\s]+)\d{1,2}(?:[-/.\s]+)\d{1,2}|'
+             r'\d{1,2}(?:[-/.])\d{1,2}(?:[-/.])\d{4})')
 OUT_OF_SCOPE_PATTERNS = [
     r'\b(?:reinforcement learning|q[- ]learning|deep learning|machine learning|quantum physics|bitcoin|crypto|python|javascript|golang)\b',
     r'\b(?:what is|explain|teach me)\s+(?:rl|ai|algebra|calculus|photosynthesis)\b',
@@ -75,12 +81,15 @@ class UtteranceExtractor:
         if pol:
             pii.policy_number = pol.group().upper()
         # A labelled DOB, or a bare date answer. Claim dates never become DOBs.
-        dob = re.search(r'\b(?:dob|date of birth|birthday|born)\s*(?:is|on|was|:)?\s*([A-Za-z]+\s+\d{1,2}(?:st|nd|rd|th)?,?\s+\d{4}|\d{4}[-/]\d{1,2}[-/]\d{1,2}|\d{1,2}[-/]\d{1,2}[-/]\d{4})', text, re.I)
+        dob = re.search(r'\b(?:dob|date of birth|birthday|born)\s*(?:is|on|was|:)?\s*(' + DOB_VALUE + ')', text, re.I)
         raw_date = dob.group(1) if dob else text.rstrip('. ')
         raw_date = re.sub(r'(\d)(st|nd|rd|th)', r'\1', raw_date, flags=re.I)
-        for fmt in ['%Y-%m-%d', '%Y/%m/%d', '%m/%d/%Y', '%m-%d-%Y', '%B %d, %Y', '%B %d %Y', '%b %d, %Y', '%b %d %Y']:
+        # Make YYYY.MM.DD and 03/15.1985 work like their slash forms, while
+        # retaining a separate space-only format for year-first input.
+        normalized_numeric = re.sub(r'(?<=\d)[./-](?=\d)', '/', raw_date)
+        for fmt in ['%Y/%m/%d', '%Y %m %d', '%m/%d/%Y', '%B %d, %Y', '%B %d %Y', '%b %d, %Y', '%b %d %Y']:
             try:
-                pii.dob = datetime.datetime.strptime(raw_date, fmt).date().isoformat()
+                pii.dob = datetime.datetime.strptime(normalized_numeric, fmt).date().isoformat()
                 break
             except ValueError:
                 continue

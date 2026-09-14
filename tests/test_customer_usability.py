@@ -57,6 +57,19 @@ def test_typo_tolerance_never_fuzzy_matches_a_name():
     assert pii.name == 'Deneid Calim' and pii.email == 'deneid@cliam.com'
 
 
+@pytest.mark.parametrize('text, expected', [
+    ('1985 3 15', '1985-03-15'),
+    ('DOB: 1985 3 15', '1985-03-15'),
+    ('DOB: 03/15.1985', '1985-03-15'),
+])
+def test_chat_accepts_clear_human_friendly_birth_date_formats(text, expected):
+    assert UtteranceExtractor.extract_pii(text).dob == expected
+
+
+def test_ambiguous_space_separated_month_first_date_is_not_identity_evidence():
+    assert UtteranceExtractor.extract_pii('3 2 2001').dob is None
+
+
 def test_form_explicitly_corrects_only_supplied_conflicts():
     sm = SOPStateMachine('correct-name')
     sm.evaluate_turn('My name is Margret Chen. My name is Margaret Chen. Denied healthcare claim from January.')

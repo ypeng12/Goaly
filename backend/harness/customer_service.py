@@ -43,6 +43,9 @@ def render_policy_reply(machine, message, result, conversation_context, decision
         label = execution.get('identity_label', 'one identity detail')
         if execution.get('correction_needed'):
             question = f'Please correct your {label}, or use the verification form to review the details you provided.'
+        elif label == 'date of birth':
+            question = ('Please share your date of birth. You can type 1985 3 15, '
+                        '1985-03-15, or 03/15/1985. You can also use the verification form.')
         else:
             question = f'Please share your {label}. You can also use the verification form.'
         remembered = 'I’ve kept your claim question for after verification. ' if any(
